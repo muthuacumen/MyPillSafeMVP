@@ -1,0 +1,234 @@
+{
+  "_meta": {
+    "author": "PillSafe SA",
+    "date": "2026-07-18",
+    "purpose": "Knowledge base for the public PillSafe Assistant (project explainer). Answers are English; CB4 localizes. question_fr aliases exist so French queries retrieve correctly.",
+    "rules": "Never add medication-specific advice entries. Never add statistics that were not SA-verified. Dev-set performance metrics must never appear here."
+  },
+  "entries": [
+    {
+      "id": "what-is-pillsafe",
+      "category": "overview",
+      "question": "What is PillSafe?",
+      "question_fr": "Qu'est-ce que PillSafe ?",
+      "answer": "PillSafe is a medication-safety assistant built as a Conestoga College capstone project. It reads your prescription to build a medication profile, verifies loose pills from a photo against that profile, and answers medication questions from Health Canada product monographs in your language. It is decision-support only — every screen reminds you to verify with a pharmacist."
+    },
+    {
+      "id": "who-is-it-for",
+      "category": "overview",
+      "question": "Who is PillSafe for?",
+      "question_fr": "À qui s'adresse PillSafe ?",
+      "answer": "PillSafe is designed for seniors managing many medications and for Canadians who are more comfortable reading health information in a language other than English or French. Both groups face a higher risk of medication mix-ups, and both are underserved by tools that assume fluent English and perfect eyesight."
+    },
+    {
+      "id": "how-verification-works",
+      "category": "how-it-works",
+      "question": "How does pill verification work?",
+      "question_fr": "Comment fonctionne la vérification des comprimés ?",
+      "answer": "You photograph a loose pill on the printed PillSafe capture card. The vision system isolates the pill, calibrates colour against the card's printed patches, reads the shape, and reads the imprint twice with complementary methods. A deterministic matcher then compares those attributes against the medications in YOUR confirmed profile — not the whole Canadian formulary — and returns one of three outcomes: verified, needs a closer look, or doesn't match."
+    },
+    {
+      "id": "capture-card",
+      "category": "how-it-works",
+      "question": "What is the capture card?",
+      "question_fr": "Qu'est-ce que la carte de capture ?",
+      "answer": "A printed card you place the pill on before photographing. It carries calibrated colour patches and corner markers, which let the app correct for your room's lighting and know the exact scale of the photo. It effectively turns an uncontrolled phone photo into a small portable studio shot. A tray version with pill wells is in development."
+    },
+    {
+      "id": "three-outcomes",
+      "category": "safety",
+      "question": "What do Verified, Needs a Closer Look, and Doesn't Match mean?",
+      "question_fr": "Que signifient Vérifié, À examiner de plus près et Ne correspond pas ?",
+      "answer": "Verified (green) means the pill matches a medication in your profile, and the app shows which attributes matched. Needs a Closer Look (amber) means PillSafe isn't sure — it may ask you to flip the pill or confirm from a short list. Doesn't Match (red) is a warning that the pill doesn't match anything in your profile. The three outcomes are deliberately distinct: amber is never a softer red."
+    },
+    {
+      "id": "why-abstain",
+      "category": "safety",
+      "question": "Why does PillSafe say it isn't sure so often?",
+      "question_fr": "Pourquoi PillSafe dit-il souvent qu'il n'est pas certain ?",
+      "answer": "By design. PillSafe is tuned so that the worst outcome — a wrong pill being called verified — is the rarest possible event. The price of that safety bias is more frequent 'I'm not sure' outcomes, where the app asks you to flip the pill, retake the photo, or check with a pharmacist. In a safety tool, an honest abstention beats a confident guess."
+    },
+    {
+      "id": "identify-any-pill",
+      "category": "safety",
+      "question": "Can PillSafe identify any pill I find?",
+      "question_fr": "PillSafe peut-il identifier n'importe quel comprimé ?",
+      "answer": "No, and that's deliberate. Research shows open-ended pill identification from consumer photos is unreliable — in the U.S. National Library of Medicine's Pill Image Recognition Challenge, even the winning system placed the correct pill in its top five guesses only 43% of the time. PillSafe instead verifies pills against the short list of medications you actually take, and refuses to guess beyond that."
+    },
+    {
+      "id": "what-is-din",
+      "category": "how-it-works",
+      "question": "What is a DIN?",
+      "question_fr": "Qu'est-ce qu'un DIN ?",
+      "answer": "A Drug Identification Number — the 8-digit number Health Canada assigns to every authorized drug product sold in Canada. PillSafe anchors everything to DINs: your prescription medications are confirmed as specific DINs, pill verification checks against those DINs' registered appearance, and monograph answers are scoped to the right DIN."
+    },
+    {
+      "id": "prescription-scan",
+      "category": "how-it-works",
+      "question": "How does the prescription scan work?",
+      "question_fr": "Comment fonctionne la numérisation d'ordonnance ?",
+      "answer": "You photograph your prescription. Text recognition extracts the medications and schedule, and the app proposes matching Canadian products (DINs) from a reference of over 7,000 marketed products. You confirm each match with one tap — PillSafe never commits a medication to your profile without your confirmation."
+    },
+    {
+      "id": "medication-qa",
+      "category": "how-it-works",
+      "question": "How does the medication Q&A work?",
+      "question_fr": "Comment fonctionne la section questions-réponses sur les médicaments ?",
+      "answer": "Inside the app, 'Ask about my medication' answers questions strictly from Health Canada product monographs. The system first resolves exactly which product you mean (asking you to confirm when ambiguous), retrieves only that product's monograph passages, runs deterministic safety guards, and then a cloud AI phrases the answer in your language with citations. If the monograph doesn't cover your question, it says so instead of improvising."
+    },
+    {
+      "id": "why-no-dosing",
+      "category": "safety",
+      "question": "Why won't PillSafe answer dosing questions?",
+      "question_fr": "Pourquoi PillSafe ne répond-il pas aux questions de dosage ?",
+      "answer": "Dosing is where a wrong answer does the most harm, and where individual factors (age, kidney function, other medications) matter most. PillSafe has a hard, deterministic rule that refuses dosing questions and directs you to a pharmacist or physician — the refusal is built into the retrieval layer, not left to an AI's judgment."
+    },
+    {
+      "id": "is-it-medical-advice",
+      "category": "safety",
+      "question": "Is PillSafe medical advice? Is it a medical device?",
+      "question_fr": "PillSafe est-il un avis médical ? Est-ce un dispositif médical ?",
+      "answer": "No. PillSafe is a research capstone providing decision support only. It is not a licensed medical device, has not been cleared by any regulator, and every decision-bearing screen carries a disclaimer. It helps you notice problems and ask better questions — final decisions belong to you and your pharmacist or physician."
+    },
+    {
+      "id": "languages",
+      "category": "overview",
+      "question": "What languages does PillSafe support?",
+      "question_fr": "Quelles langues PillSafe prend-il en charge ?",
+      "answer": "The medication Q&A can answer in multiple languages including English, French, Spanish, Arabic, and Tamil — the answer is generated in your language but always grounded in the official English monograph content, with citations. Treating language as a safety feature is core to the project's mission."
+    },
+    {
+      "id": "research-foundation",
+      "category": "research",
+      "question": "What research is PillSafe based on?",
+      "question_fr": "Sur quelles recherches PillSafe repose-t-il ?",
+      "answer": "Key published evidence includes the NLM Pill Image Recognition Challenge (IEEE AIPR 2016), MobileDeepPill (MobiSys 2017), ePillID (CVPR Workshops 2020), Few-Shot Pill Recognition (CVPR 2020), and GO-PILL (2025) on imprint OCR difficulty, plus CIHI data on seniors' medication use in Canada. The full annotated list is on the Scientific Foundation page."
+    },
+    {
+      "id": "own-paper",
+      "category": "research",
+      "question": "Is the PillSafe team publishing its own research?",
+      "question_fr": "L'équipe PillSafe publie-t-elle ses propres recherches ?",
+      "answer": "Yes — a paper is in preparation with the working title 'Verify, Don't Identify: Profile-Constrained Pill Verification from Consumer Photos with a Printed Capture Card'. It formalizes verification-with-rejection as the right task for consumer pill safety, introduces the capture card, contributes a harmonized appearance reference for over 7,000 Canadian products, and honestly reports the negative results that shaped the system."
+    },
+    {
+      "id": "research-status",
+      "category": "research",
+      "question": "Is the research finished?",
+      "question_fr": "La recherche est-elle terminée ?",
+      "answer": "Not yet. The design-phase experiments are complete, but a pre-registered confirmatory capture study — the tray v2 campaign, a pilot shoot followed by a 600-photo protocol with defined usability and safety endpoints — is still pending. The paper will be drafted from those results. Until then the team deliberately avoids quoting performance figures as product claims."
+    },
+    {
+      "id": "five-brains",
+      "category": "how-it-works",
+      "question": "What are the five brains of PillSafe?",
+      "question_fr": "Quels sont les cinq cerveaux de PillSafe ?",
+      "answer": "1) A prescription reader that OCRs your prescription and proposes DIN matches. 2) A pill-vision module that reads colour, shape, and imprint from the capture-card photo. 3) A deterministic matcher that decides verify, abstain, or reject. 4) A monograph-retrieval module with hard safety guards. 5) A cloud AI voice that phrases final answers in your language, strictly from cited sources. Everything that decides is deterministic; the AI that talks never decides."
+    },
+    {
+      "id": "why-not-ml-matcher",
+      "category": "research",
+      "question": "Why is the pill matcher not machine learning?",
+      "question_fr": "Pourquoi le comparateur de comprimés n'est-il pas un modèle d'apprentissage automatique ?",
+      "answer": "Because a safety decision must be auditable and tunable. The matcher is a transparent weighted formula over imprint, colour, shape, and type, with explicit thresholds for verify, abstain, and reject. That makes its safety bias — minimizing false accepts — something the team can measure, adjust, and explain, which a black-box classifier can't offer at this evidence scale."
+    },
+    {
+      "id": "photo-privacy",
+      "category": "privacy",
+      "question": "What happens to my photos and data?",
+      "question_fr": "Qu'advient-il de mes photos et de mes données ?",
+      "answer": "Prescription and pill photos are processed to build your profile and verify pills; scan outcomes are stored in your safety records so you and your care circle can review them. The vision and matching pipelines run on the project's own infrastructure, not a third-party image service. The only cloud AI component is the answer voice, which receives retrieved monograph text — this is a research prototype, so treat it accordingly and avoid uploading documents with information you're not comfortable sharing."
+    },
+    {
+      "id": "who-built-it",
+      "category": "team",
+      "question": "Who built PillSafe?",
+      "question_fr": "Qui a créé PillSafe ?",
+      "answer": "A five-person capstone team at Conestoga College: Muthuraj Jayakumar (Project Lead, ML Architecture), Sumanth Reddy (Backend & Systems Integration), Lohith Reddy (Frontend & User Experience), Ali Ozdemir (Data Engineering, Reference Pipeline), and Abdullah Mohammed (Quality Assurance & Evaluation)."
+    },
+    {
+      "id": "false-accept-design",
+      "category": "safety",
+      "question": "How does PillSafe avoid dangerous mistakes?",
+      "question_fr": "Comment PillSafe évite-t-il les erreurs dangereuses ?",
+      "answer": "The whole system is tuned around one question: how often could a wrong pill be called 'verified'? That event — the false accept — is treated as the catastrophic case, and thresholds are set to make it as rare as possible, accepting more frequent abstentions in exchange. The safety evaluation follows the statistical 'rule of three' so that even a clean test run is reported with an honest upper bound, never as 'zero risk'."
+    },
+    {
+      "id": "why-flash",
+      "category": "how-it-works",
+      "question": "Why does the capture protocol use the phone flash?",
+      "question_fr": "Pourquoi le protocole de capture utilise-t-il le flash du téléphone ?",
+      "answer": "Real homes have unpredictable lighting, and dim warm light is exactly when doses are taken — and when pill photos fail. The team's measurements showed the phone flash rescues dim-room photos back to near-daylight quality by giving the camera a consistent, bright light source. Combined with the capture card's colour patches, forced flash turns lighting from an uncontrolled variable into a designed one."
+    },
+    {
+      "id": "install-app",
+      "category": "app",
+      "question": "Can I install PillSafe on my phone?",
+      "question_fr": "Puis-je installer PillSafe sur mon téléphone ?",
+      "answer": "Yes — PillSafe is a progressive web app (PWA). Open it in your phone's browser and choose 'Add to Home Screen' (your browser may also offer an install prompt). It then launches like a regular app. An internet connection is still required — PillSafe does not pretend to work offline, because stale medication answers would be a safety risk."
+    },
+    {
+      "id": "product-monograph",
+      "category": "how-it-works",
+      "question": "What is a product monograph?",
+      "question_fr": "Qu'est-ce qu'une monographie de produit ?",
+      "answer": "The official Health Canada document for an authorized drug product — describing its indications, contraindications, warnings, and adverse reactions. PillSafe's Q&A answers only from these monographs (plus supplementary regulator documents for some over-the-counter products), which is why its answers carry citations instead of opinions."
+    },
+    {
+      "id": "why-canada",
+      "category": "overview",
+      "question": "Why is PillSafe Canada-specific?",
+      "question_fr": "Pourquoi PillSafe est-il spécifique au Canada ?",
+      "answer": "Because medication safety is jurisdictional. PillSafe is anchored to Health Canada DINs, Canadian product monographs, and a harmonized appearance reference of over 7,000 products marketed in Canada. A pill database from another country describes different products with different appearances — a real hazard the project measured rather than assumed."
+    },
+    {
+      "id": "negative-results",
+      "category": "research",
+      "question": "What did the negative results teach the team?",
+      "question_fr": "Qu'ont appris les résultats négatifs à l'équipe ?",
+      "answer": "Two big lessons. First, models fine-tuned on studio pill images looked better on studio benchmarks but performed worse on real phone photos — on two of three vision components, zero-shot models won. Second, fine-tuning an OCR model on its own outputs (self-distillation) cannot beat the original. The team treats these as publishable contributions: studio benchmarks can overstate real-world performance."
+    },
+    {
+      "id": "answer-ai-honesty",
+      "category": "safety",
+      "question": "How is the answer AI kept honest?",
+      "question_fr": "Comment l'IA de réponse est-elle maintenue honnête ?",
+      "answer": "Three ways. It only ever sees retrieved, cited monograph passages — never the open internet. Deterministic guards check its answers (right product, consistent ingredient, structurally valid, honest abstention) and force a retry or refusal on violation. And the architecture rule is absolute: the AI phrases answers, but deterministic code decides what may be answered at all. This design came from a measured failure where a smaller model contradicted its own cited source."
+    },
+    {
+      "id": "assistant-scope",
+      "category": "overview",
+      "question": "Can you answer questions about my medications?",
+      "question_fr": "Peux-tu répondre à des questions sur mes médicaments ?",
+      "answer": "No — I'm the project guide, and that boundary is a safety feature. Medication questions belong in the app's 'Ask about my medication' section, which answers only from official Health Canada monographs with citations and safety guards. And for anything that affects what you take: your pharmacist or physician has the final word."
+    },
+    {
+      "id": "contact",
+      "category": "team",
+      "question": "How do I contact the team?",
+      "question_fr": "Comment contacter l'équipe ?",
+      "answer": "Use the Contact page linked in the site footer to send the team a message. As a capstone project the team can't provide medical support, but they welcome feedback on the product, the research, and accessibility."
+    },
+    {
+      "id": "what-does-it-cost",
+      "category": "app",
+      "question": "How much does PillSafe cost?",
+      "question_fr": "Combien coûte PillSafe ?",
+      "answer": "PillSafe is a student research capstone, not a commercial product — there is nothing to buy. It exists to demonstrate that a safety-first, evidence-grounded medication assistant is buildable, and to publish what the team learned along the way."
+    },
+    {
+      "id": "safety-records",
+      "category": "app",
+      "question": "What are Safety Records?",
+      "question_fr": "Que sont les dossiers de sécurité ?",
+      "answer": "A history of your pill checks — what was scanned, what the outcome was (matched, warning, or unmatched), and when. It exists so you, family members, or a caregiver can review patterns over time, like repeated warnings about a look-alike pill in the household."
+    },
+    {
+      "id": "reminders",
+      "category": "app",
+      "question": "Does PillSafe remind me to take my medication?",
+      "question_fr": "PillSafe me rappelle-t-il de prendre mes médicaments ?",
+      "answer": "Yes — once your prescription schedule is in your profile, the app provides dose-time reminders. The reminder flow is also where pill verification is most useful: at dose time, in imperfect lighting, with the capture card and flash doing the heavy lifting."
+    }
+  ]
+}

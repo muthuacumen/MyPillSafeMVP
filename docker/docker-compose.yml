@@ -1,0 +1,126 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# PillSafe — Full Stack Docker Compose
+# Services: postgres · redis · backend · frontend · nginx (gateway)
+# Usage: docker compose -f docker/docker-compose.yml --env-file ../.env up --build
+# ──────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── PostgreSQL 15 ─────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: pillsafe_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-pillsafe}
+      POSTGRES_USER: ${POSTGRES_USER:-pillsafe_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pillsafe_user} -d ${POSTGRES_DB:-pillsafe}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - pillsafe_net
+
+  # ── Redis 7 ────────────────────────────────────────────────────────────────────
+  # Not yet used by the FastAPI app (no caching/session layer wired up) —
+  # included for future use per the Docker integration spec. Inert today.
+  redis:
+    image: redis:7-alpine
+    container_name: pillsafe_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - pillsafe_net
+
+  # ── FastAPI Backend ────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ../dev/backend
+      dockerfile: Dockerfile
+    container_name: pillsafe_backend
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      # Override SQLite default — force PostgreSQL inside Docker
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-pillsafe_user}:${POSTGRES_PASSWORD:-change_me}@postgres:5432/${POSTGRES_DB:-pillsafe}
+      POSTGRES_HOST: postgres
+      REDIS_HOST: redis
+      APP_ENV: ${APP_ENV:-development}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    # NOTE: no source bind-mount here. The image's CMD runs uvicorn without
+    # --reload, so mounting source over /app wouldn't hot-reload anyway — it
+    # would just make the container's installed-package layout inconsistent
+    # with what's on disk. Rebuild (`make rebuild s=backend`) to pick up changes.
+    networks:
+      - pillsafe_net
+
+  # ── React Frontend (built via Nginx) ──────────────────────────────────────────
+  frontend:
+    build:
+      context: ../dev/frontend
+      dockerfile: Dockerfile
+    container_name: pillsafe_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    volumes:
+      # SPA-routing + API-proxy config lives outside this build context, so
+      # it's mounted at runtime instead of baked into the image (also means
+      # it can be edited without a rebuild).
+      - ./nginx/spa.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - pillsafe_net
+
+  # ── Nginx Gateway (API proxy + SPA host) ──────────────────────────────────────
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: pillsafe_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - pillsafe_net
+
+# ── Named volumes (data persists across docker compose down) ─────────────────
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# ── Internal network ──────────────────────────────────────────────────────────
+networks:
+  pillsafe_net:
+    driver: bridge

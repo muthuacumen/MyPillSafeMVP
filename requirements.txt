@@ -1,0 +1,12 @@
+# ── Streamlit Cloud requirements ─────────────────────────────────────────────
+# bcrypt MUST stay at 4.0.1 — passlib 1.7.4 is incompatible with bcrypt 5.x
+streamlit>=1.40.0
+sqlalchemy>=2.0.0
+aiosqlite>=0.19.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+python-jose[cryptography]==3.3.0
+pydantic>=2.0.0
+pydantic-settings>=2.6.0
+pandas>=2.0.0
+pillow>=10.0.0

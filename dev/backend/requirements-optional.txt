@@ -1,0 +1,33 @@
+# Optional dependencies for PILLSAFE_BUILD.md Priorities 1B and 7.
+# Installed by render.yaml and the Docker backend image; not folded into
+# requirements.txt itself since it's still useful to be able to run the core
+# app without these heavier packages (e.g. plain local dev without OCR).
+# Install with: pip install -r requirements-optional.txt
+#
+# Each capability degrades gracefully without its package — the relevant
+# endpoint returns a clear error/fallback instead of crashing — so the core
+# app works fully without any of these.
+
+# Prescription OCR (Priority 1B) — gated by OCR_PIPELINE_ENABLED. Pinned to
+# the SAME paddleocr version as dev/brains/.venv's OCR subprocess chain
+# (paddleocr==3.7.0) so both processes speak the same model/result-format
+# generation -- CPU-only `paddlepaddle` here (not `paddlepaddle-gpu`), never
+# a second CUDA stack in the backend venv (Phase 3, see
+# documentation/integration/INTEGRATION_PLAN.md Phase 3 task D).
+#
+# `opencv-python` is NOT listed explicitly: paddleocr 3.7.0 (via its
+# `paddlex` dependency) pulls in `opencv-contrib-python` transitively, which
+# already provides `cv2` -- there is nothing left in this app's own code
+# that imports cv2 directly (the legacy OpenCV pill-detection path,
+# `app/services/pill_detection.py`, was removed entirely in Phase 3).
+paddleocr==3.7.0
+paddlepaddle==3.3.1
+pillow==12.2.0
+numpy==2.3.5
+
+# Claude API guidance layer (Priority 7) — inert without LLM_API_KEY set.
+# This is CB4 (Phase 4, documentation/integration/INTEGRATION_PLAN.md) --
+# the production voice for BB3 Q&A: app/services/cb4_service.py calls
+# Claude with the packed, cited context BB3's sidecar assembles. Pinned to
+# the latest SDK as of the Phase 4 build (was 0.40.0).
+anthropic==0.117.0

@@ -1,0 +1,142 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "role": "Role",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "joinDate": "Join Date",
+    "actions": "Actions",
+    "noData": "No data found."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "analyze": "Analyze Medication",
+    "medications": "My Medications",
+    "qa": "Ask about my medication",
+    "profile": "My Profile",
+    "safety": "Safety Records",
+    "education": "Med Education",
+    "settings": "Settings",
+    "adminPanel": "Admin Panel",
+    "adminUsers": "User Management",
+    "signOut": "Sign Out",
+    "more": "More"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your medication dashboard",
+      "email": "Email address",
+      "password": "Password",
+      "submit": "Sign In",
+      "forgotPassword": "Forgot password?",
+      "forgotPasswordNote": "Password reset isn't available in this preview yet. Please contact support for help accessing your account.",
+      "noAccount": "Don't have an account?",
+      "createFree": "Create one free",
+      "disclaimer": "Decision support tool only. Always confirm with your pharmacist."
+    },
+    "register": {
+      "title": "Create your account",
+      "subtitle": "Start protecting your medication safety today",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email address",
+      "dob": "Date of birth",
+      "dobHint": "Must be 18 or older",
+      "password": "Password",
+      "submit": "Create Account",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "disclaimer": "Decision support tool only. Always confirm with your pharmacist or physician."
+    },
+    "brand": {
+      "tagline": "Medication safety, made accessible",
+      "description": "AI-powered verification for elderly, visually impaired, and non-native speaking patients. Preventing 100,000+ annual medication errors.",
+      "testimonial": "\"My mother accidentally took her morning medication twice. PillSafe would have caught that.\"",
+      "testimonialAuthor": "— Family caregiver"
+    }
+  },
+  "dashboard": {
+    "greeting": "Good to see you,",
+    "tagline": "Your medication dashboard is ready. Upload a prescription photo to get an instant safety check.",
+    "analyzeNow": "Analyze Now",
+    "stats": {
+      "analyzed": "Medications Analyzed",
+      "analyzedSub": "Upload your first to start",
+      "safetyScore": "Safety Score",
+      "safetyScoreSub": "Scan to generate score",
+      "interactions": "Interactions Found",
+      "interactionsSub": "No alerts this session",
+      "adherence": "Adherence Streak",
+      "adherenceSub": "Set up reminders to track"
+    },
+    "quickActions": "Quick Actions",
+    "safetyTips": "Safety Tips",
+    "recentActivity": "Recent Activity",
+    "viewAll": "View all",
+    "noScans": "No scans yet",
+    "noScansSub": "Your verification history will appear here",
+    "todaySchedule": "Today's Schedule",
+    "noMeds": "No medications scheduled yet",
+    "open": "Open",
+    "actions": {
+      "analyze": "Analyze Medication",
+      "analyzeDesc": "Upload a photo to verify your pills",
+      "safety": "Safety Records",
+      "safetyDesc": "View your verification history",
+      "education": "Medication Guide",
+      "educationDesc": "Learn about your prescriptions"
+    },
+    "tips": {
+      "routine": "Take medications at the same time each day to build a routine.",
+      "crush": "Never crush or split pills without asking your pharmacist first.",
+      "list": "Keep an updated medication list with you at all times."
+    }
+  },
+  "search": {
+    "placeholder": "Search medications…"
+  },
+  "admin": {
+    "dashboard": "Admin Dashboard",
+    "users": "User Management",
+    "stats": "Platform Statistics",
+    "totalUsers": "Total Users",
+    "activeUsers": "Active Users",
+    "totalAnalyses": "Total Analyses",
+    "admins": "Administrators",
+    "allUsers": "All Users",
+    "email": "Email",
+    "patientName": "Patient Name",
+    "changeRole": "Change Role",
+    "confirmDeactivate": "Deactivate this user? They will not be able to log in.",
+    "confirmDelete": "Permanently delete this user and all their data?",
+    "noPatient": "No profile"
+  },
+  "analyze": {
+    "howItWorks": "How it works",
+    "howDesc": "Upload a photo of your prescription bottle or loose pills. Our AI will identify the medication, parse the label, and flag any safety concerns in under 5 seconds.",
+    "dropHere": "Drop a photo here",
+    "dropping": "Drop to upload",
+    "browse": "or click to browse — JPG, PNG, WebP",
+    "ready": "Ready to analyze",
+    "change": "Change",
+    "analyze": "Analyze",
+    "analyzing": "Analyzing…",
+    "pipeline": "Running CV + OCR + NLP pipeline",
+    "complete": "Analysis Complete",
+    "newScan": "New Scan",
+    "pillId": "Pill Identification",
+    "labelInfo": "Label Information",
+    "aiGuidance": "AI Guidance",
+    "confidence": "confidence",
+    "demoMode": "Demo mode: showing sample results. ML pipeline activates in Sprint 4.",
+    "disclaimer": "Decision support only. Always confirm with your pharmacist or physician."
+  }
+}

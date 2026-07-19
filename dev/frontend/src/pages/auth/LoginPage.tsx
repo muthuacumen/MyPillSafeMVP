@@ -1,0 +1,193 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { ShieldCheck, Mail, Pill, ScanLine, Activity, Lock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Input } from '@/components/ui/Input';
+import { PasswordField } from '@/components/ui/PasswordField';
+import { Button } from '@/components/ui/Button';
+import { Alert } from '@/components/ui/Alert';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
+import { useAuth } from '@/hooks/useAuth';
+
+const schema = z.object({
+  email: z.string().email('Enter a valid email'),
+  password: z.string().min(1, 'Password is required'),
+});
+type FormData = z.infer<typeof schema>;
+
+export default function LoginPage() {
+  const { login } = useAuth();
+  const { t } = useTranslation();
+  const [serverError, setServerError] = useState('');
+  const [showForgotNote, setShowForgotNote] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormData>({ resolver: zodResolver(schema), mode: 'onBlur', reValidateMode: 'onChange' });
+
+  const onSubmit = async (data: FormData) => {
+    setServerError('');
+    try {
+      await login(data);
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { detail?: { error?: { message?: string } } } } })
+        ?.response?.data?.detail?.error?.message;
+      setServerError(msg ?? 'Login failed. Please try again.');
+    }
+  };
+
+  const features = [
+    { icon: ScanLine, key: 'feature1', title: 'Visual Pill Verification', desc: 'AI identifies pills by color, shape, and imprint' },
+    { icon: Activity, key: 'feature2', title: 'Drug Interaction Checker', desc: 'Flags dangerous combinations automatically' },
+    { icon: ShieldCheck, key: 'feature3', title: 'Accessible Design', desc: '12+ languages, audio assistance, visual pictograms' },
+  ];
+
+  return (
+    <div className="min-h-screen flex bg-slate-50">
+      {/* Left brand panel */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-brand-hero">
+        <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
+        <div className="absolute -bottom-40 -left-20 h-[500px] w-[500px] rounded-full bg-white/8 blur-3xl" />
+
+        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 rounded-2xl bg-white/20 flex items-center justify-center">
+              <Pill className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-white">PillSafe</p>
+              <p className="text-xs text-teal-100">Medication Auditor</p>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-4xl font-extrabold text-white leading-tight tracking-tight">
+                {t('auth.brand.tagline')}
+              </h1>
+              <p className="mt-4 text-teal-50/80 leading-relaxed max-w-md">
+                {t('auth.brand.description')}
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {features.map(({ icon: Icon, key, title, desc }) => (
+                <div key={key} className="flex items-start gap-4">
+                  <div className="h-10 w-10 rounded-xl bg-white/15 border border-white/25 flex items-center justify-center shrink-0">
+                    <Icon className="h-5 w-5 text-white" strokeWidth={1.8} />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-white text-sm">{title}</p>
+                    <p className="text-teal-100/70 text-xs mt-0.5">{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-teal-100/60">
+              <span>🔒 Bank-level encryption</span>
+              <span>·</span>
+              <span>HIPAA-aware design</span>
+              <span>·</span>
+              <span>No data sold, ever</span>
+            </div>
+          </div>
+
+          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4">
+            <p className="text-sm text-white/90 italic">{t('auth.brand.testimonial')}</p>
+            <p className="text-xs text-teal-200 mt-2">{t('auth.brand.testimonialAuthor')}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Right form panel */}
+      <div className="flex-1 relative flex items-center justify-center px-6 py-12 overflow-y-auto auth-panel-bg">
+        <div className="pointer-events-none absolute top-16 right-[8%] h-72 w-72 rounded-full bg-teal-100/50 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-10 left-[6%] h-64 w-64 rounded-full bg-teal-50/70 blur-3xl" />
+
+        <div className="relative w-full max-w-md animate-fade-in">
+          {/* Mobile logo */}
+          <div className="flex items-center gap-3 mb-8 lg:hidden">
+            <div className="h-10 w-10 rounded-xl bg-teal-600 flex items-center justify-center">
+              <Pill className="h-5 w-5 text-white" />
+            </div>
+            <p className="text-xl font-bold text-slate-900">PillSafe</p>
+          </div>
+
+          {/* Language switcher */}
+          <div className="flex justify-end mb-6">
+            <LanguageSwitcher />
+          </div>
+
+          <div className="card p-8 sm:p-10 shadow-lg shadow-slate-200/60">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-slate-900">{t('auth.login.title')}</h2>
+              <p className="text-slate-500 mt-1.5 text-sm">{t('auth.login.subtitle')}</p>
+            </div>
+
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+              {serverError && <Alert variant="error" message={serverError} />}
+
+              <Input
+                label={t('auth.login.email')}
+                type="email"
+                placeholder="you@example.com"
+                autoComplete="email"
+                autoFocus
+                icon={<Mail className="h-4 w-4" />}
+                disabled={isSubmitting}
+                error={errors.email?.message}
+                {...register('email')}
+              />
+
+              <PasswordField
+                label={t('auth.login.password')}
+                placeholder="••••••••"
+                autoComplete="current-password"
+                disabled={isSubmitting}
+                error={errors.password?.message}
+                {...register('password')}
+              />
+
+              <div className="flex items-center justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotNote(true)}
+                  className="text-xs text-teal-600 hover:text-teal-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
+                >
+                  {t('auth.login.forgotPassword')}
+                </button>
+              </div>
+              {showForgotNote && (
+                <p role="status" className="text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-lg p-3 -mt-2">
+                  {t('auth.login.forgotPasswordNote')}
+                </p>
+              )}
+
+              <Button type="submit" loading={isSubmitting} className="w-full" size="lg">
+                <Lock className="h-4 w-4" />
+                {t('auth.login.submit')}
+              </Button>
+            </form>
+          </div>
+
+          <p className="mt-6 text-center text-sm text-slate-500">
+            {t('auth.login.noAccount')}{' '}
+            <Link to="/register" className="text-teal-600 hover:text-teal-700 font-medium transition-colors">
+              {t('auth.login.createFree')}
+            </Link>
+          </p>
+
+          <p className="mt-6 text-center text-xs text-slate-400">
+            {t('auth.login.disclaimer')}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

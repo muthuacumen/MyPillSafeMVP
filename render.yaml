@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: pillsafe-api
+    runtime: python
+    rootDir: dev/backend
+    # requirements-optional.txt installs PaddleOCR — without it,
+    # OCR_PIPELINE_ENABLED=true below still silently falls back to demo text
+    # for every upload, because paddleocr itself is missing (ImportError ->
+    # OcrUnavailableError -> demo fallback in ocr_service.py).
+    buildCommand: pip install -r requirements.txt -r requirements-optional.txt
+    # Multiple workers so one instance uses more than a single core under
+    # concurrent load. Each worker loads its own OCR model in memory (see
+    # ocr_service.py's lazy singleton), so raise WEB_CONCURRENCY only as far
+    # as the Render plan's RAM allows.
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers ${WEB_CONCURRENCY:-4}
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: APP_ENV
+        value: production
+      - key: OPENAPI_ENABLED
+        value: "true"
+      # Real PaddleOCR prescription parsing (was left off, which silently served
+      # canned demo text for every upload regardless of image content). paddleocr/
+      # paddlepaddle are heavy — verify the Render plan has enough RAM/build time.
+      - key: OCR_PIPELINE_ENABLED
+        value: "true"
+      - key: WEB_CONCURRENCY
+        value: "4"
+      # Set these manually in Render dashboard after deploy:
+      # DATABASE_URL  →  postgresql+asyncpg://user:pass@host/db  (from Neon / Supabase)
+      # FRONTEND_ORIGIN  →  https://your-app.vercel.app
+      - key: DATABASE_URL
+        sync: false
+      - key: FRONTEND_ORIGIN
+        sync: false

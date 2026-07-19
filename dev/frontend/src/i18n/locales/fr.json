@@ -1,0 +1,142 @@
+{
+  "common": {
+    "loading": "Chargement…",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "delete": "Supprimer",
+    "activate": "Activer",
+    "deactivate": "Désactiver",
+    "role": "Rôle",
+    "status": "Statut",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "joinDate": "Date d'inscription",
+    "actions": "Actions",
+    "noData": "Aucune donnée trouvée."
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "analyze": "Analyser un médicament",
+    "medications": "Mes médicaments",
+    "qa": "Question sur mon médicament",
+    "profile": "Mon profil",
+    "safety": "Registres de sécurité",
+    "education": "Guide médicaments",
+    "settings": "Paramètres",
+    "adminPanel": "Panneau admin",
+    "adminUsers": "Gestion des utilisateurs",
+    "signOut": "Se déconnecter",
+    "more": "Plus"
+  },
+  "auth": {
+    "login": {
+      "title": "Bienvenue",
+      "subtitle": "Connectez-vous à votre tableau de bord",
+      "email": "Adresse courriel",
+      "password": "Mot de passe",
+      "submit": "Se connecter",
+      "forgotPassword": "Mot de passe oublié ?",
+      "forgotPasswordNote": "La réinitialisation du mot de passe n'est pas encore disponible dans cet aperçu. Veuillez contacter le support pour accéder à votre compte.",
+      "noAccount": "Pas encore de compte ?",
+      "createFree": "Créer un compte gratuit",
+      "disclaimer": "Outil d'aide uniquement. Confirmez toujours avec votre pharmacien."
+    },
+    "register": {
+      "title": "Créer votre compte",
+      "subtitle": "Commencez à protéger votre sécurité médicamenteuse",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "email": "Adresse courriel",
+      "dob": "Date de naissance",
+      "dobHint": "Doit avoir 18 ans ou plus",
+      "password": "Mot de passe",
+      "submit": "Créer un compte",
+      "haveAccount": "Déjà un compte ?",
+      "signIn": "Se connecter",
+      "disclaimer": "Outil d'aide uniquement. Confirmez toujours avec votre pharmacien."
+    },
+    "brand": {
+      "tagline": "La sécurité médicamenteuse, rendue accessible",
+      "description": "Vérification par IA pour les patients âgés, malvoyants et non-anglophones. Prévention de plus de 100 000 erreurs médicamenteuses par an.",
+      "testimonial": "« Ma mère a pris accidentellement son médicament deux fois. PillSafe aurait détecté ça. »",
+      "testimonialAuthor": "— Proche aidant"
+    }
+  },
+  "dashboard": {
+    "greeting": "Heureux de vous revoir,",
+    "tagline": "Votre tableau de bord est prêt. Téléchargez une photo d'ordonnance pour une vérification instantanée.",
+    "analyzeNow": "Analyser maintenant",
+    "stats": {
+      "analyzed": "Médicaments analysés",
+      "analyzedSub": "Téléchargez le premier pour commencer",
+      "safetyScore": "Score de sécurité",
+      "safetyScoreSub": "Analysez pour générer un score",
+      "interactions": "Interactions trouvées",
+      "interactionsSub": "Aucune alerte cette session",
+      "adherence": "Série d'adhérence",
+      "adherenceSub": "Configurez des rappels pour suivre"
+    },
+    "quickActions": "Actions rapides",
+    "safetyTips": "Conseils de sécurité",
+    "recentActivity": "Activité récente",
+    "viewAll": "Tout voir",
+    "noScans": "Aucun scan encore",
+    "noScansSub": "Votre historique de vérification apparaîtra ici",
+    "todaySchedule": "Programme d'aujourd'hui",
+    "noMeds": "Aucun médicament planifié",
+    "open": "Ouvrir",
+    "actions": {
+      "analyze": "Analyser un médicament",
+      "analyzeDesc": "Téléchargez une photo pour vérifier vos pilules",
+      "safety": "Registres de sécurité",
+      "safetyDesc": "Consultez votre historique de vérification",
+      "education": "Guide médicaments",
+      "educationDesc": "Renseignez-vous sur vos ordonnances"
+    },
+    "tips": {
+      "routine": "Prenez vos médicaments à la même heure chaque jour pour créer une routine.",
+      "crush": "Ne jamais écraser ou diviser les pilules sans demander d'abord à votre pharmacien.",
+      "list": "Gardez une liste de médicaments à jour avec vous en tout temps."
+    }
+  },
+  "search": {
+    "placeholder": "Rechercher des médicaments…"
+  },
+  "admin": {
+    "dashboard": "Tableau de bord admin",
+    "users": "Gestion des utilisateurs",
+    "stats": "Statistiques de la plateforme",
+    "totalUsers": "Utilisateurs totaux",
+    "activeUsers": "Utilisateurs actifs",
+    "totalAnalyses": "Analyses totales",
+    "admins": "Administrateurs",
+    "allUsers": "Tous les utilisateurs",
+    "email": "Courriel",
+    "patientName": "Nom du patient",
+    "changeRole": "Changer le rôle",
+    "confirmDeactivate": "Désactiver cet utilisateur ? Il ne pourra plus se connecter.",
+    "confirmDelete": "Supprimer définitivement cet utilisateur et toutes ses données ?",
+    "noPatient": "Pas de profil"
+  },
+  "analyze": {
+    "howItWorks": "Comment ça marche",
+    "howDesc": "Téléchargez une photo de votre flacon d'ordonnance ou de vos pilules. Notre IA identifiera le médicament, lira l'étiquette et signalera tout problème de sécurité en moins de 5 secondes.",
+    "dropHere": "Déposez une photo ici",
+    "dropping": "Déposez pour télécharger",
+    "browse": "ou cliquez pour parcourir — JPG, PNG, WebP",
+    "ready": "Prêt à analyser",
+    "change": "Changer",
+    "analyze": "Analyser",
+    "analyzing": "Analyse en cours…",
+    "pipeline": "Exécution du pipeline CV + OCR + NLP",
+    "complete": "Analyse terminée",
+    "newScan": "Nouveau scan",
+    "pillId": "Identification des pilules",
+    "labelInfo": "Informations sur l'étiquette",
+    "aiGuidance": "Conseils IA",
+    "confidence": "confiance",
+    "demoMode": "Mode démo : affichage de résultats d'exemple. Le pipeline ML s'active au Sprint 4.",
+    "disclaimer": "Aide à la décision uniquement. Confirmez toujours avec votre pharmacien."
+  }
+}

@@ -1,0 +1,13 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+migrations/__pycache__/
+pillsafe.db
+pillsafe.db-shm
+pillsafe.db-wal
+pillsafe_test.db
+uploads/
+.env
+*.log

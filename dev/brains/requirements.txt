@@ -1,0 +1,52 @@
+# Brains sidecar pinned environment (Python 3.12, Windows 11, CUDA 12.6 GPU
+# recommended -- CPU works but is slow, see IMB1_v0/README.md "GPU vs CPU").
+#
+# Heavy pins mirror the known-good reference venv `IMB1_Prototype\.venv`
+# (same versions IMB1_v0/requirements.txt calls for) so the frozen IMB1_v0
+# package's model weights load against the exact framework versions they
+# were measured with. Install order matters for the index URLs below --
+# see README.md "Install" for the exact pip invocations.
+#
+# torch/torchvision: pip install --index-url https://download.pytorch.org/whl/cu126
+# paddlepaddle-gpu:  pip install -i https://www.paddlepaddle.org.cn/packages/stable/cu126/
+
+# --- IMB1_v0 requirements (mirrored) ---
+numpy==2.3.5
+opencv-python==5.0.0.93
+opencv-contrib-python==4.10.0.84
+pillow==12.2.0
+torch==2.13.0+cu126
+torchvision==0.28.0+cu126
+ultralytics==8.4.90
+colour-science==0.4.7
+paddleocr==3.7.0
+paddlepaddle-gpu==3.3.1
+# NOT listed in IMB1_v0/requirements.txt but imported by imb1/colour.py
+# (skimage.color.rgb2lab, sklearn k-means) -- real gaps found while building
+# this sidecar. Pinned to the versions in the known-good
+# IMB1_Prototype/.venv reference.
+scikit-image==0.26.0
+scikit-learn==1.9.0
+
+# --- SB2 requirements (mirrored) ---
+rapidfuzz>=3.0
+pandas>=2.0
+openpyxl>=3.1
+
+# --- BB3 requirements (mirrored, Phase 4 -- QA context-mode + guard
+# endpoints and BB3's own pytest suite). numpy/pandas/rapidfuzz/torch already
+# listed above (shared with IMB1_v0/SB2); openpyxl also already listed.
+# chromadb is NOT installed here -- it's needed only by BB3's one-time
+# export_store.py job, never by the runtime engine path this sidecar calls.
+rank_bm25
+sentence-transformers
+ollama
+
+# --- sidecar service itself ---
+fastapi
+uvicorn
+python-multipart
+httpx
+
+# --- testing (both packages' own suites + this service's smoke test) ---
+pytest>=7.0
