@@ -268,6 +268,8 @@ class QAGuardRequest(BaseModel):
     sources_used: list[str] = []
     abstained: bool = False
     entity_names: list[str] = []
+    question: str | None = None  # WP2.5: enables the claim-source polarity guard
+    packed_context: str | None = None  # WP2.5: the source sections the answer was generated against
 
 
 @app.post("/qa/chat")
@@ -330,7 +332,8 @@ async def qa_guard(body: QAGuardRequest) -> dict:
         )
     try:
         result = await run_in_threadpool(
-            qa.run_guards, body.answer, body.sources_used, body.abstained, body.entity_names
+            qa.run_guards, body.answer, body.sources_used, body.abstained, body.entity_names,
+            body.question, body.packed_context,
         )
     except Exception as exc:
         raise HTTPException(

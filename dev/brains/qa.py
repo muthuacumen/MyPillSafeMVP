@@ -32,6 +32,7 @@ configured app-side) DOES need a real `BB3Engine` + a running Ollama --
 """
 from __future__ import annotations
 
+import re
 import time
 from typing import Any
 
@@ -290,10 +291,38 @@ def chat_context(message: str, din: str | None = None, confirmed_name: str | Non
 
 # --- guard checks (single-shot; the app owns the retry protocol) -----------
 
-def run_guards(answer: str, sources_used: list[str], abstained: bool, entity_names: list[str]) -> dict:
+# Header line of each packed block, produced verbatim by chat_context's packing loop
+# (`f"{tag} (section: {section})\n{body}"`, blocks joined by "\n\n"). Kept next to the
+# packer so the two never drift. Splitting on header positions (not blank lines) is robust
+# to section_text that itself contains blank lines.
+_PACK_HEADER_RE = re.compile(r"^\[(?:DIN|ING):[^\]]*\] \(section: ([^)]*)\)$", re.M)
+
+
+def _parse_packed_sections(packed_context: str) -> list[tuple[str, str]]:
+    """Reconstruct [(section, section_text), ...] from a packed_sources string -- the
+    input the WP2.5 polarity guard needs. The app already holds packed_context, so this
+    reuses it instead of a second large round-trip field."""
+    if not packed_context:
+        return []
+    matches = list(_PACK_HEADER_RE.finditer(packed_context))
+    out: list[tuple[str, str]] = []
+    for i, m in enumerate(matches):
+        section = m.group(1)
+        start = m.end() + 1  # skip the newline after the header line
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(packed_context)
+        out.append((section, packed_context[start:end].strip()))
+    return out
+
+
+def run_guards(answer: str, sources_used: list[str], abstained: bool, entity_names: list[str],
+               question: str | None = None, packed_context: str | None = None) -> dict:
     """Runs BB3's single-shot post-generation guard checks (guards.py) on an
     already-generated answer. No retry logic here -- the app backend owns
-    the retry protocol (cb4_service.py mirrors guards.check_and_fix)."""
+    the retry protocol (cb4_service.py mirrors guards.check_and_fix).
+
+    question + packed_context are optional (WP2.5): when both are supplied, the
+    claim-source polarity guard runs against the reconstructed source sections
+    (F9-11 celecoxib class). Omitting them preserves the pre-WP2.5 behaviour."""
     if guards_mod is None:
         raise RuntimeError(_import_error or "bb3.guards not importable")
     parsed = {"answer": answer, "sources_used": sources_used, "abstained": abstained}
@@ -302,10 +331,15 @@ def run_guards(answer: str, sources_used: list[str], abstained: bool, entity_nam
     ingredient_violation = guards_mod.ingredient_consistency_violation(answer, cited_dins)
     structural_inconsistency = guards_mod.abstention_consistency_violation(
         abstained, sources_used, answer)
+    polarity_violation = None
+    if question and packed_context:
+        polarity_violation = guards_mod.polarity_contradiction_violation(
+            question, answer, _parse_packed_sections(packed_context))
     return {
         "entity_violation": entity_violation,
         "ingredient_violation": ingredient_violation,
         "structural_inconsistency": structural_inconsistency,
+        "polarity_violation": polarity_violation,
     }
 
 

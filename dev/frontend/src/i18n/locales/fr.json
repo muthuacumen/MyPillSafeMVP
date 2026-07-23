@@ -17,19 +17,28 @@
   },
   "nav": {
     "dashboard": "Tableau de bord",
-    "analyze": "Analyser un médicament",
+    "scanRx": "Scanner l'ordonnance",
+    "scanPill": "Vérifier un comprimé",
     "medications": "Mes médicaments",
     "qa": "Question sur mon médicament",
     "profile": "Mon profil",
-    "safety": "Registres de sécurité",
-    "education": "Guide médicaments",
+    "safety": "Historique des scans",
+    "education": "Aide",
     "settings": "Paramètres",
     "adminPanel": "Panneau admin",
     "adminUsers": "Gestion des utilisateurs",
     "signOut": "Se déconnecter",
-    "more": "Plus"
+    "menu": "Menu",
+    "short": {
+      "dashboard": "Accueil",
+      "scanRx": "Ordonnance",
+      "scanPill": "Comprimé",
+      "medications": "Médicaments",
+      "qa": "Demander"
+    }
   },
   "auth": {
+    "backHome": "Retour à l'accueil",
     "login": {
       "title": "Bienvenue",
       "subtitle": "Connectez-vous à votre tableau de bord",
@@ -58,9 +67,9 @@
     },
     "brand": {
       "tagline": "La sécurité médicamenteuse, rendue accessible",
-      "description": "Vérification par IA pour les patients âgés, malvoyants et non-anglophones. Prévention de plus de 100 000 erreurs médicamenteuses par an.",
-      "testimonial": "« Ma mère a pris accidentellement son médicament deux fois. PillSafe aurait détecté ça. »",
-      "testimonialAuthor": "— Proche aidant"
+      "description": "MyPillSafe est un assistant de sécurité médicamenteuse pour les aînés et les Canadiens confrontés à une barrière linguistique. Il lit votre ordonnance, vérifie vos comprimés à partir d'une photo et répond à vos questions dans votre langue — et lorsqu'il n'est pas certain, il le dit.",
+      "principle": "Conçu pour avertir, conçu pour s'abstenir, jamais pour deviner.",
+      "principleNote": "— le principe de conception MyPillSafe"
     }
   },
   "dashboard": {
@@ -68,12 +77,10 @@
     "tagline": "Votre tableau de bord est prêt. Téléchargez une photo d'ordonnance pour une vérification instantanée.",
     "analyzeNow": "Analyser maintenant",
     "stats": {
-      "analyzed": "Médicaments analysés",
-      "analyzedSub": "Téléchargez le premier pour commencer",
       "safetyScore": "Score de sécurité",
       "safetyScoreSub": "Analysez pour générer un score",
-      "interactions": "Interactions trouvées",
-      "interactionsSub": "Aucune alerte cette session",
+      "verified": "Pilules vérifiées",
+      "verifiedSub": "D'après votre historique de scans",
       "adherence": "Série d'adhérence",
       "adherenceSub": "Configurez des rappels pour suivre"
     },
@@ -87,21 +94,22 @@
     "noMeds": "Aucun médicament planifié",
     "open": "Ouvrir",
     "actions": {
-      "analyze": "Analyser un médicament",
-      "analyzeDesc": "Téléchargez une photo pour vérifier vos pilules",
-      "safety": "Registres de sécurité",
+      "scanRx": "Scanner l'ordonnance",
+      "scanRxDesc": "Photographiez une étiquette d'ordonnance pour l'ajouter à vos médicaments",
+      "scanPill": "Vérifier un comprimé",
+      "scanPillDesc": "Vérifiez un comprimé isolé par rapport à vos médicaments confirmés",
+      "medications": "Mes médicaments",
+      "medicationsDesc": "Consultez et gérez vos ordonnances actives",
+      "safety": "Historique des scans",
       "safetyDesc": "Consultez votre historique de vérification",
-      "education": "Guide médicaments",
-      "educationDesc": "Renseignez-vous sur vos ordonnances"
+      "education": "Aide",
+      "educationDesc": "Comment fonctionne MyPillSafe, étape par étape"
     },
     "tips": {
       "routine": "Prenez vos médicaments à la même heure chaque jour pour créer une routine.",
       "crush": "Ne jamais écraser ou diviser les pilules sans demander d'abord à votre pharmacien.",
       "list": "Gardez une liste de médicaments à jour avec vous en tout temps."
     }
-  },
-  "search": {
-    "placeholder": "Rechercher des médicaments…"
   },
   "admin": {
     "dashboard": "Tableau de bord admin",
@@ -118,25 +126,5 @@
     "confirmDeactivate": "Désactiver cet utilisateur ? Il ne pourra plus se connecter.",
     "confirmDelete": "Supprimer définitivement cet utilisateur et toutes ses données ?",
     "noPatient": "Pas de profil"
-  },
-  "analyze": {
-    "howItWorks": "Comment ça marche",
-    "howDesc": "Téléchargez une photo de votre flacon d'ordonnance ou de vos pilules. Notre IA identifiera le médicament, lira l'étiquette et signalera tout problème de sécurité en moins de 5 secondes.",
-    "dropHere": "Déposez une photo ici",
-    "dropping": "Déposez pour télécharger",
-    "browse": "ou cliquez pour parcourir — JPG, PNG, WebP",
-    "ready": "Prêt à analyser",
-    "change": "Changer",
-    "analyze": "Analyser",
-    "analyzing": "Analyse en cours…",
-    "pipeline": "Exécution du pipeline CV + OCR + NLP",
-    "complete": "Analyse terminée",
-    "newScan": "Nouveau scan",
-    "pillId": "Identification des pilules",
-    "labelInfo": "Informations sur l'étiquette",
-    "aiGuidance": "Conseils IA",
-    "confidence": "confiance",
-    "demoMode": "Mode démo : affichage de résultats d'exemple. Le pipeline ML s'active au Sprint 4.",
-    "disclaimer": "Aide à la décision uniquement. Confirmez toujours avec votre pharmacien."
   }
 }

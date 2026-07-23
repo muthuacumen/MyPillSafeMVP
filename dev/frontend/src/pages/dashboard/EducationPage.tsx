@@ -1,12 +1,38 @@
-import { Camera, FileText, Pill, ShieldAlert, HelpCircle, AlertTriangle } from 'lucide-react';
+import { Camera, FileText, Pill, ShieldAlert, AlertTriangle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/Card';
 import { useVoicePageAnnounce } from '@/hooks/useVoicePageAnnounce';
 
+// Phase 6 rewrite -- matches the real 5-step flow (the old 4 steps skipped
+// the prescription-confirm step entirely and described a single generic
+// "scan page" that no longer exists now that scanning is split into two
+// routes; see EducationPage's CAN/CANNOT section below too).
 const STEPS = [
-  { n: 1, title: 'Open Analyze', desc: 'Go to the Analyze page from the sidebar. Your camera opens automatically.' },
-  { n: 2, title: 'Take a photo', desc: 'Point your camera at the prescription label or pill, then tap Capture.' },
-  { n: 3, title: 'Confirm', desc: 'Check the photo is clear and tap Confirm to send it for analysis.' },
-  { n: 4, title: 'Review results', desc: 'PillSafe shows the medication details and any safety warnings.' },
+  {
+    n: 1,
+    title: 'Scan your prescription',
+    desc: 'Use Scan Prescription to photograph your prescription label. MyPillSafe reads it and proposes the medications it found.',
+  },
+  {
+    n: 2,
+    title: 'Confirm your medications',
+    desc: 'The "Is this your medication?" panel suggests matching Canadian products for each one — you confirm the match with a tap. Nothing is added to your profile automatically.',
+  },
+  {
+    n: 3,
+    title: 'Check a pill before taking it',
+    desc: 'Use Scan Pill to photograph a loose pill on the capture card. MyPillSafe checks it against your confirmed medications.',
+  },
+  {
+    n: 4,
+    title: 'Read the result',
+    desc: 'Green means verified, red means it doesn’t match anything you take, and amber means MyPillSafe isn’t sure and wants you to double-check. The first pill scan can take up to a minute.',
+  },
+  {
+    n: 5,
+    title: 'Ask questions',
+    desc: 'Use "Ask about my medication" for cited answers from Health Canada product monographs, in your language.',
+  },
 ];
 
 const LABEL_PARTS = [
@@ -18,16 +44,22 @@ const LABEL_PARTS = [
   'Expiry date — do not take the medication after this date.',
 ];
 
+// Phase 6 rewrite (Muthu flagged the old list as obsolete/inaccurate) --
+// wording verified against the actual UI/backend behaviour before shipping:
+// no dedicated "dosing pattern" detection exists, pill checking only ever
+// verifies against the signed-in patient's own confirmed medications (never
+// the full catalogue), and amber means "could not confirm", never a
+// softened red (binding decision-colour rule).
 const CAN_CANNOT = {
   can: [
-    'Read prescription labels and identify common time-of-day dosing patterns.',
-    'Estimate a pill’s colour, shape, and imprint from a photo.',
-    'Flag when a scanned pill doesn’t match your active prescriptions.',
+    'Read prescription labels and suggest medication matches for you to confirm.',
+    'Check a photographed pill against YOUR confirmed medication list — colour, shape, and imprint.',
+    'Answer medication questions with citations from Health Canada product monographs, in English or French.',
   ],
   cannot: [
-    'Diagnose medical conditions or recommend treatment changes.',
-    'Replace advice from your pharmacist or physician.',
-    'Guarantee 100% accurate pill identification — always verify visually too.',
+    'Identify an unknown pill from the entire drug catalogue — it verifies against your own list only.',
+    'Tell you it’s certain when it isn’t — amber means it could not confirm, not a softer warning.',
+    'Give dosing advice, or diagnose or replace your pharmacist or physician.',
   ],
 };
 
@@ -41,28 +73,18 @@ const TIPS = [
   'Tell every doctor and pharmacist about all medications you currently take.',
 ];
 
-const FAQ = [
-  { q: 'Is PillSafe a substitute for my pharmacist?', a: 'No. PillSafe is a decision support tool only — always confirm with a licensed pharmacist or physician.' },
-  { q: 'Does PillSafe store my prescription photos?', a: 'Photos are stored only to support your own medication record and are scoped to your account.' },
-  { q: 'What if the camera can’t read my label?', a: 'Make sure the label is well-lit and in focus, or use the upload option to choose a clearer photo.' },
-  { q: 'Can a caregiver use PillSafe for someone else?', a: 'Yes, a caregiver can scan prescriptions on behalf of a patient using the same account.' },
-  { q: 'What does a red warning mean?', a: 'It means the scanned pill doesn’t match anything in your active prescriptions — do not take it without checking with a pharmacist.' },
-  { q: 'What does an amber reminder mean?', a: 'It means the medication matches a prescription, but it isn’t currently scheduled for this time of day.' },
-  { q: 'Can I turn on voice readouts?', a: 'Yes — use the speaker icon in the top bar to toggle the voice assistant on or off.' },
-  { q: 'Is my data shared with anyone else?', a: 'No prescription or scan data is shared in aggregate or with other accounts.' },
-];
-
 export default function EducationPage() {
-  useVoicePageAnnounce('Medication Education');
+  const { t } = useTranslation();
+  useVoicePageAnnounce(t('nav.education'));
 
   return (
     <div className="space-y-6 page-enter max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-slate-900">Medication Education</h1>
+      <h1 className="text-2xl font-bold text-slate-900">{t('nav.education')}</h1>
 
       <Card>
         <div className="flex items-center gap-2 mb-4">
           <Camera className="h-4 w-4 text-teal-600" />
-          <h2 className="font-semibold text-slate-900">How to use PillSafe</h2>
+          <h2 className="font-semibold text-slate-900">How to use MyPillSafe</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {STEPS.map((s) => (
@@ -97,11 +119,11 @@ export default function EducationPage() {
       <Card>
         <div className="flex items-center gap-2 mb-4">
           <Pill className="h-4 w-4 text-teal-600" />
-          <h2 className="font-semibold text-slate-900">What PillSafe can and cannot do</h2>
+          <h2 className="font-semibold text-slate-900">What MyPillSafe can and cannot do</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <p className="text-sm font-semibold text-success-text mb-2">PillSafe can</p>
+            <p className="text-sm font-semibold text-success-text mb-2">MyPillSafe can</p>
             <ul className="space-y-1.5">
               {CAN_CANNOT.can.map((item) => (
                 <li key={item} className="text-sm text-slate-600">{item}</li>
@@ -109,7 +131,7 @@ export default function EducationPage() {
             </ul>
           </div>
           <div>
-            <p className="text-sm font-semibold text-danger-text mb-2">PillSafe cannot</p>
+            <p className="text-sm font-semibold text-danger-text mb-2">MyPillSafe cannot</p>
             <ul className="space-y-1.5">
               {CAN_CANNOT.cannot.map((item) => (
                 <li key={item} className="text-sm text-slate-600">{item}</li>
@@ -135,24 +157,6 @@ export default function EducationPage() {
             </li>
           ))}
         </ul>
-      </Card>
-
-      <Card>
-        <div className="flex items-center gap-2 mb-4">
-          <HelpCircle className="h-4 w-4 text-teal-600" />
-          <h2 className="font-semibold text-slate-900">Frequently Asked Questions</h2>
-        </div>
-        <div className="divide-y divide-slate-100">
-          {FAQ.map((item) => (
-            <details key={item.q} className="py-3 group">
-              <summary className="font-medium text-slate-900 text-sm cursor-pointer list-none flex items-center justify-between">
-                {item.q}
-                <span className="text-teal-600 group-open:rotate-45 transition-transform text-lg">+</span>
-              </summary>
-              <p className="text-sm text-slate-500 mt-2">{item.a}</p>
-            </details>
-          ))}
-        </div>
       </Card>
     </div>
   );

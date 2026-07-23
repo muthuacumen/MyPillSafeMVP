@@ -1,498 +1,353 @@
-# PillSafe
+# MyPillSafe
 
-**AI-powered medication safety for patients who deserve to understand their prescriptions.**
+**Scan a pill before you take it. Understand your medication in your own language.**
 
-[![CI](https://github.com/SumanthReddyKConestoga/PillSafe/actions/workflows/ci.yml/badge.svg)](https://github.com/SumanthReddyKConestoga/PillSafe/actions/workflows/ci.yml)
+[![CI](https://github.com/muthuacumen/mypillsafe/actions/workflows/ci.yml/badge.svg)](https://github.com/muthuacumen/mypillsafe/actions/workflows/ci.yml)
 
-PillSafe is a multi-modal medication analysis application built as part of the Conestoga College Graduate AI/ML program. It helps elderly, low-literacy, and visually impaired patients safely identify their medications and understand their prescription labels through camera-based scanning, plain-language guidance, and a voice assistant.
+MyPillSafe is the application surface of **PillSafe**, a medication-safety capstone project
+(Conestoga College Graduate AI/ML program, AIML-6900). It is built for **seniors and people
+in Canada facing language barriers** who manage multiple medications:
 
-> **Decision Support Only** — PillSafe does not provide medical advice. Always confirm medication information with a licensed pharmacist or physician.
+- **Scan a prescription label** → the app reads it, proposes the matching Canadian DIN
+  (Drug Identification Number), and builds a medication + schedule profile — the patient
+  always confirms, nothing is auto-committed.
+- **Photograph a loose pill** → the app checks it **against that patient's own confirmed
+  medications** and answers *verify*, *reject*, or *abstain* — it warns when a pill does
+  not match anything the patient should be taking, and says "I'm not sure" rather than guess.
+- **Ask about a medication** → answers are generated only from the official Canadian
+  product monograph of the resolved drug, with citations, in the user's language (EN/FR).
 
-> Looking for a plain-English explanation of this project (no technical background needed)? See **[PROGRESS.md](PROGRESS.md)**.
+> **Decision-support only — not medical advice.** MyPillSafe never replaces a pharmacist
+> or physician. Every decision-bearing screen carries this disclaimer. This is a capstone
+> MVP, not a licensed medical device.
+
+---
 
 ## Table of Contents
 
-1. [Architecture](#architecture)
-2. [Tech Stack](#tech-stack)
-3. [Running Locally — Step by Step](#running-locally--step-by-step)
-4. [Repo & File Guide — what every file does](#repo--file-guide--what-every-file-does)
-5. [API Reference](#api-reference)
-6. [Environment Variables](#environment-variables)
-7. [Test Suite](#test-suite)
-8. [Known Limitations](#known-limitations-by-design)
-9. [Legacy / Deprecated Artifacts](#legacy--deprecated-artifacts)
+1. [The Five-Brain Architecture](#the-five-brain-architecture)
+2. [Design Principles](#design-principles)
+3. [Repository Layout](#repository-layout)
+4. [Running Locally](#running-locally)
+5. [Environment Variables & Feature Flags](#environment-variables--feature-flags)
+6. [API Overview](#api-overview)
+7. [Test Suite & CI](#test-suite--ci)
+8. [Docker & Cloud Deploy](#docker--cloud-deploy)
+9. [Known Limitations](#known-limitations-by-design)
+10. [Research Grounding](#research-grounding)
+11. [Team](#team)
 
 ---
 
-## Architecture
+## The Five-Brain Architecture
 
-### System overview
+PillSafe is organized as five cooperating "brains". Three of them are **frozen, separately
+tested Python packages** that live *outside* this repository and are served to the app by a
+local sidecar microservice; the other two live inside the app itself.
+
+| Brain | What it does | Where it lives |
+|---|---|---|
+| **OB5** — OCR brain | Reads a prescription label photo (PaddleOCR) → drug name, dosage, schedule → proposes DIN matches for the patient to confirm | App backend (`dev/backend`) |
+| **IMB1** — pill image brain | Photographs a loose pill → colour, shape, type, and a dual-read of any imprint | Frozen package `IMB1_v0/` (sibling of the repo parent), via the brains sidecar |
+| **SB2** — matcher brain | Deterministic, auditable scorer: compares the pill record against the patient's confirmed DINs → **verify / reject / abstain** | Frozen package `SB2/`, via the brains sidecar |
+| **BB3** — monograph Q&A brain | Resolves the drug being asked about, retrieves *only that drug's* monograph passages, applies deterministic safety guards, and assembles cited context | Frozen package `BB3/`, via the brains sidecar |
+| **CB4** — cloud voice | The only cloud component: a Claude model turns BB3's guarded, cited context into a plain-language answer in the user's language; its output is re-checked by BB3's guards | App backend (`app/services/cb4_service.py`) |
 
 ```
-┌────────────────────────────────────────────────────────────────────────────┐
-│  BROWSER                                                                   │
-│  React 18 SPA (Vite dev server on :5173, or static build on Vercel)       │
-│                                                                              │
-│   Public            Auth                Patient Dashboard       Admin      │
-│   ───────           ─────               ─────────────────       ──────    │
-│   Landing /         Login               Dashboard (schedule)    Stats      │
-│   About             Register            Analyze (camera)        Users      │
-│   Contact                               My Medications                     │
-│                                          Profile / Safety /                │
-│                                          Education / Settings              │
-└───────────────────────────────┬──────────────────────────────────────────────┘
-                                │  HTTP+JSON, JWT bearer token
-                                │  (Vite proxies /api/* → :8000 in dev)
-                                ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│  FASTAPI BACKEND  (Python 3.11, async, :8000)                             │
-│                                                                              │
-│  routes/  →  services/  →  models/  →  SQLite (pillsafe.db)               │
-│  (HTTP layer)  (business logic)  (ORM tables)                             │
-│                                                                              │
-│  Routers mounted in app/api/v1/router.py:                                 │
-│  auth · patients · prescriptions · analyze · pill · reminders ·           │
-│  instructions · scans · contact · admin · dev                             │
-└───────┬───────────────────────┬──────────────────────────┬───────────────────┘
-        │                       │                          │
-        ▼                       ▼                          ▼
-┌───────────────┐   ┌─────────────────────────┐   ┌──────────────────────────┐
-│ SQLite file   │   │ Local image processing   │   │ External API (optional) │
-│ pillsafe.db   │   │ (runs on this machine,   │   │ Anthropic Claude         │
-│ + uploads/    │   │  no internet needed)     │   │ — only structured text  │
-│ (photos,      │   │ • PaddleOCR (label text)  │   │   sent (color/shape/    │
-│  contact log) │   │ • OpenCV (colour/shape)   │   │   imprint), NEVER the   │
-│               │   │ • DIN lookup table        │   │   raw image             │
-└───────────────┘   └─────────────────────────┘   └──────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│  BROWSER — React 18 SPA + PWA (Vite :5173)                               │
+│  Public: Landing · About chain (Vision/Problem/Science/Team) · Contact   │
+│          + floating MyPillSafe Assistant (project explainer, EN/FR,      │
+│            voice input; medication questions redirect to guarded Q&A)    │
+│  Patient: Dashboard · Scan Prescription · Scan Pill · My Medications ·   │
+│           Ask (Q&A) · Scan History · Help · Profile · Settings           │
+│  Admin:   Stats · Users                                                  │
+└─────────────────────────────┬────────────────────────────────────────────┘
+                              │ HTTP+JSON, JWT bearer
+                              ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│  APP BACKEND — FastAPI (:8000) · SQLite · uploads/                       │
+│                                                                          │
+│  OB5: PaddleOCR label reading → prescription parser → DIN suggestions    │
+│  CB4: Claude (LLM_API_KEY) speaks BB3's cited context — the ONLY         │
+│       cloud call in the system; raw images are never sent anywhere       │
+└───────────────┬──────────────────────────────────────────────────────────┘
+                │ HTTP (127.0.0.1:8100)
+                ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│  BRAINS SIDECAR — FastAPI (dev/brains, :8100), own Python 3.12 venv      │
+│  Hosts the frozen packages (imported from sibling folders, local-only):  │
+│    IMB1_v0  → /pill/analyze     (detect → colour/shape/type/imprint)     │
+│    SB2      → verify/reject/abstain vs the patient's confirmed DINs      │
+│    BB3      → /qa/chat context + /qa/guard (resolver-scoped retrieval,   │
+│               deterministic guards, cited monograph context)             │
+│  No cloud keys here by design. GPU (CUDA) stays on the host.             │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
-### How a "scan" actually flows through the system
-
-**Scanning a prescription label** (`AnalyzePage` → "Scan Prescription" mode):
-1. Browser opens the camera (`CameraCapture.tsx`) and captures a photo.
-2. Photo is POSTed to `app/api/v1/routes/prescriptions.py`.
-3. The route saves the image under `uploads/prescriptions/{patient_id}/`, then calls `ocr_service.py` (PaddleOCR) to read the text.
-4. The raw text is passed to `prescription_parser.py`, which splits a multi-drug printout into one block per medication (looking for `RX 1` / `RX 2` / ... markers, falling back to today's single-medication behaviour if none are found), then calls `timing_parser.py` per block to turn phrases like *"three times daily with meals"* into structured time slots (`["morning","afternoon","evening"]`) and exact clock times (`["08:00","13:00","18:00"]`), and extracts dosage, food timing, purpose, and (for "as needed" medications) the safe daily maximum.
-5. One `Prescription` row per medication is saved (`models/prescription.py`) and the list is returned to the browser, which redirects to **My Medications**.
-
-**Scanning a loose pill** (`AnalyzePage` → "Scan Pill" mode):
-1. Browser captures a photo and POSTs it to `app/api/v1/routes/pill.py`.
-2. `pill_detection.py` runs real OpenCV math on the image (threshold → largest contour → HSV colour analysis → shape classification) to get a colour and shape.
-3. `ocr_service.py` tries to read any imprint text stamped on the pill.
-4. The colour/shape/imprint are looked up against the `din_pills` table (`pill_detection.lookup_din_candidates`).
-5. If there are zero matches or no imprint, `claude_service.py` asks Claude for a plain-language description — sending **only** the colour/shape/imprint text, never the photo.
-6. The browser then fetches the patient's active prescriptions and compares the result against them locally, showing a green / amber / red safety message.
-
-**Hearing a medication reminder** (`ReminderAudio` component on `MyMedicationsPage`):
-1. Patient picks a language (English / French / Arabic / Spanish) and presses "Hear Reminder" on a medication card.
-2. Browser POSTs to `app/api/v1/routes/reminders.py`, which fills in a hardcoded per-language template with the patient's name and medication name — pure string formatting, zero external API calls.
-3. The browser speaks the returned message via the Web Speech API (`SpeechSynthesisUtterance`), with `utterance.lang` set to match the chosen language (`en-CA` / `fr-CA` / `ar-SA` / `es-ES`).
-
-**Reading the full instructions in your language** (`InstructionsPanel` component on `MyMedicationsPage`):
-1. Patient picks a language and the panel POSTs the medication's already-extracted structured fields (drug name, dosage, frequency category, computed times, food flag, purpose, max daily dose) to `app/api/v1/routes/instructions.py`.
-2. The route fills in localized phrase templates (en/fr/ar/es) — never a live translation of the original OCR text, since no translation API key is required — and returns one plain-language sentence, e.g. *"Take Ibuprofen 200mg at 8:00 AM, 1:00 PM and 6:00 PM, with food for joint pain."*
-3. The sentence is displayed (not just spoken) in large text, right-aligned automatically for Arabic.
-
-**Viewing the original prescription photo** (`PrescriptionImageModal` component on `MyMedicationsPage`):
-1. Patient presses the image icon on a medication card.
-2. The browser fetches `GET /prescriptions/{id}/image` as a blob via the authenticated Axios client (a plain `<img src="...">` can't carry the bearer token), then renders it via `URL.createObjectURL`.
-3. The route checks the requesting patient owns that prescription before returning the file (`FileResponse`).
-
-**Automatic dose reminders** (`src/lib/doseReminders.ts`, started once in `AppShell.tsx`):
-1. On login, the browser asks for Notification permission once, then polls `GET /prescriptions/me` every 30 seconds.
-2. For every active, non-"as needed" medication, it computes today's dose times from `specific_times` and fires a browser Notification + spoken alert exactly once per dose: 30 minutes before, and again at the dose time. Already-fired alerts are tracked in `sessionStorage` so a page refresh doesn't repeat them.
-3. This only runs while the dashboard tab is open — it is not a background/push-notification system (see Known Limitations).
+**Why "verify, don't identify"?** Identifying an arbitrary pill from the full Canadian
+formulary is not reliably solvable from a phone photo — many marketed products look
+identical. Verifying a pill **against the handful of medications a patient is actually
+prescribed** is a much smaller, safer question, and it allows the honest third answer:
+*abstain* ("I can't tell — check with your pharmacist"), which the system prefers over
+guessing. The same philosophy scopes Q&A: the BB3 resolver is the **only door** to drug
+information — retrieval is always scoped to one resolved drug's monograph, never a
+free-text search across all drugs, and dosing questions are refused outright.
 
 ---
 
-## Tech Stack
+## Design Principles
 
-| Layer          | Technology                                                     |
-|-----------------|-----------------------------------------------------------------|
-| Frontend        | React 18, TypeScript, Vite, TailwindCSS v3                     |
-| State mgmt      | Zustand (localStorage persistence)                              |
-| Forms           | React Hook Form + Zod                                            |
-| HTTP client     | Axios (silent token refresh interceptor)                        |
-| i18n            | react-i18next (EN/FR)                                            |
-| Backend         | FastAPI, Python 3.11, async/await throughout                     |
-| ORM             | SQLAlchemy 2.x async (code-first, additive column sync on boot) |
-| Auth            | JWT (HS256), bcrypt cost-12, httpOnly refresh cookie             |
-| Database        | **SQLite** (dev) — no Docker, no Redis, no Postgres required     |
-| OCR             | PaddleOCR (optional — installed & verified in the dev venv), regex-based timing parser |
-| Pill detection  | OpenCV colour/shape math + DIN database lookup (optional)        |
-| Guidance layer  | Claude API, structured attributes only, never raw images (optional) |
-| Voice           | Web Speech API (`speechSynthesis`, browser-native), multilingual reminder/instruction templates (en/fr/ar/es) |
-| Notifications   | Web Notification API (browser-native) — in-app, foreground-only dose reminders, no service worker/push |
-| Camera          | `getUserMedia` (browser-native), file-upload fallback            |
-| CI/CD           | GitHub Actions (backend pytest + frontend typecheck/build)       |
-| Deploy          | Render (API) + Vercel (static frontend) — see `render.yaml` / `vercel.json` |
-
-> No custom ML training, no FAISS, no YOLOv8, no NIH Pillbox dataset, no BioBERT. Pill detection is pure OpenCV math + PaddleOCR + a DIN lookup table, per `PILLSAFE_BUILD.md`. (There's a leftover notebook from an earlier, different approach that *did* plan to use YOLOv8 — see [Legacy / Deprecated Artifacts](#legacy--deprecated-artifacts).)
+- **Abstain over guess.** Every decision path has a built-in "I'm not sure" outcome, and
+  it is treated as a first-class result, never an error.
+- **Deterministic guards around the model.** LLM output is checked by rule-based guards
+  (drug-entity match, ingredient consistency, dosing refusal); the guards are code, not
+  another model's opinion.
+- **The cloud sees text, never photos.** CB4 receives structured, cited monograph context.
+  Pill and prescription images are processed locally.
+- **Disclaimers are mandatory** on every decision-bearing surface, and the decision colour
+  tokens (`success`/`warning`/`danger`) are frozen — abstain (amber) is never rendered as
+  verified (green) or rejected (red).
+- **No fabricated claims.** App copy carries no invented statistics, testimonials, or
+  certifications; performance figures live in the research documentation, not in the app.
 
 ---
 
-## Running Locally — Step by Step
+## Repository Layout
+
+```
+PillSafe/                        (this repo — app layer only)
+├── README.md                    This file
+├── Makefile                     Docker + local-dev targets
+├── render.yaml · vercel.json    Optional app-only cloud deploy (see Docker & Cloud Deploy)
+├── .env.example                 Template for the root .env
+├── .github/workflows/ci.yml     CI: backend pytest + frontend type-check/build
+├── docker/                      docker-compose stack + nginx config
+├── documentation/
+│   └── integration/             App×brains integration plan, phase results,
+│                                LOCAL_TESTING.md (launch guide + seeded test accounts)
+├── dev/backend/                 FastAPI app — auth, patients, prescriptions (OB5 OCR +
+│                                DIN linking), pill-scan proxy, Q&A (CB4), assistant,
+│                                reminders/instructions, scans, admin
+├── dev/brains/                  Brains sidecar (FastAPI :8100) — serves the frozen
+│                                IMB1_v0 / SB2 / BB3 packages to the app
+└── dev/frontend/                React 18 + TypeScript + Tailwind SPA, PWA-enabled
+
+# NOT in this repo (frozen research packages, siblings of the repo's parent folder):
+# D:\Projects\PillSafe\IMB1_v0\   pill image pipeline
+# D:\Projects\PillSafe\SB2\       deterministic matcher + Canadian appearance reference
+# D:\Projects\PillSafe\BB3\       monograph retrieval + guards (multi-GB local store)
+# Each has its own CONTRACT.md — those contracts are authoritative for integration.
+```
+
+---
+
+## Running Locally
 
 ### Prerequisites
-- **Python 3.11** (check with `python --version`)
-- **Node.js 20+** and npm (check with `node --version`)
-- Git, obviously — you're reading this from a clone already.
 
-### 1. Clone and enter the project
-```bash
-git clone https://github.com/SumanthReddyKConestoga/PillSafe.git
-cd PillSafe
+- **Python 3.11+** (CI runs 3.11; 3.12 is what the dev machine uses)
+- **Node.js 20+** and npm
+- For the full pill-scan and Q&A experience: the three frozen brain packages
+  (`IMB1_v0`, `SB2`, `BB3`) installed as siblings of this repo's parent folder, an
+  NVIDIA GPU for the sidecar, and a Python 3.12 venv in `dev/brains/.venv`
+  (`pip install -r dev/brains/requirements.txt`). Package roots can be overridden with
+  the `IMB1_ROOT` / `SB2_ROOT` / `BB3_ROOT` environment variables.
+
+**Without the brain packages the app still runs** — accounts, prescription scanning
+(with OCR), reminders, instructions, and the public site all work; pill analysis and
+monograph Q&A report the sidecar as unavailable instead of crashing.
+
+### 1. Environment
+
+```powershell
+copy .env.example .env
 ```
-(If you already have it locally, just `cd` into it.)
+Defaults work out of the box. Add an Anthropic key as `LLM_API_KEY` to enable CB4
+(generated Q&A and assistant answers); without a key those paths fall back or degrade
+gracefully.
 
-### 2. Set up environment variables
-```bash
-cp .env.example .env
+### 2. Brains sidecar (Terminal 1, optional but recommended, :8100)
+
+```powershell
+cd dev\brains
+.\.venv\Scripts\python.exe -m uvicorn app:app --host 127.0.0.1 --port 8100
 ```
-The defaults work out of the box for local development — SQLite needs no extra setup, and `LLM_API_KEY`/`OCR_PIPELINE_ENABLED` can stay blank/false until you want those optional features (see [Known Limitations](#known-limitations-by-design)).
+First start takes a while (loads the appearance reference and opens the BB3 store).
+Check <http://127.0.0.1:8100/health>.
 
-### 3. Start the backend
-```bash
-cd dev/backend
+### 3. App backend (Terminal 2, :8000)
+
+```powershell
+cd dev\backend
 python -m venv venv
-# Windows:
 venv\Scripts\activate
-# macOS/Linux:
-source venv/bin/activate
-
 pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+pip install -r requirements-optional.txt   # PaddleOCR (Rx scanning), Claude SDK, voice STT
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
-Leave this terminal running. You should see `Database ready` in the logs — a `pillsafe.db` SQLite file is created automatically next to `dev/backend/`, no database server to install.
+API docs: <http://127.0.0.1:8000/docs> · Health: <http://127.0.0.1:8000/health>
 
-- API base: **http://localhost:8000**
-- Interactive API docs (Swagger): **http://localhost:8000/docs**
-- Health check: **http://localhost:8000/health**
+### 4. Frontend (Terminal 3, :5173)
 
-### 4. Start the frontend (in a *new* terminal)
-```bash
-cd dev/frontend
+```powershell
+cd dev\frontend
 npm install
 npm run dev
 ```
-- App: **http://localhost:5173**
+Open **<http://localhost:5173>**. Chrome's address-bar install icon installs the PWA
+(localhost counts as a secure origin).
 
-### 5. Create an account
-Open http://localhost:5173, click **Get Started** / **Create Free Account**, and sign up like any normal app (email + password). That's a regular patient account.
+### Test accounts & guided test flows
 
-### 6. (Optional) Create an admin account
-Admins see platform stats and manage users, but are technically blocked from ever seeing patient medication data. To create one for testing, open Swagger (http://localhost:8000/docs) and call:
-```
-POST /api/v1/dev/seed-admin
-{ "email": "admin@pillsafe.dev", "password": "Admin1234" }
-```
-Copy the `access_token` from the response, click **Authorize** at the top of the Swagger page, and paste it in. This endpoint only works when `APP_ENV=development` (the default) — it intentionally returns `404` in production and in CI.
+See **[documentation/integration/LOCAL_TESTING.md](documentation/integration/LOCAL_TESTING.md)**
+for five pre-seeded patient accounts (each with three confirmed real OTC medications),
+suggested end-to-end flows (pill verify/reject/abstain, Q&A with citations, assistant
+widget, French paths), and expected timing behaviour.
 
-### 7. Run the automated tests
-```bash
-cd dev/backend
-pytest tests/ -v
-```
-All 24 should pass.
+Useful to know:
 
-### 8. (Optional) Enable the heavier features
-By default the app runs fully without these — prescription scanning shows realistic example text, and pill-photo scanning returns a clear "not available" message instead of crashing. To turn them on:
-```bash
-cd dev/backend
-pip install -r requirements-optional.txt   # PaddleOCR, OpenCV, the Claude SDK
-```
-Then:
-- Set `LLM_API_KEY=<your Anthropic key>` in `.env` to turn on AI-written pill descriptions.
-- For real OCR, **don't** flip `OCR_PIPELINE_ENABLED` in the committed `.env` — it's shared with the pytest suite, and several tests use fake image bytes that assume OCR is off. Instead set it as a real process environment variable right before starting the server, so it only applies to that session:
-  ```bash
-  # macOS/Linux
-  OCR_PIPELINE_ENABLED=true uvicorn app.main:app --reload --port 8000
-  ```
-  ```powershell
-  # Windows PowerShell
-  $env:OCR_PIPELINE_ENABLED='true'; uvicorn app.main:app --reload --port 8000
-  ```
-  (Environment variables always take precedence over `.env` file values, so this works without touching the committed default.) Installing PaddleOCR also transitively installs OpenCV, which means real pill colour/shape detection on `/analyze/pill` switches on too, at no extra cost.
-
-### Troubleshooting
-| Problem | Fix |
-|---|---|
-| `Address already in use` on port 8000 or 5173 | Something else is already running there — stop it, or run `uvicorn app.main:app --port 8001` and update `dev/frontend/vite.config.ts`'s proxy target. |
-| Backend won't start, complains about `bcrypt` | This project pins `bcrypt==4.0.1` — `passlib` 1.7.4 is incompatible with bcrypt 5.x. Re-run `pip install -r requirements.txt` inside the venv. |
-| `/dev/seed-admin` returns 404 | You're not running with `APP_ENV=development` (check your `.env`). This is intentional — that route is dev-only. |
-| Camera doesn't open on the Analyze page | Browsers only allow camera access over `https://` or `localhost` — make sure you're on `http://localhost:5173`, not an IP address, and that you clicked "Allow" on the permission prompt. There's a file-upload fallback if the camera truly isn't available. |
+- The **first pill analysis is slow** (model load + a fresh OCR subprocess per call — a
+  deliberate process-isolation constraint); later calls are faster but still take seconds.
+- A full prescription-label OCR pass on CPU can take a couple of minutes — the UI shows
+  progress states.
+- Don't run Ollama during pill analysis (GPU contention); it is only used by the
+  offline-fallback Q&A voice, never by the CB4 path.
+- To create an admin account, use `POST /api/v1/dev/seed-admin` from Swagger — it only
+  exists when `APP_ENV=development`.
 
 ---
 
-## Repo & File Guide — what every file does
+## Environment Variables & Feature Flags
 
-```
-PillSafe_FINAL/
-├── PILLSAFE_BUILD.md          The build spec this entire codebase implements, priority by priority
-├── README.md                  This file — technical reference
-├── PROGRESS.md                Plain-English explainer (no tech background needed)
-├── render.yaml                Render.com deploy config for the backend
-├── vercel.json                 Vercel deploy config for the frontend
-├── .github/workflows/ci.yml   GitHub Actions: backend pytest + frontend typecheck/build
-├── .env.example                Template for the root .env file
-│
-├── dev/backend/                ─── FastAPI application ───
-│   ├── app/
-│   │   ├── main.py                FastAPI app factory: creates the app, sets up CORS,
-│   │   │                          Swagger docs, the /health check, and runs DB setup on startup
-│   │   ├── api/
-│   │   │   ├── deps.py            Shared auth dependencies: get_current_user (any logged-in
-│   │   │   │                      user), get_current_admin (ADMIN only), get_current_patient
-│   │   │   │                      (blocks ADMIN — used on every patient-data route)
-│   │   │   └── v1/
-│   │   │       ├── router.py      Wires every route file below into the app under /api/v1
-│   │   │       └── routes/
-│   │   │           ├── auth.py            register / login / logout / refresh / me
-│   │   │           ├── patients.py        profile get/update, change password, delete account
-│   │   │           ├── prescriptions.py   upload prescription photo (OCR, multi-medication aware),
-│   │   │           │                      list/update/delete, serve the original photo back
-│   │   │           ├── analyze.py         legacy demo pill-stub endpoint (kept, not used by UI anymore)
-│   │   │           ├── pill.py            real pill photo analysis: OpenCV + OCR + DIN + Claude
-│   │   │           ├── reminders.py       multilingual (en/fr/ar/es) spoken reminder text, zero external API calls
-│   │   │           ├── instructions.py    multilingual (en/fr/ar/es) plain-language instruction sentence,
-│   │   │           │                      built from structured fields, zero external API calls
-│   │   │           ├── scans.py           read-only scan history for the Safety Records page
-│   │   │           ├── contact.py         public "contact us" form submission
-│   │   │           ├── admin.py           platform stats, user management, analyses audit log
-│   │   │           └── dev.py             dev-only: bootstrap the first admin account
-│   │   ├── core/
-│   │   │   ├── config.py          All settings/feature flags, loaded from .env
-│   │   │   ├── database.py        Creates the SQLite connection, creates tables on startup,
-│   │   │   │                      and adds any new columns to existing tables automatically
-│   │   │   └── security.py        Password hashing (bcrypt) and JWT token creation/verification
-│   │   ├── models/                 (one file per database table)
-│   │   │   ├── user.py            Login accounts — email, password hash, role (PATIENT/ADMIN)
-│   │   │   ├── patient.py         A patient's profile info (name, DOB, language, settings)
-│   │   │   ├── analysis.py        Records from the legacy /analyze demo endpoint
-│   │   │   ├── prescription.py    A saved prescription: drug name, dosage, schedule, photo path
-│   │   │   └── din_pill.py        Reference table of known pills (colour/shape/imprint) — empty
-│   │   │                          until real Health Canada data is loaded, see Known Limitations
-│   │   ├── schemas/                 (request/response shapes, validated automatically by FastAPI)
-│   │   │   ├── auth.py · patient.py · prescription.py · scan.py · admin.py
-│   │   └── services/                (the actual business logic, called by the routes above)
-│   │       ├── auth_service.py        register/login logic
-│   │       ├── patient_service.py     profile read/update logic
-│   │       ├── prescription_service.py listing/updating/soft-deleting prescriptions
-│   │       ├── prescription_parser.py splits one OCR'd photo into one or more medications
-│   │       │                         (drug name, dosage, food/purpose/max-dose) before timing_parser
-│   │       ├── timing_parser.py       turns text like "twice daily" into ["morning","evening"],
-│   │       │                         plus classify_frequency() (QID/TID/BID/PRN/...) for instructions.py
-│   │       ├── ocr_service.py         wraps PaddleOCR to read text out of a photo
-│   │       ├── pill_detection.py      OpenCV colour/shape detection + DIN table lookup
-│   │       ├── claude_service.py      asks Claude for a plain-language pill description
-│   │       └── admin_service.py       stats/user-management logic for admins
-│   ├── tests/                     pytest test suite (40 tests) — see Test Suite below
-│   ├── requirements.txt           Core dependencies — installed on every deploy
-│   ├── requirements-optional.txt  PaddleOCR / OpenCV / Claude SDK — install only if you want them
-│   └── pillsafe.db                The actual SQLite database file (created automatically, gitignored)
-│
-└── dev/frontend/                ─── React application ───
-    └── src/
-        ├── main.tsx                   Entry point — mounts the React app into the page
-        ├── App.tsx                    Top-level component, renders the router
-        ├── router/index.tsx           Every page route + who's allowed to see it
-        │                              (RequireAuth / RequireGuest / RequireAdmin guards)
-        ├── api/                        One file per backend feature — each just wraps an HTTP call
-        │   ├── client.ts              Shared Axios instance: attaches the login token to every
-        │   │                          request, auto-refreshes it silently when it expires
-        │   ├── auth.ts · admin.ts · patients.ts · prescriptions.ts · pill.ts · reminders.ts ·
-        │   │   instructions.ts · scans.ts · contact.ts
-        ├── components/
-        │   ├── CameraCapture.tsx      Reusable camera viewfinder + capture/retake/confirm,
-        │   │                          falls back to a file picker if the camera is denied
-        │   ├── ReminderAudio.tsx      Language picker + "Hear Reminder" button on each medication
-        │   │                          card — calls /reminders/message, speaks it via SpeechSynthesisUtterance
-        │   ├── InstructionsPanel.tsx  Language picker that displays (not just speaks) a full
-        │   │                          plain-language instruction sentence in large text
-        │   ├── PrescriptionImageModal.tsx  Fetches the original prescription photo as a blob
-        │   │                          (authenticated) and shows it in a modal
-        │   ├── DisclaimerModal.tsx    The "this isn't medical advice" pop-up
-        │   ├── layout/
-        │   │   ├── AppShell.tsx       Wraps every logged-in page: sidebar + top bar + content
-        │   │   ├── PublicLayout.tsx   Wraps Landing/About/Contact: simple header + footer
-        │   │   ├── Sidebar.tsx        Left-hand navigation menu
-        │   │   └── Topbar.tsx         Top bar: page title, language switch, voice toggle, avatar
-        │   └── ui/                     Small reusable building blocks
-        │       ├── Button.tsx · Card.tsx · Input.tsx · Alert.tsx · LanguageSwitcher.tsx
-        ├── hooks/
-        │   ├── useAuth.ts             Login/register/logout actions
-        │   └── useVoicePageAnnounce.ts Announces the page name out loud on page load
-        ├── lib/
-        │   ├── voiceAssistant.ts      The "read it out loud" engine (browser's built-in voice)
-        │   └── doseReminders.ts       Polls active prescriptions every 30s; fires a Notification +
-        │                              spoken alert 30 min before and at each dose time (foreground only)
-        ├── i18n/                       English/French text, and the library that switches between them
-        ├── store/authStore.ts          Remembers who's logged in (persisted in the browser)
-        ├── styles/globals.css          The light colour theme and text sizing rules
-        ├── types/index.ts              Shared TypeScript shape definitions (what a Prescription
-        │                              object looks like, etc.)
-        └── pages/
-            ├── public/                 No login required
-            │   ├── LandingPage.tsx        The "/" homepage
-            │   ├── AboutPage.tsx          "/about"
-            │   └── ContactPage.tsx        "/contact"
-            ├── auth/
-            │   ├── LoginPage.tsx · RegisterPage.tsx
-            ├── dashboard/                Everything behind login
-            │   ├── DashboardPage.tsx      Home screen — today's schedule, quick actions
-            │   ├── AnalyzePage.tsx        The camera page — scan a prescription OR a pill
-            │   ├── MyMedicationsPage.tsx  List of everything currently being tracked
-            │   ├── ProfilePage.tsx        Edit profile, change password
-            │   ├── SafetyRecordsPage.tsx  History of past scans
-            │   ├── EducationPage.tsx      How-to guide, safety tips, FAQ (static content)
-            │   └── SettingsPage.tsx       Notifications, voice, language, delete account
-            ├── admin/
-            │   ├── AdminDashboardPage.tsx · AdminUsersPage.tsx
-            └── NotFoundPage.tsx           Catch-all 404 page
-```
+Defined in `dev/backend/app/core/config.py`, loaded from `.env` (see `.env.example`).
 
----
-
-## API Reference
-
-All endpoints are under `/api/v1/`. Protected routes require `Authorization: Bearer <access_token>`. Full interactive docs at `/docs`.
-
-### Auth — `app/api/v1/routes/auth.py`
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/auth/register` | No | Create patient account, return token pair |
-| POST | `/auth/login` | No | Validate credentials, return token pair |
-| POST | `/auth/logout` | No | Clears refresh cookie |
-| POST | `/auth/refresh` | Cookie | Issue new access token |
-| GET | `/auth/me` | Bearer | Current user profile |
-
-### Patients — `app/api/v1/routes/patients.py`
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET / PATCH | `/patients/me` | Bearer | Get/update patient profile |
-| PATCH | `/patients/me/password` | Bearer (patient) | Change password |
-| DELETE | `/patients/me` | Bearer (patient) | Permanently delete own account |
-
-### Prescriptions — `app/api/v1/routes/prescriptions.py`
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/prescriptions` | Bearer (patient) | Upload prescription photo → OCR → split into one or more medications → save. Returns a **list** of prescriptions (usually 1, but more if the photo has several Rx blocks) |
-| GET | `/prescriptions/me` | Bearer (patient) | List active prescriptions |
-| GET | `/prescriptions/{id}/image` | Bearer (patient, owner only) | Return the original uploaded photo for that prescription |
-| PATCH | `/prescriptions/{id}` | Bearer (patient) | Update a prescription |
-| DELETE | `/prescriptions/{id}` | Bearer (patient) | Soft-delete a prescription |
-
-### Analyze / Pill — `app/api/v1/routes/analyze.py`, `pill.py`
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/analyze` | Bearer | Legacy pill-stub demo (kept for compatibility, superseded by `/analyze/pill` in the UI) |
-| GET | `/analyze/history` / `/analyze/{id}` | Bearer | Legacy demo history |
-| POST | `/analyze/pill` | Bearer (patient) | OpenCV colour/shape + PaddleOCR imprint + DIN candidates + Claude guidance |
-
-### Reminders — `app/api/v1/routes/reminders.py`
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/reminders/message` | Bearer (patient) | Returns a spoken-aloud reminder message for a medication, in English, French, Arabic, or Spanish — hardcoded templates, zero external API calls |
-
-### Instructions — `app/api/v1/routes/instructions.py`
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/instructions/message` | Bearer (patient) | Returns a full plain-language instruction sentence (dose, times, food, purpose, max daily dose) for a medication, in English, French, Arabic, or Spanish — built from structured fields via hardcoded templates, zero external API calls |
-
-### Scans — `app/api/v1/routes/scans.py`
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET | `/scans/me` | Bearer (patient) | Safety Records — past scans with prescription match status |
-
-### Contact — `app/api/v1/routes/contact.py`
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/contact` | No | Public contact form submission |
-
-### Admin — `app/api/v1/routes/admin.py` (ADMIN role only)
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET | `/admin/stats` | Bearer + ADMIN | Platform-wide stats |
-| GET | `/admin/users` / `/admin/users/{id}` | Bearer + ADMIN | List/view users |
-| PUT | `/admin/users/{id}/activate` / `/deactivate` | Bearer + ADMIN | Enable/disable a user |
-| PUT | `/admin/users/{id}/role` | Bearer + ADMIN | Change a user's role |
-| DELETE | `/admin/users/{id}` | Bearer + ADMIN | Delete a user |
-| GET | `/admin/analyses` | Bearer + ADMIN | Audit log of legacy `/analyze` records |
-
-### Dev — `app/api/v1/routes/dev.py` (404 outside `APP_ENV=development`)
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/dev/seed-admin` | No | Bootstrap the first admin account |
-
-**Admins are blocked (403, not just 404) from every patient-data endpoint** — `/prescriptions/*`, `/scans/*`, `/patients/me/password` — enforced by the `get_current_patient` dependency in `app/api/deps.py`, regardless of how the request is made.
-
-**Error envelope** — all errors use this shape:
-```json
-{ "detail": { "error": { "code": "EMAIL_TAKEN", "message": "An account with this email already exists.", "details": {} } } }
-```
-
----
-
-## Environment Variables (`.env` at project root)
-
-| Variable | Description | Example |
+| Variable | Purpose | Default |
 |---|---|---|
-| `APP_ENV` | `development` / `production` / `test` | `development` |
-| `SECRET_KEY` | JWT signing secret — change in prod | `openssl rand -hex 32` |
-| `DATABASE_URL` | SQLAlchemy async connection string | `sqlite+aiosqlite:///./pillsafe.db` |
-| `FRONTEND_ORIGIN` | Allowed CORS origin | `http://localhost:5173` |
-| `OPENAPI_ENABLED` | Expose `/docs` and `/redoc` | `true` |
-| `ML_PIPELINE_ENABLED` | Gate for the legacy `/analyze` real pipeline | `false` |
-| `OCR_PIPELINE_ENABLED` | Gate for real PaddleOCR on `/prescriptions` | `false` |
-| `LLM_API_KEY` | Anthropic API key — blank keeps guidance inert | *(blank until you add one)* |
-| `LLM_MODEL` | Claude model id | `claude-sonnet-4-6` |
-| `UPLOAD_DIR` | Where prescription images / contact log are written | `./uploads` |
+| `APP_ENV` | `development` / `production` / `test` (gates `/dev/*` routes) | `development` |
+| `SECRET_KEY` | JWT signing secret — change in production | dev placeholder |
+| `DATABASE_URL` | SQLAlchemy async URL | SQLite `pillsafe.db` |
+| `FRONTEND_ORIGIN` | CORS origin | `http://localhost:5173` |
+| `OPENAPI_ENABLED` | Expose `/docs` | `true` |
+| `OCR_PIPELINE_ENABLED` | Real PaddleOCR on prescription upload (off = demo text) | `true` |
+| `LLM_API_KEY` | Anthropic key — enables CB4; blank = offline fallback / degraded | *(blank)* |
+| `LLM_MODEL` | Claude model for CB4 | `claude-haiku-4-5` |
+| `BRAINS_SERVICE_URL` | Where the sidecar listens | `http://127.0.0.1:8100` |
+| `PILL_V2_ENABLED` | Kill-switch for the pill-scan path (sidecar-backed; there is no other pill path) | `true` |
+| `UPLOAD_DIR` | Prescription photos / contact log | `./uploads` |
 
-> **Note on `OCR_PIPELINE_ENABLED`:** this `.env` is read by both the running app *and* the pytest suite (`tests/test_prescriptions.py` assumes it's `false`). Keep it `false` here; flip it via a real process env var instead when you want real OCR for a one-off run — see step 8 in [Running Locally](#running-locally--step-by-step).
+Sidecar-side: `IMB1_ROOT`, `SB2_ROOT`, `BB3_ROOT` (frozen-package locations), `BRAINS_PORT`.
 
 ---
 
-## Test Suite
+## API Overview
 
-```bash
-cd dev/backend && pytest tests/ -v
+All app endpoints live under `/api/v1/` (interactive docs at `/docs`). Protected routes
+take `Authorization: Bearer <token>`. Errors use one envelope:
+`{"detail": {"error": {"code": ..., "message": ..., "details": {}}}}`.
+
+| Area | Endpoints | Notes |
+|---|---|---|
+| Auth | `POST /auth/register` · `/auth/login` · `/auth/logout` · `/auth/refresh` · `GET /auth/me` | JWT + httpOnly refresh cookie |
+| Patients | `GET/PATCH /patients/me` · `PATCH /patients/me/password` · `DELETE /patients/me` | Admins are blocked from patient data |
+| Prescriptions (OB5) | `POST /prescriptions` (photo → OCR → one row per medication, **with DIN suggestions**) · `GET /prescriptions/me` · `GET /prescriptions/{id}/image` · `PATCH /prescriptions/{id}` (incl. DIN confirm/unset) · `DELETE /prescriptions/{id}` | DINs are suggested, never auto-committed |
+| Reference | `GET /reference/search` | Authenticated proxy to the sidecar's DIN name search |
+| Pill scan | `POST /analyze/pill/v2` | The only pill endpoint: sidecar IMB1→SB2, returns verify/reject/abstain + per-attribute breakdown + disclaimer; empty profile short-circuits |
+| Q&A (BB3→CB4) | `POST /qa/chat` | Resolver statuses (confirm, pick-list, refusals) surface as real UI flows; answers cite DIN-scoped monograph sections |
+| Assistant | `POST /assistant/chat` · `POST /assistant/voice` | Public project-explainer widget (KB + CB4, EN/FR, speech-to-text); medication questions are redirected to the guarded Q&A |
+| Reminders / Instructions | `POST /reminders/message` · `POST /instructions/message` | Template-based, en/fr/ar/es, zero external calls |
+| Scans | `GET /scans/me` | Safety Records history (verify/reject/abstain per scan) |
+| Contact | `POST /contact` | Public form |
+| Admin | `/admin/stats` · `/admin/users*` · `/admin/analyses` | ADMIN role only |
+
+Brains sidecar (`:8100`, local-only, no auth — never expose beyond localhost):
+`GET /health` · `POST /pill/analyze` · `GET /reference/search` · `GET /reference/candidates` ·
+`POST /qa/chat` (context mode for CB4, full mode for the offline fallback) · `POST /qa/guard`
+(runs BB3's deterministic guards over CB4's answer).
+
+---
+
+## Test Suite & CI
+
+```powershell
+cd dev\backend
+venv\Scripts\python.exe -m pytest tests/ -v
 ```
-40 tests covering auth, patients (password change, self-delete), prescriptions (CRUD, ownership, admin-block, graceful degradation on bad uploads, multi-medication creation, image retrieval), the multi-medication OCR parser in isolation (`test_prescription_parser.py` — letterhead exclusion, dosage extraction, PRN vs scheduled, max-daily-dose), pill analysis (graceful degradation without OpenCV, mocked happy path), reminders and instructions (auth guard, per-language templates, unknown-language fallback), scans, and the contact form. CI runs the same suite with `APP_ENV=test` on every push to `main` — see the badge at the top of this file.
+
+The backend suite covers auth, patients, prescriptions (incl. multi-medication OCR
+parsing and DIN suggestion/confirmation), the pill-scan proxy (flag off/on, sidecar-down
+degradation, empty-profile short-circuit), Q&A (CB4 called/mocked, guard retry, offline
+fallback), the assistant (intent gate, confidence zones, rate limiting), reminders,
+instructions, scans, contact, and admin.
+
+CI (GitHub Actions) runs the backend suite plus frontend `type-check` and `build` on
+every push to `main`. The brains sidecar has its own smoke test
+(`dev/brains/smoke_test.py`) which requires the frozen packages and is run locally, not
+in CI.
+
+---
+
+## Docker & Cloud Deploy
+
+**Docker (local):** `make dev` brings up the app stack via `docker/docker-compose.yml`.
+The **brains sidecar intentionally stays on the host** (not containerized): it needs the
+host GPU/CUDA, imports the frozen packages from sibling folders outside the repo, and
+BB3's multi-gigabyte store must never be copied into an image. The compose file maps
+`host.docker.internal` so the containerized backend reaches the host-run sidecar; see the
+comments in `docker/docker-compose.yml`.
+
+**Cloud (optional, app-only demo):** `render.yaml` (backend) and `vercel.json` (frontend)
+deploy the app **without the brains** — accounts, prescription OCR, reminders,
+instructions, and the public site work; pill verification and monograph Q&A are
+unavailable there because the sidecar and its GPU-backed frozen packages are local-only
+by design. Treat a cloud deploy as a shareable demo of the app shell, not the full
+five-brain system.
 
 ---
 
 ## Known Limitations (by design)
 
-- **DIN database is empty.** `din_pills` table exists with the right schema/indices but has no seed data — pill-mode scans will show "no matches found" until a real Health Canada DPD extract is loaded. See `app/models/din_pill.py`.
-- **PaddleOCR / OpenCV are not installed by default.** `/prescriptions` falls back to demo OCR text and `/analyze/pill` returns a clear `501 CV_UNAVAILABLE` until `requirements-optional.txt` is installed. (They are installed and verified working in this project's `dev/backend/venv` — see step 8 above for how to switch `OCR_PIPELINE_ENABLED` on for a single session without touching the committed `.env`.)
-- **Claude guidance is inert without an API key.** No raw images or PHI are ever sent — only structured colour/shape/imprint attributes, per the Data Privacy rule in `PILLSAFE_BUILD.md`.
-- **Dose reminders are in-app/foreground-only.** `doseReminders.ts` polls and fires Notification + voice alerts only while the dashboard tab is open in the browser; it is not a background push-notification system (no service worker, no VAPID keys, no backend scheduler) — that would be a separate, larger feature.
-- **Instruction sentences are template-based, not a live translation.** `instructions.py` builds French/Arabic/Spanish sentences from structured fields (dose, time, food, purpose) already extracted by `prescription_parser.py`, rather than translating the OCR'd text word-for-word — this keeps it deterministic and free of any external translation API dependency.
-
-For the full plain-language breakdown of what's done and what's left, see **[PROGRESS.md](PROGRESS.md)**.
-
----
-
-## Legacy / Deprecated Artifacts
-
-Three files at the project root predate `PILLSAFE_BUILD.md` and are **not used anywhere in the current app**:
-
-| File | What it is | Why it's unused |
-|---|---|---|
-| `orchestrator.ipynb` | A Jupyter notebook stub outlining a 5-step ML pipeline: data collection → preprocessing → train a **YOLOv8** segmentation model → evaluate → export. Every cell just prints `[STUB] ...` — no real code ever ran. | `PILLSAFE_BUILD.md` explicitly replaced this approach: *"NO custom ML training. NO YOLOv8 custom training. NO NIH Pillbox image dataset."* Pill detection now uses OpenCV math instead (`app/services/pill_detection.py`). |
-| `data-collection/collect_pillbox.py` | A script intended to download the NIH Pillbox image dataset for training that YOLOv8 model. | Same reason — the NIH Pillbox dataset approach was explicitly ruled out in favour of OpenCV + a DIN reference table. |
-| `training/trained-model-v0.h5` | A placeholder/empty model weights file from the same earlier approach. | Never trained on real data; superseded the same way. |
-
-They were left in place rather than deleted, since deleting files is a one-way action and wasn't asked for — but they no longer reflect the direction of the project and can be safely archived or removed whenever you're ready.
+- **This is a capstone MVP under active research.** The pill pipeline's accuracy figures
+  come from a small development set; the confirmatory capture campaign (a controlled
+  tray + phone-flash protocol) is still ahead. No performance claims are made in the app,
+  and none should be quoted from it.
+- **Abstain is common.** The matcher is tuned to keep false-accepts rare, at the cost of
+  frequently answering "I can't tell — check with your pharmacist." That trade-off is
+  deliberate and should not be "fixed" by loosening thresholds.
+- **The frozen brain packages are not in this repo.** Pill verification and monograph
+  Q&A require them (plus a GPU) on the machine running the sidecar.
+- **Q&A refuses dosing questions** and drug-vs-drug comparisons; brands absent from the
+  Canadian formulary get an explicit "not in the Canadian formulary" refusal rather than
+  a guess.
+- **Dose reminders are foreground-only** (browser Notification + speech while the tab is
+  open) — there is no push-notification backend.
+- **Instruction sentences are template-based** (en/fr/ar/es) built from structured fields,
+  not live translation of the OCR text.
+- **PWA install needs HTTPS** off localhost; camera access likewise.
 
 ---
 
-## Contributing
+## Research Grounding
 
-**Branch naming:** `feat/<short-description>` · `fix/<issue>` · `chore/<task>`
-
-**Commit messages:** [Conventional Commits](https://www.conventionalcommits.org/)
+The pill-verification approach ("verify against the patient's own medications, with an
+explicit abstain") and the monograph-scoped Q&A design are grounded in published work on
+pill recognition and its limits — see the in-app **Scientific Foundation** page
+(`/about/science`) for the cited papers with links. A research paper on the pill pipeline
+(working title *"Verify, Don't Identify"*) is in preparation; its evidence and numbers
+live with the frozen research packages and their contracts, not in this repo.
 
 ---
 
-*PillSafe · Conestoga College Graduate AI/ML Program · AIML-6900 Capstone*
+## Team
+
+**MyPillSafe · 2026** — Muthuraj Jayakumar · Sumanth Reddy · Lohith Reddy · Ali Ozdemir ·
+Abdullah Mohammed
+
+Roles and per-member responsibilities: see `/about/team` in the app.
+
+**Contributing:** branch as `feat/<desc>` / `fix/<issue>` / `chore/<task>`; commits follow
+[Conventional Commits](https://www.conventionalcommits.org/).
+
+---
+
+*PillSafe · Conestoga College Graduate AI/ML Program · AIML-6900 Capstone · Decision-support only — not medical advice.*

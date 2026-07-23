@@ -25,12 +25,17 @@ export const TIME_SLOT_GREETING: Record<TimeSlot, string> = {
   night: 'Good night',
 };
 
-/** Hero gradient per time of day — soft sunrise, bright calm blue, warm amber sunset, deep calm night. */
+/** Hero gradient per time of day — soft sunrise, bright calm teal, warm amber
+ * sunset, deep calm navy night. Phase 6 palette sweep: afternoon was
+ * `from-sky-500 via-blue-600 to-blue-700` and night was
+ * `from-indigo-900 via-slate-900 to-slate-950` -- both off the Phase 5
+ * navy/teal system (this is the "bright-blue gradient" Muthu flagged on the
+ * dashboard greeting header). Moved onto the brand teal/navy tokens. */
 export const TIME_SLOT_HERO_GRADIENT: Record<TimeSlot, string> = {
   morning: 'from-amber-400 via-amber-500 to-orange-500',
-  afternoon: 'from-sky-500 via-blue-600 to-blue-700',
+  afternoon: 'from-teal-400 via-teal-500 to-teal-600',
   evening: 'from-orange-500 via-rose-500 to-rose-600',
-  night: 'from-indigo-900 via-slate-900 to-slate-950',
+  night: 'from-primary-dark via-navy to-slate-950',
 };
 
 /** Subtle page wash behind the dashboard, matching the tailwind.config.ts time-of-day tokens. */

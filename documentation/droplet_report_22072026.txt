@@ -1,0 +1,261 @@
+
+muthu@Muthu MINGW64 ~
+$ ssh deploy@134.122.34.26
+Enter passphrase for key '/c/Users/muthu/.ssh/id_ed25519':
+Welcome to Ubuntu 24.04.4 LTS (GNU/Linux 6.8.0-110-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Wed Jul 22 19:31:28 UTC 2026
+
+  System load:  0.0                Processes:             146
+  Usage of /:   59.8% of 76.45GB   Users logged in:       1
+  Memory usage: 57%                IPv4 address for eth0: 134.122.34.26
+  Swap usage:   1%                 IPv4 address for eth0: 10.20.0.5
+
+Expanded Security Maintenance for Applications is not enabled.
+
+27 updates can be applied immediately.
+1 of these updates is a standard security update.
+To see these additional updates run: apt list --upgradable
+
+Enable ESM Apps to receive additional future security updates.
+See https://ubuntu.com/esm or run: sudo pro status
+
+
+*** System restart required ***
+Last login: Wed Jul 22 18:37:09 2026 from 142.156.1.230
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$ ^[[200~  echo "########## 1. IDENTITY / OS / UPTIME ##########"
+  grep -E 'PRETTY|VERSION=' /etc/os-release
+  uptime
+  echo "-- DO metadata (region/id) --"
+  curl -s --max-time 3 http://169.254.169.254/metadata/v1/region; echo
+  curl -s --max-time 3 http://169.254.169.254/metadata/v1/id; echo: command not found
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$   hostnamectl 2>/dev/null; uname -a
+ Static hostname: ubuntu-s-2vcpu-2gb-tor1-01
+       Icon name: computer-vm
+         Chassis: vm 🖴
+      Machine ID: f91d2939e9923b3cf733924b69d8444c
+         Boot ID: 754dc2cbb75947ae9f0cf46a575ff95d
+  Virtualization: kvm
+Operating System: Ubuntu 24.04.4 LTS
+          Kernel: Linux 6.8.0-110-generic
+    Architecture: x86-64
+ Hardware Vendor: DigitalOcean
+  Hardware Model: Droplet
+Firmware Version: 20171212
+   Firmware Date: Tue 2017-12-12
+    Firmware Age: 8y 7month 1w 2d
+Linux ubuntu-s-2vcpu-2gb-tor1-01 6.8.0-110-generic #110-Ubuntu SMP PREEMPT_DYNAMIC Thu Mar 19 15:09:20 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$   grep -E 'PRETTY|VERSION=' /etc/os-release
+PRETTY_NAME="Ubuntu 24.04.4 LTS"
+VERSION="24.04.4 LTS (Noble Numbat)"
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$   uptime
+ 19:31:50 up 95 days, 18:45,  2 users,  load average: 0.00, 0.01, 0.00
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$   echo "-- DO metadata (region/id) --"
+-- DO metadata (region/id) --
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$   curl -s --max-time 3 http://169.254.169.254/metadata/v1/region; echo
+tor1
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$   curl -s --max-time 3 http://169.254.169.254/metadata/v1/id; echo
+564015320
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$   echo "########## 2. CPU ##########"
+  nproc
+  lscpu | grep -E 'Model name|^CPU\(s\)|Thread|Core|Socket|MHz'
+########## 2. CPU ##########
+2
+CPU(s):                                  2
+Model name:                              DO-Regular
+Thread(s) per core:                      1
+Core(s) per socket:                      2
+Socket(s):                               1
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$   echo "########## 3. MEMORY + SWAP ##########"
+  free -h
+  echo "swappiness:"; cat /proc/sys/vm/swappiness
+  grep -E 'MemTotal|MemAvailable|SwapTotal|SwapFree' /proc/meminfo
+########## 3. MEMORY + SWAP ##########
+               total        used        free      shared  buff/cache   available
+Mem:           3.8Gi       2.3Gi       355Mi       143Mi       1.6Gi       1.5Gi
+Swap:          4.0Gi        42Mi       4.0Gi
+swappiness:
+60
+MemTotal:        4009880 kB
+MemAvailable:    1622564 kB
+SwapTotal:       4194300 kB
+SwapFree:        4150820 kB
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$   echo "########## 4. DISK ##########"
+  df -h
+  echo "-- inodes --"; df -i
+  echo "-- biggest dirs in home --"; du -h -d1 ~ 2>/dev/null | sort -h | tail -15
+########## 4. DISK ##########
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           392M  1.4M  391M   1% /run
+/dev/vda1        77G   46G   31G  60% /
+tmpfs           2.0G     0  2.0G   0% /dev/shm
+tmpfs           5.0M     0  5.0M   0% /run/lock
+/dev/vda16      881M  117M  703M  15% /boot
+/dev/vda15      105M  6.2M   99M   6% /boot/efi
+tmpfs           392M   12K  392M   1% /run/user/1000
+-- inodes --
+Filesystem       Inodes  IUsed   IFree IUse% Mounted on
+tmpfs            501235    848  500387    1% /run
+/dev/vda1      10354688 490452 9864236    5% /
+tmpfs            501235      1  501234    1% /dev/shm
+tmpfs            501235      3  501232    1% /run/lock
+/dev/vda16        58496    604   57892    2% /boot
+/dev/vda15            0      0       0     - /boot/efi
+tmpfs            100247     32  100215    1% /run/user/1000
+-- biggest dirs in home --
+4.0K    /home/deploy/.cache
+12K     /home/deploy/jidokaacumen
+16K     /home/deploy/.ssh
+580K    /home/deploy/.docker
+663M    /home/deploy
+663M    /home/deploy/pathointern
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$   echo "########## 5. LOAD / PRESSURE (is anything actually starved?) ##########"
+  vmstat 1 5
+  echo "-- PSI: any nonzero 'avg' = a REAL bottleneck --"
+  for p in cpu memory io; do echo "[$p]"; cat /proc/pressure/$p 2>/dev/null; done
+  echo "-- top 12 by MEM --"; ps aux --sort=-%mem | head -13
+  echo "-- top 12 by CPU --"; ps aux --sort=-%cpu | head -13
+########## 5. LOAD / PRESSURE (is anything actually starved?) ##########
+procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu
+ 1  0  43480 259844 121756 1701404    0    0     7    24  197    1  1  0 99  0  0  0
+ 0  0  43480 259844 121756 1701496    0    0     0     0  157  205  0  0 100  0  0  0
+ 0  0  43480 259844 121756 1701496    0    0     0     0  134  185  0  1 100  0  0  0
+ 0  0  43480 259844 121756 1701496    0    0     0     0  103  186  1  0 100  0  0  0
+ 0  0  43480 259844 121756 1701496    0    0     0     0  101  170  0  0 100  0  0  0
+-- PSI: any nonzero 'avg' = a REAL bottleneck --
+[cpu]
+some avg10=0.08 avg60=0.17 avg300=0.13 total=35212253320
+full avg10=0.00 avg60=0.00 avg300=0.00 total=0
+[memory]
+some avg10=0.00 avg60=0.00 avg300=0.00 total=35912666
+full avg10=0.00 avg60=0.00 avg300=0.00 total=29200694
+[io]
+some avg10=0.00 avg60=0.22 avg300=0.10 total=2644964650
+full avg10=0.00 avg60=0.22 avg300=0.10 total=2375873016
+-- top 12 by MEM --
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root     1142951  0.2 40.4 6278392 1621500 ?     Ssl  Jul18  11:56 /usr/local/bin/python3.11 /usr/local/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1
+root     1143129  0.0  4.0 53743044 164404 ?     Sl   Jul18   2:03 next-server (v14.2.3)
+do-agent 1143149  0.0  3.7 225492 150736 ?       Ss   Jul18   0:00 postgres: pathointern pathointern_qa 172.18.0.3(36092) idle
+root     2242556  0.0  2.1 132464 87568 ?        S<s  Jun11   4:45 /usr/lib/systemd/systemd-journald
+root        1024  0.1  1.7 2609552 71788 ?       Ssl  Apr18 224:45 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+root     1898409  0.0  1.0 479328 42756 ?        Ssl  19:30   0:00 /usr/libexec/fwupd/fwupd
+root         906  0.1  0.8 2021308 33856 ?       Ssl  Apr18 166:28 /usr/bin/containerd
+root     2049753  0.0  0.6 288952 27292 ?        SLsl Jun10   7:53 /sbin/multipathd -d -s
+do-agent 1142820  0.0  0.6 219688 25032 ?        Ss   Jul18   1:05 postgres
+do-agent 1145555  0.0  0.6 229436 24608 ?        Ss   Jul18   0:00 postgres: pathointern pathointern_qa 172.18.0.3(36078) idle
+do-agent 1145557  0.0  0.5 229176 23412 ?        Ss   Jul18   0:00 postgres: pathointern pathointern_qa 172.18.0.3(36106) idle
+do-agent 1145556  0.0  0.5 229176 23384 ?        Ss   Jul18   0:00 postgres: pathointern pathointern_qa 172.18.0.3(36094) idle
+-- top 12 by CPU --
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+deploy   1899020  100  0.1  11320  4448 pts/1    R+   19:34   0:00 ps aux --sort=-%cpu
+root     1142951  0.2 40.4 6278392 1621500 ?     Ssl  Jul18  11:56 /usr/local/bin/python3.11 /usr/local/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1
+root        1024  0.1  1.7 2609552 71788 ?       Ssl  Apr18 224:45 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+root         906  0.1  0.8 2021308 33856 ?       Ssl  Apr18 166:28 /usr/bin/containerd
+root     1898409  0.0  1.0 479328 42756 ?        Ssl  19:30   0:00 /usr/libexec/fwupd/fwupd
+root     1142797  0.0  0.3 1235604 13256 ?       Sl   Jul18   4:39 /usr/bin/containerd-shim-runc-v2 -namespace moby -id 921111a01a355ec04dc1e9a0f24e933efaef829e2dab9a7b1848aa28a975b364 -address /run/containerd/containerd.sock
+deploy   1898581  0.0  0.1  14996  7132 ?        S    19:31   0:00 sshd: deploy@pts/1
+root     1143129  0.0  4.0 53743044 164404 ?     Sl   Jul18   2:03 next-server (v14.2.3)
+do-agent 1047964  0.0  0.3 1238616 12408 ?       Ssl  May15  29:08 /opt/digitalocean/bin/do-agent --syslog
+deploy   1898582  0.0  0.1   9060  5444 pts/1    Ss   19:31   0:00 -bash
+root          17  0.0  0.0      0     0 ?        I    Apr18  31:35 [rcu_preempt]
+do-agent 1142820  0.0  0.6 219688 25032 ?        Ss   Jul18   1:05 postgres
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$   echo "########## 6. OOM / CRASH HISTORY (sudo) ##########"
+  sudo dmesg -T 2>/dev/null | grep -iE 'oom|killed process|out of memory' | tail -20 || echo "no dmesg access / no OOM lines"
+  sudo journalctl --since '7 days ago' 2>/dev/null | grep -iE 'oom|out of memory|segfault' | tail -20 || echo "no journal access"
+########## 6. OOM / CRASH HISTORY (sudo) ##########
+[sudo] password for deploy:
+Jul 19 01:01:50 ubuntu-s-2vcpu-2gb-tor1-01 sshd[1174358]: Invalid user showroom from 45.169.200.254 port 42284
+Jul 19 01:01:50 ubuntu-s-2vcpu-2gb-tor1-01 sshd[1174358]: Disconnected from invalid user showroom 45.169.200.254 port 42284 [preauth]
+Jul 21 03:05:45 ubuntu-s-2vcpu-2gb-tor1-01 sshd[1573983]: Invalid user showroom from 221.163.5.228 port 59452
+Jul 21 03:05:45 ubuntu-s-2vcpu-2gb-tor1-01 sshd[1573983]: Disconnected from invalid user showroom 221.163.5.228 port 59452 [preauth]
+Jul 22 17:01:42 ubuntu-s-2vcpu-2gb-tor1-01 sshd[1878456]: Invalid user zoom from 207.180.212.102 port 56640
+Jul 22 17:01:42 ubuntu-s-2vcpu-2gb-tor1-01 sshd[1878456]: Disconnected from invalid user zoom 207.180.212.102 port 56640 [preauth]
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$   echo "########## 7. WHAT'S RUNNING ##########"
+  echo "-- docker --"; command -v docker >/dev/null && { docker ps -a; echo; docker stats --no-stream; } || echo "no docker"
+  echo "-- app-ish services --"; systemctl list-units --type=service --state=running 2>/dev/null | grep -iE
+  'pill|brain|uvicorn|gunicorn|node|nginx|ollama|paddle' || echo "none matched"
+  echo "-- listening ports --"; sudo ss -tlnp 2>/dev/null || ss -tln
+  echo "-- python/node/ollama procs --"; ps aux | grep -iE 'python|uvicorn|gunicorn|node|ollama' | grep -v grep
+########## 7. WHAT'S RUNNING ##########
+-- docker --
+CONTAINER ID   IMAGE                    COMMAND                  CREATED      STATUS                PORTS                                         NAMES
+93d6c31b6e68   qa-frontend              "docker-entrypoint.s…"   3 days ago   Up 3 days             0.0.0.0:3100->3000/tcp, [::]:3100->3000/tcp   pathointern-qa-frontend
+e05997dadc3e   qa-backend               "uvicorn app.main:ap…"   3 days ago   Up 3 days             0.0.0.0:8100->8000/tcp, [::]:8100->8000/tcp   pathointern-qa-backend
+921111a01a35   pgvector/pgvector:pg15   "docker-entrypoint.s…"   3 days ago   Up 3 days (healthy)   0.0.0.0:5433->5432/tcp, [::]:5433->5432/tcp   pathointern-qa-db
+
+CONTAINER ID   NAME                      CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O       PIDS
+93d6c31b6e68   pathointern-qa-frontend   0.00%     173.9MiB / 3.824GiB   4.44%     4.92MB / 63.8MB   25.9MB / 41kB   23
+e05997dadc3e   pathointern-qa-backend    0.20%     1.482GiB / 3.824GiB   38.76%    454MB / 958kB     292MB / 482MB   20
+921111a01a35   pathointern-qa-db         0.01%     180.5MiB / 3.824GiB   4.61%     253kB / 230kB     169MB / 745kB   10
+-- app-ish services --
+Usage: grep [OPTION]... PATTERNS [FILE]...
+Try 'grep --help' for more information.
+pill|brain|uvicorn|gunicorn|node|nginx|ollama|paddle: command not found
+none matched
+-- listening ports --
+State        Recv-Q       Send-Q              Local Address:Port               Peer Address:Port       Process
+LISTEN       0            4096                127.0.0.53%lo:53                      0.0.0.0:*           users:(("systemd-resolve",pid=2242576,fd=15))
+LISTEN       0            4096                      0.0.0.0:22                      0.0.0.0:*           users:(("sshd",pid=436187,fd=3),("systemd",pid=1,fd=151))
+LISTEN       0            511                       0.0.0.0:80                      0.0.0.0:*           users:(("nginx",pid=1791011,fd=5),("nginx",pid=1791010,fd=5),("nginx",pid=1791008,fd=5))
+LISTEN       0            511                       0.0.0.0:443                     0.0.0.0:*           users:(("nginx",pid=1791011,fd=6),("nginx",pid=1791010,fd=6),("nginx",pid=1791008,fd=6))
+LISTEN       0            4096                   127.0.0.54:53                      0.0.0.0:*           users:(("systemd-resolve",pid=2242576,fd=17))
+LISTEN       0            4096                      0.0.0.0:8100                    0.0.0.0:*           users:(("docker-proxy",pid=1142981,fd=8))
+LISTEN       0            4096                      0.0.0.0:3100                    0.0.0.0:*           users:(("docker-proxy",pid=1143062,fd=8))
+LISTEN       0            4096                      0.0.0.0:5433                    0.0.0.0:*           users:(("docker-proxy",pid=1142850,fd=8))
+LISTEN       0            4096                         [::]:22                         [::]:*           users:(("sshd",pid=436187,fd=4),("systemd",pid=1,fd=152))
+LISTEN       0            4096                         [::]:8100                       [::]:*           users:(("docker-proxy",pid=1142987,fd=8))
+LISTEN       0            4096                         [::]:3100                       [::]:*           users:(("docker-proxy",pid=1143067,fd=8))
+LISTEN       0            4096                         [::]:5433                       [::]:*           users:(("docker-proxy",pid=1142855,fd=8))
+-- python/node/ollama procs --
+root         928  0.0  0.0 110012  3260 ?        Ssl  Apr18   0:00 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+root     1142951  0.2 40.4 6278392 1621500 ?     Ssl  Jul18  11:56 /usr/local/bin/python3.11 /usr/local/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$   echo "########## 8. GPU (expect none) ##########"
+  command -v nvidia-smi >/dev/null && nvidia-smi || echo "no nvidia-smi -> CPU-only droplet"
+########## 8. GPU (expect none) ##########
+no nvidia-smi -> CPU-only droplet
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$   echo "########## 9. OUR STACK FOOTPRINT ##########"
+  echo "-- big model/store files (BB3 memmap, sqlite, gguf, npy) --"
+  sudo find / -xdev -type f \( -name '*.memmap' -o -name '*.npy' -o -name '*.sqlite*' -o -name '*.db' -o -name '*.gguf' -o -name '*.bin' \) -size +50M
+  2>/dev/null -printf '%s\t%p\n' | sort -rn | head -20
+  echo "-- ollama models --"; command -v ollama >/dev/null && ollama list || echo "no ollama"
+  echo "-- nginx sites --"; ls -1 /etc/nginx/sites-enabled/ 2>/dev/null
+########## 9. OUR STACK FOOTPRINT ##########
+-- big model/store files (BB3 memmap, sqlite, gguf, npy) --
+/var/cache/apt/srcpkgcache.bin
+/var/cache/apt/pkgcache.bin
+-- ollama models --
+no ollama
+-- nginx sites --
+jidokaacumen
+pathointern
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$   echo "########## 10. RESOURCE HISTORY (if sysstat present) ##########"
+  command -v sar >/dev/null && { echo '-- mem --'; sar -r 2>/dev/null | tail -8; echo '-- cpu --'; sar -u 2>/dev/null | tail -8; } || echo "sar not
+  installed (optional: apt install sysstat, gives history next time)"
+  echo "########## DONE ##########"
+########## 10. RESOURCE HISTORY (if sysstat present) ##########
+-- mem --
+18:30:13       381056   1628312   1806160     45.04     94532   1279736   4742620     57.81   1265376   1804160       404
+18:40:04       379216   1634916   1799540     44.88     95752   1286980   4694960     57.23   1268824   1810628       232
+18:50:05       379648   1635484   1798964     44.86     95840   1287032   4695016     57.23   1268400   1810764       240
+19:00:02       378644   1634568   1799876     44.89     95888   1287064   4695016     57.23   1268652   1810844       200
+19:10:08       357024   1613180   1821264     45.42     95956   1287244   4698268     57.27   1270596   1810952       352
+19:20:07       369176   1625408   1809044     45.11     95992   1287280   4698268     57.27   1270684   1811028       284
+19:30:10       376484   1632780   1801688     44.93     96020   1287320   4695064     57.23   1269212   1811092       212
+Average:       367598   1656708   1792050     44.69     99928   1297656   4764882     58.08   1431876   1643433       224
+-- cpu --
+18:30:13        all      0.66      0.00      0.36      0.01      0.07     98.90
+18:40:04        all      0.72      0.00      0.39      0.03      0.13     98.73
+18:50:05        all      0.63      0.00      0.35      0.01      0.12     98.88
+19:00:02        all      0.64      0.00      0.35      0.01      0.18     98.82
+19:10:08        all      0.65      0.00      0.36      0.01      0.26     98.72
+19:20:07        all      0.63      0.00      0.35      0.01      0.11     98.90
+19:30:10        all      0.61      0.00      0.34      0.01      0.09     98.95
+Average:        all      0.70      0.02      0.37      0.02      0.15     98.74
+########## DONE ##########
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$ 

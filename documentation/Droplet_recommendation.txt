@@ -1,0 +1,157 @@
+● Report read. There's a headline finding that reframes the whole question, so let me lead with it.
+
+  The big finding: PillSafe isn't on this droplet.
+
+  You answered "not sure — let the output show it." It showed it. This box (134.122.34.26, tor1) is running two other projects, and zero PillSafe:
+
+  ┌─────────────────────────────────────────────────────────────────────────────┬──────────────────────┬───────────────────────────────────────────────┐
+  │                           What's actually running                           │        Where         │                      RAM                      │
+  ├─────────────────────────────────────────────────────────────────────────────┼──────────────────────┼───────────────────────────────────────────────┤
+  │ JidokaAcumen — bare-metal uvicorn app.main:app :8000 (as root, 1 worker) +  │ nginx site           │ 1.62 GB RSS (the single biggest process)      │
+  │ next-server v14.2.3                                                         │ jidokaacumen         │                                               │
+  ├─────────────────────────────────────────────────────────────────────────────┼──────────────────────┼───────────────────────────────────────────────┤
+  │ PathoIntern QA — 3 Docker containers (qa-frontend :3100, qa-backend :8100,  │ nginx site           │ backend 1.48 GB, +0.35 GB                     │
+  │ pgvector db :5433)                                                          │ pathointern          │                                               │
+  ├─────────────────────────────────────────────────────────────────────────────┼──────────────────────┼───────────────────────────────────────────────┤
+  │ PillSafe / brains / PaddleOCR / Ollama / BB3 memmap                         │ —                    │ nothing — §9 found no model files, §7 no      │
+  │                                                                             │                      │ PillSafe process                              │
+  └─────────────────────────────────────────────────────────────────────────────┴──────────────────────┴───────────────────────────────────────────────┘
+
+  So "do I need to upscale?" isn't really the question yet. The real question is where PillSafe goes — and whether it can share this box.
+
+  The box itself: healthy, and it's a 4 GB / 2 vCPU (not 2 GB)
+
+  The hostname ...-2vcpu-2gb-... is its birth slug — free is authoritative and reports 4 GB, with an 80 GB disk. So it was resized up at some point. Live
+  spec: 2 vCPU / 4 GB RAM / 4 GB swap / 80 GB disk, tor1.
+
+Health for its current two tenants is all green — no upscale needed for what's on it today:
+  - Memory pressure = zero. PSI memory some avg10/60/300 = 0.00 (35.9s of pressure total across 95 days uptime). Not a hint of starvation.
+  - RAM: 2.3 GB used, 1.5 GB available, swap 42 MB / 4 GB (1%). Flat as a table for the last hour (sar).
+  - CPU: load 0.00, 98.7% idle. Practically asleep.
+  - Disk: 60% used, 31 GB free. Inodes 5%.
+  - No OOM history (the dmesg/journal hits were just SSH brute-force noise — internet background radiation).
+
+  The actual question: can PillSafe co-tenant here?
+
+  Your real budget for anything new is that 1.5 GB of available RAM and 31 GB disk. Against PillSafe's measured footprint:
+
+  - App-only (FastAPI backend + SQLite + static frontend via nginx): ~300–500 MB. ✅ Fits. But pill-scan and Q&A would be dead — a hollow demo that can't
+  show the five brains, which are the capstone.
+
+- App + brains (the real demo): torch-CPU (~1.5–2 GB) + PaddleOCR as a separate subprocess (~1–1.5 GB, and our measured ~2m21s per Rx label on CPU) +
+  BB3's query embedder + the 3.9M-chunk float32 memmap (~6–12 GB on disk depending on embedding dim — the one number to confirm from the file on your dev
+  box). Realistic peak ~4–6 GB RAM + 6–12 GB disk. ❌ Does not fit in 1.5 GB free — it would swap hard and could OOM-kill JAcI's live site or PathoIntern QA
+  mid-presentation. The memmap is the killer: exact search touches all of it per query, so you want it mostly in page cache, which a 4 GB box can't spare.
+
+  My read (evidence-backed)
+
+  1. This droplet needs no upscale for its current job — it's over-provisioned for JAcI + PathoIntern QA as-is.
+  2. You cannot run the full PillSafe brains on it without either starving it or resizing it substantially — and co-tenanting three projects (two of them
+  heavy Python backends) puts a live JAcI site in the blast radius of a capstone demo. I'd advise against that on principle.
+  3. For a demo that actually scans a pill and answers a question, PillSafe wants its own box sized for CPU brains — realistically 8 GB RAM minimum
+  (memory-optimized if the memmap is 768-dim). And regardless of RAM, the ~2 min CPU OCR is a demo-UX problem you design around (pre-warm the models, raise
+  the proxy timeout, or use a pre-staged scan), not something a bigger box fixes.
+
+  Before I turn this into the written prework, one decision genuinely branches the sizing recommendation — how the demo shows the brains:
+
+User answered Claude's questions:
+  ⎿  · For the capstone demo, how should PillSafe's brains (pill-scan + Q&A) actually run? This decides the sizing recommendation. → Resize & co-tenant here
+
+● Noted — one box, resize and co-tenant. That's your call to make, and it's defensible for a capstone as long as we do it with guardrails so a PillSafe
+  hiccup can't take JAcI's live site down with it. Let me size the resize precisely instead of hand-waving — the swing factor is the BB3 memmap's real size,
+  and I can measure that directly from the package on this machine rather than making you go look.
+
+  Searched for 2 patterns, listed 1 directory
+
+● 384 dimensions → 6.01 GB memmap (embeddings.f32, per the export log). That's the small case — good. Let me get the exact on-disk sizes of the two BB3
+  stores plus the app's own footprint so the disk math is real.
+
+  Listed 1 directory
+
+● Swing factor resolved — and it's the friendly case. Here are the measured PillSafe numbers (not estimates):
+
+  ┌────────────────────────────────────────────────────────────────────────────────────┬──────────────┐
+  │                              BB3 / PillSafe artifact                               │ On-disk size │
+  ├────────────────────────────────────────────────────────────────────────────────────┼──────────────┤
+  │ embeddings.f32 memmap (3,915,457 × 384-dim float32)                                │ 6.01 GB      │
+  ├────────────────────────────────────────────────────────────────────────────────────┼──────────────┤
+  │ bb3.db (SQLite FTS5 + products)                                                    │ 2.65 GB      │
+  ├────────────────────────────────────────────────────────────────────────────────────┼──────────────┤
+  │ Brains sidecar venv (CPU torch + paddle + sklearn/skimage + sentence-transformers) │ ~3–4 GB      │
+  ├────────────────────────────────────────────────────────────────────────────────────┼──────────────┤
+  │ IMB1_v0 weights + code                                                             │ 0.19 GB      │
+  ├────────────────────────────────────────────────────────────────────────────────────┼──────────────┤
+  │ App backend (venv + code + SQLite + Rx uploads)                                    │ 0.68 GB      │
+  ├────────────────────────────────────────────────────────────────────────────────────┼──────────────┤
+  │ PillSafe total disk                                                                │ ~13–14 GB    │
+  └────────────────────────────────────────────────────────────────────────────────────┴──────────────┘
+
+  Disk verdict: no resize needed for disk
+
+  You have 31 GB free on the 80 GB volume. PillSafe wants ~14 GB → fits with ~17 GB to spare. Disk is not a reason to resize. (Nice side effect: the 384-dim
+  memmap is 6 GB, not the 12 GB a 768-dim model would've cost.)
+
+  RAM verdict: this is the real driver — resize to 16 GB
+RAM is the whole story, because the 6 GB memmap wants to live in page cache for Q&A to feel instant, and PaddleOCR + torch spike during a scan. The budget
+  on one shared box:
+
+  ┌─────────────────────────────────────────────────────────────────────────┬──────────────┐
+  │                                Consumer                                 │     RAM      │
+  ├─────────────────────────────────────────────────────────────────────────┼──────────────┤
+  │ Existing tenants (JAcI uvicorn + PathoIntern QA), under light demo load │ ~3.0 GB      │
+  ├─────────────────────────────────────────────────────────────────────────┼──────────────┤
+  │ PillSafe app backend                                                    │ ~0.4 GB      │
+  ├─────────────────────────────────────────────────────────────────────────┼──────────────┤
+  │ BB3: 384-dim embedder + 6 GB memmap kept resident                       │ ~6.5 GB      │
+  ├─────────────────────────────────────────────────────────────────────────┼──────────────┤
+  │ IMB1 (FastSAM+ResNet) + PaddleOCR subprocess, during a scan             │ ~2.5 GB peak │
+  ├─────────────────────────────────────────────────────────────────────────┼──────────────┤
+  │ Warm peak (memmap cached + a scan in flight)                            │ ~12.5 GB     │
+  └─────────────────────────────────────────────────────────────────────────┴──────────────┘
+
+  - 16 GB → recommended. ~12.5 GB peak leaves ~3.5 GB headroom for spikes and PathoIntern load; memmap stays cached → fast Q&A; no swap thrash. This is the
+  reliable-under-a-live-demo pick.
+  - 8 GB → the frugal floor, but fragile. Only works if you don't keep the memmap cached (it pages from disk → first Q&A is slow, seconds) and demo the
+  brains strictly sequentially. On a 4 GB box today it simply won't fit (3 + 9.5 peak ≫ 4 → swap storm, OOM risk). I wouldn't stake a presentation on it.
+
+  Your current box is 4 GB / 2 vCPU (free reports 4 GB — the -2gb- hostname is just its birth slug; it was resized up once already). It's 98.7% idle with
+  zero memory pressure today, so the two current tenants aren't the problem — PillSafe is simply a third, heavier tenant that doubles the RAM demand.
+
+  Guardrails — the price of co-tenancy done safely
+
+  You accepted the blast-radius risk. Here's what neutralizes it (the first one is non-negotiable):
+
+  1. Cap PillSafe with a cgroup memory limit. Run the brains sidecar (ideally the app backend too) in Docker with --memory=10g (or a systemd MemoryMax=).
+  PathoIntern is already containerized/isolated; JAcI is bare-metal uvicorn as root with no limit — it's the exposed neighbor. A cap means if PillSafe
+  balloons, the OOM killer takes PillSafe's cgroup, not JAcI's live site. This is what turns "could kill JAcI mid-demo" into "PillSafe degrades, neighbors
+  survive."
+  2. Pre-warm before you present. One throwaway pill scan + one throwaway Q&A minutes before → loads torch/paddle models and pages the 6 GB memmap into
+  cache. Cold-start is where the ~2m21s CPU OCR and memmap paging bite.
+
+  3. Confirm the app→sidecar timeout clears the OCR time (the proxy is httpx 180s; 2m21s fits, but verify — or use a pre-staged scan on stage).
+  4. Bump swap to ~8 GB as an OOM backstop (safety net, not a place to run the memmap).
+  5. Do the pending reboot + 27 apt updates (1 security) now, not near demo day. The report shows *** System restart required ***. A DO resize powers the
+  droplet off anyway → fold the reboot into the resize, scheduled away from live JAcI traffic.
+
+  Resize mechanics (and the cost-smart move)
+
+  - Use "Resize CPU and RAM only" (reversible, keeps your 80 GB disk — which is fine, disk isn't the constraint). Avoid the permanent disk-grow resize; you
+  don't need it.
+  - Resize requires a brief power-off → short downtime for JAcI + PathoIntern. Schedule it.
+  - DO bills hourly, and a capstone is a bounded event: scale up to 16 GB for the demo window, scale back to 4 GB after. The delta is only a few dollars a
+  day (confirm current pricing in the DO panel). Reversible RAM-only resize makes this trivial.
+  - The 16 GB tier also brings more vCPU, which helps the OCR latency (PaddleOCR threads) but won't erase it — that's still a design-around
+  (pre-warm/stage), not a hardware fix.
+
+  One-line hygiene note
+
+  The journal showed SSH brute-force probes (invalid users showroom/zoom on port 22 open to the world) — normal internet noise, but fail2ban + key-only auth
+  is cheap insurance, and JAcI running as root is a smell worth fixing independent of PillSafe. Out of scope for the sizing call; flagging it because I saw
+  it.
+
+  ---
+  Bottom line: don't touch disk; reversible RAM-only resize 4 GB → 16 GB, run PillSafe's brains in a memory-capped container, pre-warm before the demo, and
+  scale back down afterward. That makes your one-box co-tenancy choice both feasible and demo-safe.
+
+  Want me to write this up as the deployment prework doc now (I'd drop it in documentation/ alongside the report), or hold until you've had a chance to
+  react to the sizing?

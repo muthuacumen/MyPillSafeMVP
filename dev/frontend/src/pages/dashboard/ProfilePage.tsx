@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Pencil, Pill, ScanLine, Calendar, KeyRound, HeartHandshake, Settings2, Globe, Bell, BellOff, Volume2, VolumeX } from 'lucide-react';
+import { Pencil, Pill, Calendar, KeyRound, HeartHandshake, Settings2, Globe, Bell, BellOff, Volume2, VolumeX } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -134,16 +134,19 @@ export default function ProfilePage() {
         </div>
       </Card>
 
-      {/* Medication summary */}
+      {/* Medication summary -- the "Medications Analyzed" card was removed
+          (Phase 6): that field was only ever incremented by the deleted
+          legacy /analyze demo stub, so it read as a fabricated, frozen
+          stat. The DB column/API field stay (no migration), just not
+          displayed. */}
       <div>
         <SectionHeader>Medication Summary</SectionHeader>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-3">
-          <StatCard label="Medications Analyzed" value={String(patient.medications_analyzed)} icon={<ScanLine className="h-5 w-5" strokeWidth={1.8} />} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
           <StatCard
             label="Active Prescriptions"
             value={String(activeCount)}
             icon={<Pill className="h-5 w-5" strokeWidth={1.8} />}
-            iconBg="bg-blue-50 text-blue-600"
+            iconBg="bg-navy/10 text-navy"
           />
           <StatCard
             label="Last Scan"

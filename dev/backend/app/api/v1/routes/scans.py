@@ -52,6 +52,13 @@ async def list_my_scans(
     records: list[ScanRecord] = []
     for row in analyses:
         drug_name = (row.label_info or {}).get("drug_name")
+        # Pill-v2 verify rows never populate label_info (that's the legacy
+        # /analyze demo-stub's field) -- their product identity lives in
+        # matched_din, already persisted on the scan row (routes/pill.py).
+        # The product NAME isn't persisted (only the score/breakdown are),
+        # so fall back to showing the DIN itself rather than "Unknown".
+        if not drug_name and row.decision == "verify" and row.matched_din:
+            drug_name = f"DIN {row.matched_din}"
         is_pill_v2_row = row.decision is not None or row.detected is not None
 
         if row.decision is not None:

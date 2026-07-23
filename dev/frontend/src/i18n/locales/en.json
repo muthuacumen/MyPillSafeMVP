@@ -17,19 +17,28 @@
   },
   "nav": {
     "dashboard": "Dashboard",
-    "analyze": "Analyze Medication",
+    "scanRx": "Scan Prescription",
+    "scanPill": "Scan Pill",
     "medications": "My Medications",
     "qa": "Ask about my medication",
     "profile": "My Profile",
-    "safety": "Safety Records",
-    "education": "Med Education",
+    "safety": "Scan History",
+    "education": "Help",
     "settings": "Settings",
     "adminPanel": "Admin Panel",
     "adminUsers": "User Management",
     "signOut": "Sign Out",
-    "more": "More"
+    "menu": "Menu",
+    "short": {
+      "dashboard": "Home",
+      "scanRx": "Scan Rx",
+      "scanPill": "Scan Pill",
+      "medications": "Meds",
+      "qa": "Ask"
+    }
   },
   "auth": {
+    "backHome": "Back to home",
     "login": {
       "title": "Welcome back",
       "subtitle": "Sign in to your medication dashboard",
@@ -58,9 +67,9 @@
     },
     "brand": {
       "tagline": "Medication safety, made accessible",
-      "description": "AI-powered verification for elderly, visually impaired, and non-native speaking patients. Preventing 100,000+ annual medication errors.",
-      "testimonial": "\"My mother accidentally took her morning medication twice. PillSafe would have caught that.\"",
-      "testimonialAuthor": "— Family caregiver"
+      "description": "MyPillSafe is a medication-safety assistant for seniors and Canadians with language barriers. It reads your prescription, verifies your pills from a photo, and answers medication questions in your language — and when it isn't sure, it says so.",
+      "principle": "Built to warn, designed to abstain, never to guess.",
+      "principleNote": "— the MyPillSafe design principle"
     }
   },
   "dashboard": {
@@ -68,12 +77,10 @@
     "tagline": "Your medication dashboard is ready. Upload a prescription photo to get an instant safety check.",
     "analyzeNow": "Analyze Now",
     "stats": {
-      "analyzed": "Medications Analyzed",
-      "analyzedSub": "Upload your first to start",
       "safetyScore": "Safety Score",
       "safetyScoreSub": "Scan to generate score",
-      "interactions": "Interactions Found",
-      "interactionsSub": "No alerts this session",
+      "verified": "Pills Verified",
+      "verifiedSub": "From your scan history",
       "adherence": "Adherence Streak",
       "adherenceSub": "Set up reminders to track"
     },
@@ -87,21 +94,22 @@
     "noMeds": "No medications scheduled yet",
     "open": "Open",
     "actions": {
-      "analyze": "Analyze Medication",
-      "analyzeDesc": "Upload a photo to verify your pills",
-      "safety": "Safety Records",
+      "scanRx": "Scan Prescription",
+      "scanRxDesc": "Photograph a prescription label to add it to your medications",
+      "scanPill": "Scan Pill",
+      "scanPillDesc": "Check a loose pill against your confirmed medications",
+      "medications": "My Medications",
+      "medicationsDesc": "View and manage your active prescriptions",
+      "safety": "Scan History",
       "safetyDesc": "View your verification history",
-      "education": "Medication Guide",
-      "educationDesc": "Learn about your prescriptions"
+      "education": "Help",
+      "educationDesc": "How MyPillSafe works, step by step"
     },
     "tips": {
       "routine": "Take medications at the same time each day to build a routine.",
       "crush": "Never crush or split pills without asking your pharmacist first.",
       "list": "Keep an updated medication list with you at all times."
     }
-  },
-  "search": {
-    "placeholder": "Search medications…"
   },
   "admin": {
     "dashboard": "Admin Dashboard",
@@ -118,25 +126,5 @@
     "confirmDeactivate": "Deactivate this user? They will not be able to log in.",
     "confirmDelete": "Permanently delete this user and all their data?",
     "noPatient": "No profile"
-  },
-  "analyze": {
-    "howItWorks": "How it works",
-    "howDesc": "Upload a photo of your prescription bottle or loose pills. Our AI will identify the medication, parse the label, and flag any safety concerns in under 5 seconds.",
-    "dropHere": "Drop a photo here",
-    "dropping": "Drop to upload",
-    "browse": "or click to browse — JPG, PNG, WebP",
-    "ready": "Ready to analyze",
-    "change": "Change",
-    "analyze": "Analyze",
-    "analyzing": "Analyzing…",
-    "pipeline": "Running CV + OCR + NLP pipeline",
-    "complete": "Analysis Complete",
-    "newScan": "New Scan",
-    "pillId": "Pill Identification",
-    "labelInfo": "Label Information",
-    "aiGuidance": "AI Guidance",
-    "confidence": "confidence",
-    "demoMode": "Demo mode: showing sample results. ML pipeline activates in Sprint 4.",
-    "disclaimer": "Decision support only. Always confirm with your pharmacist or physician."
   }
 }

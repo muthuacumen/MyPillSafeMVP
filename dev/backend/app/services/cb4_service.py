@@ -55,7 +55,7 @@ def cb4_enabled() -> bool:
 # this session's spec calls for. Never edits the frozen BB3 package --
 # BB3's own template stays untouched; this is the app-side CB4 equivalent.
 
-SYSTEM_PROMPT_TEMPLATE = """You are PillSafe's medication-information assistant. You are handed \
+SYSTEM_PROMPT_TEMPLATE = """You are MyPillSafe's medication-information assistant. You are handed \
 pre-retrieved SOURCE SECTIONS (DIN-scoped Canadian product monographs or generated ingredient \
 references) and a user question -- you have no independent knowledge of these products. Answer \
 using ONLY the SOURCE SECTIONS given to you -- never outside knowledge, never guesses.
@@ -80,10 +80,14 @@ demonstrated allergic-type reaction to something, your answer must preserve that
 
 Respond via the given JSON schema."""
 
-CAUTION_NOTE = ("\n\n[PillSafe note: this answer arrived without source citations and "
+CAUTION_NOTE = ("\n\n[MyPillSafe note: this answer arrived without source citations and "
                 "should be treated with extra caution.]")
 SAFE_REFUSAL = "I couldn't produce a reliable answer for this -- please ask your pharmacist."
 JSON_DEGENERACY_MSG = "Something went wrong generating this answer -- please try re-phrasing."
+CONTRADICTION_REFUSAL = (
+    "I can't confirm whether this medication is safe for you given that concern -- its "
+    "monograph lists related contraindications or warnings, so please confirm with your "
+    "pharmacist or doctor before taking it.")
 
 GUARD_CHECK_TIMEOUT_SECONDS = 20.0
 
@@ -91,6 +95,7 @@ _DEFAULT_GUARD_FLAGS = {
     "json_degenerate_retried": False,
     "entity_guard_retried": False,
     "ingredient_consistency_retried": False,
+    "polarity_contradiction_retried": False,
     "guard_refused": False,
     "structural_inconsistency": False,
 }
@@ -161,10 +166,13 @@ def _call_claude(client, system_prompt: str, packed_sources: str, question: str,
     }
 
 
-async def _check_guards(answer: str, sources_used: list[str], abstained: bool, entity_names: list[str]) -> dict:
+async def _check_guards(answer: str, sources_used: list[str], abstained: bool, entity_names: list[str],
+                        question: str | None = None, packed_context: str | None = None) -> dict:
     """POSTs the sidecar's /qa/guard (single-shot BB3 guard checks). Raises
     on failure -- guard checks are safety-critical and must never be
-    silently skipped; the route catches and returns a clean error envelope."""
+    silently skipped; the route catches and returns a clean error envelope.
+
+    question + packed_context (WP2.5) enable the claim-source polarity guard."""
     async with httpx.AsyncClient(timeout=GUARD_CHECK_TIMEOUT_SECONDS) as http_client:
         response = await http_client.post(
             f"{settings.BRAINS_SERVICE_URL}/qa/guard",
@@ -173,6 +181,8 @@ async def _check_guards(answer: str, sources_used: list[str], abstained: bool, e
                 "sources_used": sources_used,
                 "abstained": abstained,
                 "entity_names": entity_names,
+                "question": question,
+                "packed_context": packed_context,
             },
         )
         response.raise_for_status()
@@ -183,11 +193,11 @@ def _empty(parsed: dict | None) -> bool:
     return parsed is None or not (parsed.get("answer") or "").strip()
 
 
-def _refused_response(flags: dict, results: list[dict]) -> dict:
+def _refused_response(flags: dict, results: list[dict], answer: str = SAFE_REFUSAL) -> dict:
     return {
         "status": "guard_refused",
         "abstained": True,
-        "answer": SAFE_REFUSAL,
+        "answer": answer,
         "cited_tags": [],
         "priority": _priority(results, [], True, flags),
         "guard_flags": flags,
@@ -243,39 +253,64 @@ async def answer_question(
 
     parsed["sources_used"] = [t for t in parsed["sources_used"] if t in offered_tags]
 
-    for flag_name, kind in (("entity_guard_retried", "entity"), ("ingredient_consistency_retried", "ingredient")):
-        guard_result = await _check_guards(parsed["answer"], parsed["sources_used"], parsed["abstained"], entity_names)
-        offender = guard_result.get("entity_violation") if kind == "entity" else guard_result.get("ingredient_violation")
+    # Guard key / corrective / hard-refusal message per violation kind. Polarity (WP2.5,
+    # F9-11 celecoxib) gets its own corrective + CONTRADICTION_REFUSAL; mirrors
+    # bb3.guards.check_and_fix.
+    def _corrective(kind: str, offender: str) -> str:
+        if kind == "polarity":
+            return (f"Your previous draft affirmed that the medication is safe with respect to "
+                    f"'{offender}', but a CONTRAINDICATIONS or WARNINGS section in your sources "
+                    f"names '{offender}'. Do NOT tell the user it is safe or that they can take "
+                    f"it. State what the contraindication/warning says and tell them to confirm "
+                    f"with their pharmacist or doctor. Never give a yes/no safety verdict.")
+        return (f"Your previous draft mentioned {offender}, which is not among the "
+                f"user's medication or your sources -- answer strictly about "
+                f"{', '.join(entity_names) or 'the cited sources'}.")
+
+    guard_loop = (
+        ("entity_guard_retried", "entity", "entity_violation", SAFE_REFUSAL),
+        ("ingredient_consistency_retried", "ingredient", "ingredient_violation", SAFE_REFUSAL),
+        ("polarity_contradiction_retried", "polarity", "polarity_violation", CONTRADICTION_REFUSAL),
+    )
+    for flag_name, kind, result_key, refusal in guard_loop:
+        guard_result = await _check_guards(
+            parsed["answer"], parsed["sources_used"], parsed["abstained"], entity_names,
+            question, packed_sources)
+        offender = guard_result.get(result_key)
         if not offender:
             continue
 
         flags[flag_name] = True
-        corrective = (f"Your previous draft mentioned {offender}, which is not among the "
-                      f"user's medication or your sources -- answer strictly about "
-                      f"{', '.join(entity_names) or 'the cited sources'}.")
-        retried = await generate(corrective)
+        retried = await generate(_corrective(kind, offender))
         if _empty(retried):
             flags["guard_refused"] = True
-            return _refused_response(flags, sources)
+            return _refused_response(flags, sources, refusal)
 
         retried["sources_used"] = [t for t in retried["sources_used"] if t in offered_tags]
-        recheck = await _check_guards(retried["answer"], retried["sources_used"], retried["abstained"], entity_names)
-        still_offending = recheck.get("entity_violation") if kind == "entity" else recheck.get("ingredient_violation")
-        if still_offending:
+        recheck = await _check_guards(
+            retried["answer"], retried["sources_used"], retried["abstained"], entity_names,
+            question, packed_sources)
+        if recheck.get(result_key):
             flags["guard_refused"] = True
-            return _refused_response(flags, sources)
+            return _refused_response(flags, sources, refusal)
 
         parsed = retried
 
     # Structural abstention check on the final parsed answer -- flags but
     # never retries (same as guards.check_and_fix / BB3Engine.chat()).
-    final_guard = await _check_guards(parsed["answer"], parsed["sources_used"], parsed["abstained"], entity_names)
+    final_guard = await _check_guards(
+        parsed["answer"], parsed["sources_used"], parsed["abstained"], entity_names,
+        question, packed_sources)
     if final_guard.get("structural_inconsistency"):
         flags["structural_inconsistency"] = True
 
     answer = parsed["answer"]
     abstained = parsed["abstained"]
     cited = parsed["sources_used"]
+    # F9-04: a substantive but UNCITED answer mislabeled abstained=true is not really an
+    # abstention -- relabel it so it earns the caution note (parity with engine.py).
+    if abstained and not cited and answer.strip() and "don't have that information" not in answer.lower():
+        abstained = False
     if not cited and not abstained:
         answer += CAUTION_NOTE
 

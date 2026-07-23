@@ -27,7 +27,7 @@ export function DisclaimerModal({ open, onAccept }: DisclaimerModalProps) {
               Important Notice
             </h2>
             <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-              PillSafe is a decision support tool only. It does not replace professional
+              MyPillSafe is a decision support tool only. It does not replace professional
               medical advice. Always confirm medication information with a licensed
               pharmacist or physician before taking any medication.
             </p>

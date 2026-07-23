@@ -14,6 +14,20 @@ client.interceptors.request.use((config) => {
 
 let refreshPromise: Promise<string> | null = null;
 
+// Requests to these endpoints must never trigger the refresh-retry-and-redirect
+// flow below: a failed /auth/login or /auth/register is a normal form-validation
+// outcome the page needs to render inline (LoginPage renders `serverError` from
+// the rejection), not a session expiry. A hard `window.location.href` redirect
+// on a wrong-password attempt destroys the form's error state before the user
+// ever sees it. /auth/refresh itself is excluded too, so a failed refresh can't
+// try to refresh-and-retry itself.
+const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh'];
+
+function isAuthEndpoint(url?: string): boolean {
+  if (!url) return false;
+  return AUTH_ENDPOINTS.some((path) => url.includes(path));
+}
+
 function refreshAccessToken(): Promise<string> {
   if (!refreshPromise) {
     const apiBase = import.meta.env.VITE_API_URL ?? '/api/v1';
@@ -34,7 +48,7 @@ client.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
-    if (error.response?.status === 401 && !original._retry) {
+    if (error.response?.status === 401 && !original._retry && !isAuthEndpoint(original?.url)) {
       original._retry = true;
       try {
         // Several requests can hit a just-expired token at once (e.g. the

@@ -189,16 +189,17 @@ async def test_pill_v2_requires_auth(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_legacy_pill_endpoint_removed(client: AsyncClient, auth_headers: dict):
-    """The pre-v2 OpenCV pill-analyze endpoint no longer exists at all. POST
-    /analyze/pill now falls through to analyze.py's generic GET-only
-    `/{analysis_id}` route (path matches, method doesn't) -- 405, not 404 --
-    which itself confirms no POST handler for this path exists anymore."""
+    """The pre-v2 OpenCV pill-analyze endpoint no longer exists at all, and
+    (legacy cleanup) the `/analyze` demo-stub router that used to own
+    `/{analysis_id}` under this prefix was removed entirely -- POST
+    /analyze/pill no longer matches any registered route, so it 404s rather
+    than the old 405 (path-matches-but-wrong-method)."""
     response = await client.post(
         "/api/v1/analyze/pill",
         headers=auth_headers,
         files={"image": ("pill.jpg", b"fake-bytes", "image/jpeg")},
     )
-    assert response.status_code == 405
+    assert response.status_code == 404
 
 
 # --- empty-profile short-circuit ---------------------------------------------

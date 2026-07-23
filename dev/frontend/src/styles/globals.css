@@ -38,6 +38,16 @@
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-teal-500;
   }
+
+  /* Phase 5 -- teal focus-visible ring as a sane default for plain
+     interactive elements (links/buttons) that don't already carry an
+     explicit focus:ring-* utility. Existing components with their own
+     focus:ring classes are unaffected (the outline simply layers behind
+     their ring, both teal, no visual conflict). */
+  :focus-visible {
+    outline: 2px solid #2A9D8F;
+    outline-offset: 2px;
+  }
 }
 
 @layer components {
@@ -133,21 +143,24 @@
   }
 
   /* ── Time-of-day slot badges (Priority 1E) ── */
+  /* Phase 6 palette sweep: the four "-night" rules below were indigo
+     (off the Phase 5 navy/teal system) -- moved onto the navy brand
+     token. Decision-surface colours (success/warning/danger) untouched. */
   .slot-badge-morning   { @apply bg-amber-100 text-amber-900 border border-amber-300; }
   .slot-badge-afternoon { @apply bg-orange-100 text-orange-900 border border-orange-300; }
   .slot-badge-evening   { @apply bg-rose-100 text-rose-900 border border-rose-300; }
-  .slot-badge-night     { @apply bg-indigo-100 text-indigo-900 border border-indigo-300; }
+  .slot-badge-night     { @apply bg-navy/10 text-navy border border-navy/30; }
 
   /* ── Larger schedule-row variants (Dashboard "Today's Schedule") ── */
   .schedule-badge-morning   { @apply bg-amber-100 text-amber-900 border border-amber-300; }
   .schedule-badge-afternoon { @apply bg-orange-100 text-orange-900 border border-orange-300; }
   .schedule-badge-evening   { @apply bg-rose-100 text-rose-900 border border-rose-300; }
-  .schedule-badge-night     { @apply bg-indigo-100 text-indigo-900 border border-indigo-300; }
+  .schedule-badge-night     { @apply bg-navy/10 text-navy border border-navy/30; }
 
   .schedule-row-morning   { @apply bg-amber-50/60 border-amber-200; }
   .schedule-row-afternoon { @apply bg-orange-50/60 border-orange-200; }
   .schedule-row-evening   { @apply bg-rose-50/60 border-rose-200; }
-  .schedule-row-night     { @apply bg-indigo-50/60 border-indigo-200; }
+  .schedule-row-night     { @apply bg-navy/5 border-navy/20; }
 }
 
 @layer utilities {
@@ -156,7 +169,7 @@
   }
 
   .glow-teal {
-    box-shadow: 0 0 20px rgba(11, 138, 134, 0.35);
+    box-shadow: 0 0 20px rgba(42, 157, 143, 0.35);
   }
 
   /* Subtle dot-grid backdrop for the auth pages' form panel */
@@ -164,5 +177,20 @@
     background-color: #f8fafc;
     background-image: radial-gradient(circle, rgba(148, 163, 184, 0.35) 1px, transparent 1px);
     background-size: 24px 24px;
+  }
+
+  /* Phase 5 (PathoIntern niceties) -- opt-in card hover lift for the new
+     public marketing/about pages (step cards, tier cards, citation cards).
+     Deliberately NOT applied to the base `.card` class -- that would alter
+     PillResultPanel's decision surfaces and every dashboard card app-wide,
+     which is out of scope / frozen (Phase 3 decision colours). */
+  .card-hover {
+    @apply transition-all duration-200 hover:-translate-y-1 hover:shadow-lg;
+  }
+
+  /* Page-level fade-in for newly mounted public pages (in addition to the
+     existing .page-enter slide-up used across the dashboard). */
+  .page-fade-in {
+    @apply animate-fade-in;
   }
 }

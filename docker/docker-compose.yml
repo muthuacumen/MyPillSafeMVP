@@ -64,6 +64,31 @@ services:
       POSTGRES_HOST: postgres
       REDIS_HOST: redis
       APP_ENV: ${APP_ENV:-development}
+      # ── Brains sidecar (Phase 6 packaging) ───────────────────────────────
+      # The brains sidecar (dev/brains/) is DELIBERATELY NOT containerized
+      # here, for three reasons:
+      #   1. It needs the HOST's GPU/CUDA (RTX 4060) — IMB1's vision models
+      #      and BB3's local-7B fallback are not meant to run on CPU-only or
+      #      inside a container without GPU passthrough plumbing.
+      #   2. It imports the three FROZEN sibling packages (IMB1_v0/SB2/BB3)
+      #      that live OUTSIDE this repo (`D:\Projects\PillSafe\{...}`) —
+      #      they are not part of the build context and must never be copied
+      #      into an image (see the Builder Briefing: frozen packages).
+      #   3. BB3's reference store is a multi-GB SQLite + float32 memmap —
+      #      baking that into an image (or even a bind mount) is the wrong
+      #      shape for a container; it stays a host-run process.
+      # So: run `dev/brains` directly on the host (see LOCAL_TESTING.md /
+      # `make brains`) on port 8100, and point the containerized backend at
+      # it via Docker's special host gateway DNS name instead of
+      # 127.0.0.1 (which inside a container means the container itself, not
+      # the host machine running the sidecar).
+      BRAINS_SERVICE_URL: http://host.docker.internal:8100
+      PILL_V2_ENABLED: ${PILL_V2_ENABLED:-true}
+    extra_hosts:
+      # Resolves host.docker.internal -> the host's gateway IP. Needed on
+      # Linux Docker Engine (Docker Desktop on Windows/Mac already provides
+      # this DNS name without it, but the mapping is harmless there too).
+      - "host.docker.internal:host-gateway"
     depends_on:
       postgres:
         condition: service_healthy

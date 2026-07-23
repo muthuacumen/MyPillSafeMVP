@@ -3,13 +3,14 @@ import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ShieldCheck, Mail, Pill, ScanLine, Activity, Lock } from 'lucide-react';
+import { ShieldCheck, Mail, ScanLine, Activity, Lock, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/Input';
 import { PasswordField } from '@/components/ui/PasswordField';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
+import { Logo } from '@/components/ui/Logo';
 import { useAuth } from '@/hooks/useAuth';
 
 const schema = z.object({
@@ -42,9 +43,9 @@ export default function LoginPage() {
   };
 
   const features = [
-    { icon: ScanLine, key: 'feature1', title: 'Visual Pill Verification', desc: 'AI identifies pills by color, shape, and imprint' },
-    { icon: Activity, key: 'feature2', title: 'Drug Interaction Checker', desc: 'Flags dangerous combinations automatically' },
-    { icon: ShieldCheck, key: 'feature3', title: 'Accessible Design', desc: '12+ languages, audio assistance, visual pictograms' },
+    { icon: ScanLine, key: 'feature1', title: 'Prescription Scanning', desc: 'Reads your prescription and builds your personal medication profile' },
+    { icon: Activity, key: 'feature2', title: 'Pill Verification', desc: 'Checks a pill photo’s colour, shape, and imprint against your profile — not the whole formulary' },
+    { icon: ShieldCheck, key: 'feature3', title: 'Cited Answers', desc: 'Medication questions answered from Health Canada monographs, with citations, in your language' },
   ];
 
   return (
@@ -55,15 +56,9 @@ export default function LoginPage() {
         <div className="absolute -bottom-40 -left-20 h-[500px] w-[500px] rounded-full bg-white/8 blur-3xl" />
 
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
-          <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-2xl bg-white/20 flex items-center justify-center">
-              <Pill className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-white">PillSafe</p>
-              <p className="text-xs text-teal-100">Medication Auditor</p>
-            </div>
-          </div>
+          <Link to="/" className="inline-flex w-fit focus-visible:ring" aria-label="Back to home">
+            <Logo onDark className="h-9" />
+          </Link>
 
           <div className="space-y-6">
             <div>
@@ -90,17 +85,17 @@ export default function LoginPage() {
             </div>
 
             <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-teal-100/60">
-              <span>🔒 Bank-level encryption</span>
+              <span>Capstone MVP</span>
               <span>·</span>
-              <span>HIPAA-aware design</span>
+              <span>Decision-support only</span>
               <span>·</span>
-              <span>No data sold, ever</span>
+              <span>Always confirm with your pharmacist</span>
             </div>
           </div>
 
           <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4">
-            <p className="text-sm text-white/90 italic">{t('auth.brand.testimonial')}</p>
-            <p className="text-xs text-teal-200 mt-2">{t('auth.brand.testimonialAuthor')}</p>
+            <p className="text-sm text-white/90 italic">{t('auth.brand.principle')}</p>
+            <p className="text-xs text-teal-200 mt-2">{t('auth.brand.principleNote')}</p>
           </div>
         </div>
       </div>
@@ -112,15 +107,20 @@ export default function LoginPage() {
 
         <div className="relative w-full max-w-md animate-fade-in">
           {/* Mobile logo */}
-          <div className="flex items-center gap-3 mb-8 lg:hidden">
-            <div className="h-10 w-10 rounded-xl bg-teal-600 flex items-center justify-center">
-              <Pill className="h-5 w-5 text-white" />
-            </div>
-            <p className="text-xl font-bold text-slate-900">PillSafe</p>
+          <div className="flex items-center mb-8 lg:hidden">
+            <Link to="/" aria-label="Back to home">
+              <Logo className="h-9" />
+            </Link>
           </div>
 
-          {/* Language switcher */}
-          <div className="flex justify-end mb-6">
+          {/* Back to home + language switcher */}
+          <div className="flex items-center justify-between mb-6">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" /> {t('auth.backHome')}
+            </Link>
             <LanguageSwitcher />
           </div>
 

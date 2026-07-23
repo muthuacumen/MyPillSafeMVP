@@ -23,7 +23,22 @@ interface PillResultPanelProps {
   onGoToPrescriptions: () => void;
 }
 
-const DISCLAIMER_CLASSES = 'flex items-start gap-1.5 text-xs text-slate-500 border-t border-slate-200 pt-3';
+// Phase 6 safety audit (PisaPillsafeFindings.md §5/§7): the result screen is
+// the moment of highest risk, and the only safety framing here used to be a
+// skippable text-xs caption. This strip is a SCOPED EXCEPTION to this file's
+// normal zero-diff rule (binding rule 1) -- it may only add this persistent,
+// non-dismissible, identically-styled strip to every result state; decision
+// colour tokens and all existing state logic/rendering are untouched.
+const STANDARD_DISCLAIMER = 'Decision support only — always confirm with your pharmacist or physician.';
+
+function SafetyStrip({ text }: { text?: string | null }) {
+  return (
+    <div className="flex items-start gap-2 rounded-xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700">
+      <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5 text-slate-500" />
+      <span>{text || STANDARD_DISCLAIMER}</span>
+    </div>
+  );
+}
 
 /** Builds the "imprint matched exactly; colour and shape matched" sentence
  * from a candidate's per-attribute breakdown (SB2 CONTRACT.md §4 -- this
@@ -115,6 +130,7 @@ export function PillResultPanel({ result, onRetake, onGoToPrescriptions }: PillR
             <li>Photograph one pill at a time</li>
           </ul>
         </Card>
+        <SafetyStrip />
         <Button variant="secondary" onClick={onRetake}>
           <RefreshCw className="h-4 w-4" /> Try Again
         </Button>
@@ -125,12 +141,7 @@ export function PillResultPanel({ result, onRetake, onGoToPrescriptions }: PillR
   const match = result.match;
   if (!match) return null;
 
-  const disclaimer = (
-    <p className={DISCLAIMER_CLASSES}>
-      <ShieldAlert className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-      {match.disclaimer}
-    </p>
-  );
+  const disclaimer = <SafetyStrip text={match.disclaimer} />;
 
   if (match.decision === 'verify') {
     const top = match.ranked_candidates[0];

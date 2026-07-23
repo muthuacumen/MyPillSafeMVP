@@ -24,6 +24,12 @@ pytest==8.3.4
 pytest-asyncio==0.24.0
 httpx==0.28.0
 
+# MyPillSafe Assistant (Phase 5) -- fuzzy KB retrieval for the public
+# project-explainer chatbot, app/services/assistant_kb.py. Lightweight
+# (pure Python + optional C extension), unlike the heavier ML deps below,
+# so it stays in the core install (render.yaml / every deploy).
+rapidfuzz==3.10.1
+
 # NOTE: PaddleOCR, OpenCV, and the Claude SDK are intentionally NOT listed
 # here — they're heavy/optional and this file is what `render.yaml` installs
 # on every deploy. See requirements-optional.txt to enable Priorities 1B/6/7.

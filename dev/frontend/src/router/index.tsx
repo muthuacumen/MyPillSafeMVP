@@ -29,6 +29,10 @@ const EducationPage = () => lazyPage(() => import('@/pages/dashboard/EducationPa
 const SettingsPage = () => lazyPage(() => import('@/pages/dashboard/SettingsPage'));
 const LandingPage = () => lazyPage(() => import('@/pages/public/LandingPage'));
 const AboutPage = () => lazyPage(() => import('@/pages/public/AboutPage'));
+const VisionPage = () => lazyPage(() => import('@/pages/public/VisionPage'));
+const ProblemPage = () => lazyPage(() => import('@/pages/public/ProblemPage'));
+const SciencePage = () => lazyPage(() => import('@/pages/public/SciencePage'));
+const TeamPage = () => lazyPage(() => import('@/pages/public/TeamPage'));
 const ContactPage = () => lazyPage(() => import('@/pages/public/ContactPage'));
 const AdminDashboardPage = () => lazyPage(() => import('@/pages/admin/AdminDashboardPage'));
 const AdminUsersPage = () => lazyPage(() => import('@/pages/admin/AdminUsersPage'));
@@ -57,6 +61,10 @@ export const router = createBrowserRouter([
     children: [
       { path: '/', element: <LandingPage /> },
       { path: '/about', element: <AboutPage /> },
+      { path: '/about/vision', element: <VisionPage /> },
+      { path: '/about/problem', element: <ProblemPage /> },
+      { path: '/about/science', element: <SciencePage /> },
+      { path: '/about/team', element: <TeamPage /> },
       { path: '/contact', element: <ContactPage /> },
     ],
   },
@@ -73,7 +81,11 @@ export const router = createBrowserRouter([
     element: <RequireAuth><AppShell /></RequireAuth>,
     children: [
       { index: true, element: <DashboardPage /> },
-      { path: 'analyze', element: <AnalyzePage /> },
+      // `/dashboard/analyze` is a legacy path (pre-split single-mode scan
+      // page) -- kept as a redirect so old links/bookmarks still resolve.
+      { path: 'analyze', element: <Navigate to="/dashboard/scan-pill" replace /> },
+      { path: 'scan-prescription', element: <AnalyzePage /> },
+      { path: 'scan-pill', element: <AnalyzePage /> },
       { path: 'medications', element: <MyMedicationsPage /> },
       { path: 'qa', element: <QAChatPage /> },
       { path: 'profile', element: <ProfilePage /> },

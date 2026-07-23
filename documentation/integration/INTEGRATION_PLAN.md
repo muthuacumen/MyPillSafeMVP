@@ -79,8 +79,8 @@ capsule, navy #1E3A5F / teal #2A9D8F). Design tokens now seed from the PathoInte
 | 2 | DIN linking at Rx-save (auto-match + confirm) | ✅ DONE | 2026-07-18 |
 | 3 | Pill-scan rewire (verify/reject/abstain UX) | ✅ DONE | 2026-07-18 |
 | 4 | BB3 Q&A page + CB4 voice | ✅ DONE (SA independently re-verified) | 2026-07-18 |
-| 5 | UI overhaul: PathoIntern design system + logo + public content chain + assistant chatbot + mobile/PWA | 🟡 PREP DONE — SA assets shipped, build NOT started (run `phase5_builder_prompt.md`) | 2026-07-18 |
-| 6 | Packaging, docs, end-to-end verification | ⬜ | |
+| 5 | UI overhaul: PathoIntern design system + logo + public content chain + assistant chatbot + mobile/PWA | ✅ DONE (SA verification passed 2026-07-19; RegisterPage must-fix executed + widened to LoginPage/locales) | 2026-07-19 |
+| 6 | Packaging, docs, end-to-end verification | ✅ DONE (SA independent verification passed 2026-07-19 — all suites, live E2E 1280+360, five review items evidenced; zero app bugs) | 2026-07-19 |
 
 ---
 
@@ -385,13 +385,13 @@ GO-PILL, MedSnap, Hanley & Lippman-Hand 1983. Dev-set metrics stay OFF public co
 - `dev/backend/app/data/assistant_kb.json` — 30-entry assistant KB (EN answers + FR question
   aliases; CB4 localizes).
 - `dev/frontend/public/{logo.svg, logo-white.svg, logo-mark.svg}` — new brand mark.
+  **(RETIRED 2026-07-19 — deleted; replaced by Muthu's own logo + the MyPillSafe rebrand, see Result.)**
 - `documentation/integration/phase5_builder_prompt.md` — the COMPLETE builder prompt +
   next-session resume steps (incl. Muthu's Journey.md-harvest directive: SA lifts intro-worthy
   material from `D:\Projects\PillSafe\Journey.md` into pack §1/§2 BEFORE spawning).
 
-**Build status:** NOT started — a Sonnet build was spawned then stopped within seconds
-(Muthu's token budget; no builder files written). Next session: follow the resume steps at the
-top of `phase5_builder_prompt.md`.
+**Build status:** BUILT 2026-07-19 by a Sonnet agent (full run; the 2026-07-18 spawn had been
+stopped within seconds on token budget with no files written). See Result below.
 
 **Verification bar:** backend pytest fully green (was 93; + new assistant tests incl. zones,
 med-redirect, rate-limit 429, voice) · `npm run type-check` + `build` clean · PWA manifest +
@@ -400,7 +400,97 @@ redirect, clarification + fallback zones, `/assistant/voice` with a generated WA
 tokens diff-clean vs HEAD · SA browser click-through at 360/1280px (landing, all 5 about
 pages, widget flows, PillResultPanel states unchanged).
 
-**Result:** _(fill in at completion)_
+**Result (2026-07-19 — BUILT; agent verification bar fully passed; SA independent verification PENDING, next session):**
+
+**Pre-build SA amendments (same session, Muthu's two AskUserQuestion calls):** Muthu supplied his
+own logo (`dev/frontend/public/MyPillSafe_Logo.png`) → (1) **app-surface rebrand to "MyPillSafe"**
+(dev packages / ADR / paper keep "PillSafe"); (2) **white rounded chip behind the logo on all dark
+surfaces** (wordmark + mark linework are navy). SA asset forensics: the PNG's "transparency" was a
+baked-in fake checkerboard (alpha=255 on 100% of pixels, generator artifact); a pure color-key was
+measured unsafe (top capsule highlight is cool, R−B ≈ −22, same signature as the checker) → cleaned
+via connected components (border-connected pale-cool → transparent, 994,008 px; enclosed → pure
+white, 2,486 px / 13 components), alpha feathered. Derived `logo.png` (653×521 lockup) +
+`logo-mark.png` (400×400 mark); source PNG untouched; three prep SVGs deleted. Content pack renamed
+(44 occurrences), assistant KB renamed (48; `"author": "PillSafe SA"` preserved; JSON validated).
+`phase5_builder_prompt.md` amended (briefing #10 brand-sweep rule, §B rewrite, maskable icon
+background navy→WHITE, brand-sweep grep added to the bar). **Note:** the KB / content pack /
+builder prompt showing as modified in `git status` (and the 3 SVG deletions) are this SA prep, NOT
+builder writes — the builder never edited them.
+
+**Agent-run verification bar — ALL PASSED (agent-reported):**
+- Backend pytest **109 passed** (was 93; +16 in new `tests/test_assistant.py`), 0 failures.
+- `npm run type-check` + `npm run build` clean; `dist/manifest.webmanifest` + `sw.js` +
+  `workbox-*.js` present (64 precached entries); icon script generated favicon-32 /
+  apple-touch-icon / pwa-192 / pwa-512 / pwa-maskable-512.
+- Live smoke (servers killed after): (a) real CB4 `/assistant/chat` "What is MyPillSafe?" →
+  `used_llm: true`, confidence 100, on-scope answer; (b) "can I take ibuprofen with warfarin?" →
+  `redirect_to_qa: true`, `used_llm: false`, no LLM call; (c) clarification zone (conf 45.45,
+  3 options) + fallback zone (conf 33.8, verbatim string); (d) System.Speech WAV "What is My Pill
+  Safe" → `/assistant/voice` → `{"text":"What is my pill safe?"}`.
+- Frozen decision tokens `success/warning/danger` byte-identical vs HEAD; `PillResultPanel.tsx`
+  **zero diff**.
+- Brand sweep: one remaining non-"MyPillSafe" occurrence = a code comment in `DashboardPage.tsx`
+  (not user-visible).
+- Nothing committed (~31 modified, ~24 untracked, 3 SA-deleted SVGs).
+
+**Builder deviations (SA-reviewed, none block verification):** teal scale redefined to derive from
+#2A9D8F + `primary`→navy remap — cascade restyle of all pre-existing pages instead of file-by-file
+rewrites (spec-permitted); custom ~70-line unit-tested sliding-window rate limiter instead of
+slowapi; **med-intent gate is keyword-broad by design** — "take"/"prendre" alone trigger it, so
+even "Does MyPillSafe remind me to take my medication?" redirects to the guarded Q&A instead of
+answering from the KB (SA accepts: the false positive errs toward the guarded path, consistent
+with abstain-over-guess; revisit only on real UX pain); camera full-bleed partial (inner
+viewfinder keeps rounded corners); app has no sidebar-collapse state so `logo-mark.png` is
+icons-only; `cb4_service.py` gained brand-name strings (app-generated text, in-scope per the
+brand-sweep rule — Phase 4 QA tests still green in the 109).
+
+**SA verification (2026-07-19) — ALL BARS PASSED; status ✅ DONE:**
+
+1. **Suites re-run by the SA:** backend pytest **109 passed** · `npm run type-check` +
+   `npm run build` clean (build re-run AFTER the must-fix edits below) · PWA artifacts in
+   `dist/` (sw.js + workbox, 64 precached entries; manifest verified clean UTF-8).
+2. **MUST-FIX executed and WIDENED** — the builder-reported RegisterPage violation was one
+   instance of a class; a full-frontend grep sweep (`100K|100,000|95%|12+|thousands|HIPAA|
+   Bank-level|Deaths prevented`) found the rest. Removed: RegisterPage stats
+   ("100K+ Deaths prevented", "95%+ Accuracy", "<5s", "12+ Languages") + "Join thousands"
+   headline + "Bank-level encryption"/"HIPAA-aware" claims; LoginPage's **nonexistent
+   "Drug Interaction Checker" feature card**, "12+ languages" claim, and same
+   encryption/HIPAA chips; `auth.brand` in **both** en.json/fr.json — "Preventing 100,000+
+   annual medication errors" and a **fabricated caregiver testimonial with fabricated
+   attribution**. Replaced with pack-compliant copy: CIHI stat tiles (1-in-4, ~5×), the
+   three-outcome + EN·FR tiles, real feature descriptions (scan/verify/cited answers),
+   "Capstone MVP · Decision-support only" chips, and the "Built to warn, designed to
+   abstain, never to guess" principle card in place of the testimonial. Remaining sweep
+   hits verified true-or-CSS (ProblemPage "thousands of candidate products" = the 7,055-DIN
+   formulary; QAChatPage `max-w-[95%]`).
+3. **Browser click-through** (Playwright driving installed Chrome, live 3-server stack,
+   360×740 AND 1280×800): 48 scripted checks — 46 PASS, 2 FAIL both traced to the SA
+   script itself (its panel locator bound to LandingPage's decorative `div.w-80` blur
+   circle instead of the widget panel; screenshots prove both flows correct — the
+   mandated-verification-finds-a-bug pattern struck the verifier again, same as Phase 4's
+   scroll false alarm). Verified: landing + all 5 about pages + AboutNav chain at both
+   widths; **no horizontal scroll on any page at 360px**; widget high zone = live CB4
+   answer (badge `High 100% · EN · 7.62s · Show sources (3)`); med-intent
+   "ibuprofen with warfarin" → redirect button (no direct answer); fallback = verbatim
+   string (`Low 33% · (fallback)`); EN/FR toggle; auth pages render the new copy (CIHI
+   tiles screenshot-confirmed at 1280); dashboard + BottomTabBar at 360 (widget bubble
+   clears it); seeded meds visible with "Linked to DIN 00013803" chip; QAChatPage intact
+   with widget hidden; AnalyzePage renders; `PillResultPanel.tsx` zero diff vs HEAD
+   (code-level, from the agent bar — decision surfaces untouched). WCAG contrast:
+   white/60·/70·/80 over navy #1E3A5F = **5.25 / 6.53 / 7.99 : 1**, all ≥ 4.5:1.
+4. **Voice round-trip re-run live:** System.Speech WAV → `POST /assistant/voice` →
+   `{"text":"What is my pill safe?"}`.
+5. **PWA:** manifest installable (name/short_name MyPillSafe, standalone, navy theme,
+   192 + 512 + maskable-512 icons); `/api/**` = NetworkOnly runtime handler **and**
+   navigateFallbackDenylist — no offline-API pretense.
+6. **Test fixtures for Muthu's independent pass:** 5 patient accounts seeded via the app's
+   own models (real login path), 3 confirmed-DIN prescriptions each = all 15 NB07 OTC
+   DINs. Credentials + launch steps + suggested flows:
+   **`documentation/integration/LOCAL_TESTING.md`** (Phase 6 folds this into the README).
+
+*Observation (pre-existing, Phase 6 polish):* the dashboard stat card **"Interactions
+Found"** implies an interaction-checker the app does not have (same class as LoginPage's
+removed feature card) — rename or remove in Phase 6.
 
 ---
 
@@ -414,10 +504,189 @@ targets, README rewrite (architecture diagram now five-brain-accurate, setup ste
 flags), `.env.example` refresh, Journey.md gets an integration chapter (SA writes, not
 Sonnet), final full-stack E2E: register → scan Rx → confirm DINs → scan pill (verify + reject
 + abstain) → ask Q&A (CB4) → records — on desktop AND a phone-sized viewport.
-**Verification bar:** all suites green (app, SB2 8/8, BB3 29/29 in sidecar venv); the E2E
-script above executed and logged in this doc.
 
-**Result:** _(fill in at completion)_
+**Muthu's verification items (added 2026-07-19, after his Phase 5 review — each must be
+checked/fixed during Phase 6):**
+1. **Science page paper links** — every paper cited in `/about/science` (Scientific
+   Foundation) must link out to the actual paper (DOI/arXiv/publisher page); verify each
+   link resolves to the correct paper (verified DOIs are in the Phase 5 Grounding block
+   above — never link an unverified citation).
+2. **Public footer** — every public page footer reads:
+   `MyPillSafe · 2026 · Muthuraj Jayakumar, Sumanth Reddy, Lohith Reddy, Ali Ozdemir,
+   Abdullah Mohammed`.
+3. **Team page roles** — `/about/team` shows each member's role WITH their tasks/
+   responsibilities outlined, at PathoIntern parity (role title + concrete task list per
+   member, not just names).
+4. **Dashboard palette drift** — the dashboard's UI colours must match the Phase 5
+   navy/teal system; the dashboard greeting header's bright-blue gradient is off-palette
+   (visible in the Phase 5 click-through screenshot `m360_dashboard.png`). Sweep the
+   dashboard pages for remaining pre-Phase-5 blues. Binding constraint unchanged:
+   `success`/`warning`/`danger` decision tokens stay byte-identical — palette fixes must
+   never touch decision surfaces (PillResultPanel etc.).
+5. **Dashboard menu re-assessment (label intuitiveness)** — Muthu's example: how would a
+   patient know **"Analyze Medication"** is where you scan a pill before taking it?
+   Revisit EVERY dashboard nav option, validate its purpose, rename to plain
+   **task-language a senior would recognize** (what the user is trying to DO, not what
+   the system does). Current inventory (en.json `nav.*` + `nav.short.*` for the
+   BottomTabBar): Dashboard/Home · **Analyze Medication/Analyze** · My Medications/Meds ·
+   Ask about my medication/**Q&A** · My Profile · **Safety Records/Records** ·
+   **Med Education** · Settings. Flagged by the SA as least self-explanatory: "Analyze
+   Medication" (candidate direction: "Check My Pill"/"Scan Pill"), "Q&A" short label
+   (the sidebar's "Ask about my medication" is the model — the short form lost the
+   meaning), "Safety Records" (it is the scan history), "Med Education". Rules:
+   renames are **label/i18n-only** (EN + FR in lockstep; never rename routes, code
+   identifiers, or API fields — Phase 5 brand-sweep precedent); keep labels short enough
+   for the 5-tab bar at 360px; decision-surface wording untouched. Verification: each
+   final label passes a naive-reader test ("would a first-time senior know what happens
+   when they tap this?") documented per label in the Phase 6 Result.
+
+(Also carried from Phase 5: rename/remove the dashboard "Interactions Found" stat card —
+implies an interaction-checker the app doesn't have.)
+
+**Verification bar:** all suites green (app, SB2 8/8, BB3 29/29 in sidecar venv); the E2E
+script above executed and logged in this doc; Muthu's four items above each verified with
+evidence (link-check output, footer screenshot, team-page screenshot, dashboard
+before/after screenshots).
+
+**Result (build session 2026-07-19 — SA verification DEFERRED to next session, Muthu's token-budget call):**
+
+**Muthu's four scope calls this session (AskUserQuestion):** (1) delete ALL legacy groups from
+the app repo root; (2) PROGRESS.md deleted (plain-language audience now served by the About
+chain + assistant); (3) cloud deploy KEPT as app-only demo (render.yaml/vercel.json stay,
+documented as brains-disabled); (4) **README = number-free** (treated as public copy —
+qualitative only; measured numbers live in Journey.md + the contracts. BINDING for future
+README edits.)
+
+**SA-side work (done this session):**
+- **Legacy purge executed** (12 items): presentation.md, sprint0-README.md, PROGRESS.md,
+  documentation/sprint0-notes.md, orchestrator.ipynb, data-collection/, training/,
+  streamlit_app.py, st_db.py, st_pages/, .streamlit/, root requirements.txt. Pre-delete
+  sweep: render.yaml/CI/Makefile reference none. Dangling refs fixed:
+  requirements-optional.txt PILLSAFE_BUILD.md comment; .gitignore `.venv-streamlit/`.
+- **README.md rewritten from scratch** — five-brain-accurate diagram + brain table, sidecar
+  run story (3 terminals), flags table matching config.py, API overview incl. sidecar
+  endpoints, docker + app-only cloud deploy section, number-free limitations, LOCAL_TESTING.md
+  linked, CI badge repointed to the real remote (muthuacumen/mypillsafe — old badge pointed at
+  a dead repo).
+- **Journey.md §12 written** (app-integration chapter, Phases 1–6 narrative + §9 status
+  pointer: #1/#2 closed, #3 gained F9-17).
+
+**Builder results (Sonnet agent; full report in its transcript, condensed here):**
+- **Item A (science links):** all 6 verified citations link out (NLM Challenge, MobileDeepPill,
+  ePillID, Few-Shot, GO-PILL, CIHI — URL+title table in builder report). MedSnap + Hanley
+  deliberately left unlinked (outside the closed VERIFIED set).
+- **Item B (footer):** exact five-name string in AppFooter.tsx.
+- **Item C (team page):** per-member "Responsibilities" task lists added, task-language only.
+- **Item D (palette):** root cause found — `lib/timeOfDay.ts` afternoon hero gradient was
+  sky/blue (screenshot was an afternoon capture); fixed + night indigo + 4 more off-palette
+  spots + 2 dead blue hex tokens (`evening`/`night`) in tailwind.config.ts. Post-fix grep of
+  dashboard pages for blue/indigo/sky: zero live occurrences. **Decision tokens byte-identical;
+  PillResultPanel.tsx zero diff (confirmed).**
+- **Item E (nav labels, EN/FR lockstep, naive-reader table in builder report):**
+  Analyze Medication→**Check My Pill** (short **Check Pill** / FR Vérifier ma pilule),
+  Q&A short→**Ask** (FR Demander), Safety Records→**Scan History** (short **History** / FR
+  Historique des scans), Med Education→**Medication Guide**; Dashboard/Home, My Medications/
+  Meds, My Profile, Settings kept. Also aligned stale `dashboard.actions.*` quick-action tiles
+  + one hardcoded English tile (deviation, accepted — same-page label consistency).
+- **Item F:** "Interactions Found" → **Pills Verified**, computed from real scan records
+  (match_status==='matched'); old keys removed, no dangling references.
+- **Item G (packaging):** docker-compose gains extra_hosts + BRAINS_SERVICE_URL=
+  host.docker.internal:8100 + 3-reason not-containerized comment (YAML validated; docker not
+  run — honest report); Makefile gains brains/backend/frontend/test-backend/seed local targets
+  (tabs verified; `make` not on PATH to dry-run); .env.example fully synced to config.py
+  (16 fields; removed dead REDIS_URL/AUTH_RATE_LIMIT/POSTGRES_*; fixed stale
+  ACCESS_TOKEN_EXPIRE_MINUTES 15→60, OCR default, LLM_MODEL→claude-haiku-4-5, CB4-accurate
+  key comment).
+- **Agent-run verification:** backend pytest **109 passed** · type-check + build clean (64
+  precached PWA entries) · EN↔FR key parity zero missing · locale/diff/grep gates above.
+- **Out-of-scope findings (builder, not fixed):** (a) `/api/v1/analyze` legacy stub
+  (hardcoded demo Metformin) still mounted — dead code, superseded by /analyze/pill/v2;
+  (b) unused `analyze.*` i18n block ("Sprint 4" copy) in both locales; (c) AppShell
+  `pageTitleKeys` missing `/dashboard/qa` (blank Topbar title; ties into a pre-existing
+  duplicate-H1 pattern on all dashboard pages).
+
+**➡ NEXT SESSION (SA independent verification — do NOT re-spawn the build):**
+1. Re-run suites: backend pytest (expect 109), frontend type-check + build, SB2 8/8 + BB3
+   29/29 in the sidecar venv (builder could not run those), sidecar /health.
+2. Full-stack E2E on the live 3-server stack per the Phase 6 spec: register → scan Rx →
+   confirm DINs → pill verify + reject + abstain → Q&A (CB4, incl. one FR answer) → Safety
+   Records ("Scan History") — desktop 1280 AND 360px viewports, screenshots.
+3. Muthu's five items, evidence each: click all 6 science links live (correct paper loads);
+   footer screenshot; team-page screenshot; dashboard after-screenshots at 360 across ≥2
+   time-of-day gradients (the fix lives in timeOfDay.ts — check afternoon specifically);
+   nav labels at 360px (5 tabs fit: Home/Check Pill/Meds/Ask/History + FR lengths in sidebar).
+4. Re-confirm: decision tokens byte-identical, PillResultPanel.tsx zero diff, tailwind
+   evening/night hex change reviewed and accepted/reverted.
+5. README (SA-written concurrently with the build) cross-checked against builder's
+   .env.example/Makefile/compose — flags table and make targets must match; ASCII-diagram
+   nav wording updated to the new labels if it grates.
+6. Rule-of-thumb sweep: no fabricated-claims regression on TeamPage task lists.
+7. On pass: flip status board to ✅ DONE, drop the "verification pending" note from
+   Journey.md §12, ADR completion entry. Decide with Muthu: delete the legacy /analyze
+   stub + dead analyze.* i18n block + fix /dashboard/qa Topbar title (5-minute items, or
+   log as post-capstone polish).
+
+**SA verification Result (2026-07-19 — ALL BARS PASSED; status flipped ✅ DONE):**
+
+1. **Suites re-run by the SA:** backend pytest **109 passed** · frontend type-check +
+   `vite build` clean (64 precached PWA entries) · SB2 **8/8** in the sidecar venv · BB3
+   **28 passed + the Ollama-gated smoke run live = 29/29** (Ollama started for the test,
+   stopped before any pill analysis per the GPU-contention constraint) · sidecar `/health`
+   ok (imb1/sb2/bb3 all true, reference_rows=7055, CUDA available).
+2. **Live E2E (Playwright driving installed Chrome, 3-server stack), desktop 1280×800 +
+   mobile 360×740, screenshots in session scratchpad `shots/`:** fresh-account register →
+   Rx label upload → OCR → **5 DIN suggestions → one-tap confirm → PATCH persisted
+   `din_confirmed=true`** (never auto-committed) · as `margaret@test.com`, all three pill
+   outcomes through the UI against her real confirmed profile: **verify** (GRAVOL DL photo,
+   matched DIN13803), **abstain → ask_to_flip** (GRAVOL LED photo — the flip prompt renders),
+   **reject** (SENOKOT photo, red warning) — photos pre-screened via the sidecar so each
+   outcome was deterministic · Q&A: **F9-11 celecoxib probe re-passed live**
+   ("No … contraindicated … allergic-type reactions to sulfonamides", `voice=cb4`,
+   `cites=[DIN:2239942]`) and **French warfarine answer** (`voice=cb4`,
+   `cites=[DIN:2245618]`, French prose) · "aspirin with food" produced CB4's **honest
+   uncited abstention** (`abstained=true`, "I don't have that information…") — the known
+   F9 retrieval-recall gap, same class as Phase 4's warfarin-food, not a regression ·
+   Scan History shows Matched/Warning/Unmatched rows · no horizontal scroll at 360 on
+   landing/dashboard/analyze/qa/safety/science, EN and FR.
+3. **Muthu's five items, evidence each:** (1) **six science links** — arXiv ePillID and
+   CIHI loaded live with correct titles; IEEE×2/ACM/MDPI returned automation bot-walls, so
+   resolved out-of-band: doi.org handle API maps 10.1109/AIPR.2016.8010584 →
+   ieeexplore/8010584, 10.1145/3081333.3081336 → dl.acm.org, 10.1109/CVPR42600.2020.00981 →
+   ieeexplore/9157392, and WebSearch confirms mdpi.com/2227-7390/14/2/356 is "GO-PILL: A
+   Geometry-Aware OCR Pipeline…" — all six point at the verified papers (a human browser
+   passes those bot-walls). (2) **footer**: five-name string live (`d02_footer.png`).
+   (3) **team page**: five members with task-language Responsibilities lists
+   (`d12_team.png`), zero fabricated claims. (4) **palette**: gradients checked live in
+   all four time slots (afternoon teal by wall-clock AND mocked clock, morning amber,
+   evening orange/rose, night navy) at 1280 and 360 with **zero sky/blue/indigo classes**
+   on the dashboard; "Pills Verified" card present, "Interactions Found" gone.
+   (5) **nav labels**: 5-tab bar fits at 360 with no overflow in EN
+   (Home/Check Pill/Meds/Ask/History) and FR (Accueil/Vérifier/Médicaments/Demander/
+   Historique); sidebar shows the full renamed set in both languages, no clipped labels.
+4. **Static re-confirms:** decision tokens byte-identical (unchanged context lines in the
+   tailwind diff vs `bc27af8`); `PillResultPanel.tsx` **zero diff**; the tailwind
+   `evening`/`night` hex change reviewed — consumed only by the unused
+   `TIME_SLOT_PAGE_WASH` export (single reference = its own definition) — **accepted**.
+5. **README cross-check:** config.py's 16 Settings fields match `.env.example` exactly;
+   README flags table consistent (incl. `ACCESS_TOKEN_EXPIRE_MINUTES=60`,
+   `LLM_MODEL=claude-haiku-4-5`); Makefile targets as documented; compose `extra_hosts` +
+   `host.docker.internal:8100` override present; CI badge → real remote
+   (muthuacumen/mypillsafe) and CI pins Python 3.11 as stated. One fix applied: the README
+   ASCII diagram still carried pre-rename nav labels — updated to
+   Check My Pill / Ask (Q&A) / Scan History / Medication Guide (box widths preserved).
+6. **Fabricated-claims regression grep** across `dev/frontend/src`: only hit is a CSS
+   `max-w-[95%]` utility — clean.
+7. **No app bugs found.** Every E2E failure traced to the SA's own scripts (the AppShell
+   first-visit disclaimer modal blocking clicks, an orphaned waitForResponse promise, the
+   17:00 afternoon→evening boundary crossing mid-run, `selectOption('fr')` vs the real
+   option value `'French'`, and a case-sensitive innerText check against CSS-uppercased
+   text) or to publisher bot-walls — the Phase 4/5 verifier-bug pattern, five more times.
+   *Honest observations, no action required:* (a) OB5 parsed the SA's synthetic test
+   label's pharmacy header as the drug name (mechanism worked end-to-end: suggestions →
+   confirm → persist; real-label parsing was verified in Phases 2–3 with METFORMIN);
+   (b) EducationPage's static FAQ mis-describes amber as "matches but isn't scheduled for
+   this time of day" — amber means abstain; logged for Muthu's FAQ decision (see ADR
+   2026-07-19 UX batch entry).
 
 ---
 

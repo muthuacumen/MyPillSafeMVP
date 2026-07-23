@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ScanLine, ShieldCheck, Activity, Clock, ArrowRight,
+  FileText, ScanLine, ShieldCheck, Activity, Clock, ArrowRight,
   Pill, AlertTriangle, BookOpen, Bell, BellOff,
   Sunrise, Sun, Sunset, Moon, CheckCircle2, Hourglass, CalendarClock,
 } from 'lucide-react';
@@ -46,14 +46,17 @@ const SLOT_HERO: Record<TimeSlot, string> = {
   morning: 'border-amber-300 from-amber-50',
   afternoon: 'border-orange-300 from-orange-50',
   evening: 'border-rose-300 from-rose-50',
-  night: 'border-indigo-300 from-indigo-50',
+  // Phase 6 palette sweep: was border-indigo-300/from-indigo-50 (off-brand
+  // blue-purple) -- moved onto the Phase 5 navy token.
+  night: 'border-navy/30 from-light',
 };
 
 const SLOT_HERO_ICON_BG: Record<TimeSlot, string> = {
   morning: 'bg-amber-500',
   afternoon: 'bg-orange-500',
   evening: 'bg-rose-500',
-  night: 'bg-indigo-500',
+  // Phase 6 palette sweep: was bg-indigo-500.
+  night: 'bg-navy',
 };
 
 /** 20-minute window either side of "now" counts as due, not upcoming/past. */
@@ -183,10 +186,15 @@ export default function DashboardPage() {
   const safetyAlerts = (scans ?? []).filter((s) => s.match_status !== 'matched').slice(0, 3);
 
   const quickActions = [
-    { to: '/dashboard/analyze', icon: ScanLine, label: t('dashboard.actions.analyze'), desc: t('dashboard.actions.analyzeDesc'), badge: null, accent: 'group-hover:text-teal-600' },
-    { to: '/dashboard/medications', icon: Pill, label: 'My Medications', desc: 'View and manage your active prescriptions', badge: null, accent: 'group-hover:text-teal-600' },
-    { to: '/dashboard/safety', icon: ShieldCheck, label: t('dashboard.actions.safety'), desc: t('dashboard.actions.safetyDesc'), badge: null, accent: 'group-hover:text-blue-600' },
-    { to: '/dashboard/education', icon: BookOpen, label: t('dashboard.actions.education'), desc: t('dashboard.actions.educationDesc'), badge: 'New', accent: 'group-hover:text-purple-600' },
+    // Phase 6: the single "Check My Pill" tile split into its two real
+    // scan modes (AnalyzePage's in-page switcher was removed; mode is now
+    // routed -- see router/index.tsx).
+    { to: '/dashboard/scan-prescription', icon: FileText, label: t('dashboard.actions.scanRx'), desc: t('dashboard.actions.scanRxDesc'), badge: null, accent: 'group-hover:text-teal-600' },
+    { to: '/dashboard/scan-pill', icon: ScanLine, label: t('dashboard.actions.scanPill'), desc: t('dashboard.actions.scanPillDesc'), badge: null, accent: 'group-hover:text-teal-600' },
+    { to: '/dashboard/medications', icon: Pill, label: t('dashboard.actions.medications'), desc: t('dashboard.actions.medicationsDesc'), badge: null, accent: 'group-hover:text-teal-600' },
+    // Phase 6 palette sweep: accent was group-hover:text-blue-600 (off-brand) -- moved to navy.
+    { to: '/dashboard/safety', icon: ShieldCheck, label: t('dashboard.actions.safety'), desc: t('dashboard.actions.safetyDesc'), badge: null, accent: 'group-hover:text-navy' },
+    { to: '/dashboard/education', icon: BookOpen, label: t('dashboard.actions.education'), desc: t('dashboard.actions.educationDesc'), badge: null, accent: 'group-hover:text-purple-600' },
   ];
 
   const safetyTips = [
@@ -199,27 +207,26 @@ export default function DashboardPage() {
     <div className="space-y-6 page-enter max-w-6xl mx-auto">
       <TimeAwareHeader firstName={firstName} tagline={t('dashboard.tagline')} analyzeLabel={t('dashboard.analyzeNow')} />
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          label={t('dashboard.stats.analyzed')}
-          value={String(user?.medications_analyzed ?? 0)}
-          sub={t('dashboard.stats.analyzedSub')}
-          icon={<Pill className="h-5 w-5" strokeWidth={1.8} />}
-        />
+      {/* Stats -- the "Medications Analyzed" card was removed (Phase 6):
+          that field was only ever incremented by the deleted legacy
+          /analyze demo stub, so it read as a fabricated, frozen stat.
+          The DB column/API field stay (no migration), just not displayed. */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           label={t('dashboard.stats.safetyScore')}
           value="—"
           sub={t('dashboard.stats.safetyScoreSub')}
           icon={<ShieldCheck className="h-5 w-5" strokeWidth={1.8} />}
-          iconBg="bg-blue-50 text-blue-600"
+          iconBg="bg-navy/10 text-navy"
         />
+        {/* Phase 6: replaced "Interactions Found" (implied an interaction-checker
+            the app doesn't have) with a real, computed stat from scan history. */}
         <StatCard
-          label={t('dashboard.stats.interactions')}
-          value="0"
-          sub={t('dashboard.stats.interactionsSub')}
-          icon={<AlertTriangle className="h-5 w-5" strokeWidth={1.8} />}
-          iconBg="bg-amber-50 text-amber-600"
+          label={t('dashboard.stats.verified')}
+          value={scans === null ? '—' : String(scans.filter((s) => s.match_status === 'matched').length)}
+          sub={t('dashboard.stats.verifiedSub')}
+          icon={<ShieldCheck className="h-5 w-5" strokeWidth={1.8} />}
+          iconBg="bg-teal-50 text-teal-600"
         />
         <StatCard
           label={t('dashboard.stats.adherence')}
@@ -233,7 +240,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           <SectionHeader>{t('dashboard.quickActions')}</SectionHeader>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {quickActions.map(({ to, icon: Icon, label, desc, badge, accent }) => (
               <Link
                 key={to}
@@ -269,7 +276,7 @@ export default function DashboardPage() {
                 title="No medications scheduled yet"
                 description="Scan a prescription label to start tracking your daily schedule and reminders."
                 action={
-                  <Link to="/dashboard/analyze" className="btn-primary min-h-[44px]">
+                  <Link to="/dashboard/scan-prescription" className="btn-primary min-h-[44px]">
                     <ScanLine className="h-4 w-4" /> Scan a prescription
                   </Link>
                 }

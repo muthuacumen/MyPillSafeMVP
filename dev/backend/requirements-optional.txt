@@ -1,4 +1,4 @@
-# Optional dependencies for PILLSAFE_BUILD.md Priorities 1B and 7.
+# Optional heavy dependencies (prescription OCR, CB4 Claude voice, assistant STT).
 # Installed by render.yaml and the Docker backend image; not folded into
 # requirements.txt itself since it's still useful to be able to run the core
 # app without these heavier packages (e.g. plain local dev without OCR).
@@ -31,3 +31,10 @@ numpy==2.3.5
 # Claude with the packed, cited context BB3's sidecar assembles. Pinned to
 # the latest SDK as of the Phase 4 build (was 0.40.0).
 anthropic==0.117.0
+
+# MyPillSafe Assistant voice input (Phase 5) — POST /api/v1/assistant/voice.
+# CPU + int8 "base" model, lazy singleton (app/services/voice_transcribe.py).
+# Heavier than rapidfuzz (pulls in ctranslate2) so it stays optional like the
+# rest of this file; /assistant/voice degrades to a clean 500 without it,
+# /assistant/chat (text) works fine either way.
+faster-whisper==1.1.0

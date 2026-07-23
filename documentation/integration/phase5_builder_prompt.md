@@ -4,6 +4,13 @@
 verified); the build was spawned then STOPPED almost immediately (token budget — no files were
 written by the builder). Execution happens next session.
 
+**AMENDED 2026-07-19 (SA):** Muthu supplied his own logo (`dev/frontend/public/MyPillSafe_Logo.png`)
+and chose an app-surface rebrand to **MyPillSafe** (dev packages, ADR, and the paper keep "PillSafe").
+The SA cleaned the asset (a baked fake-transparency checkerboard was removed; `logo.png` +
+`logo-mark.png` derived), renamed the content pack + assistant KB, and deleted the three prep SVGs.
+Briefing #10, §B, §C/§D/§E brand touches, and the verification bar were amended to match. Spawn the
+prompt below as amended.
+
 ## Next-session resume steps (SA, in order)
 
 1. ~~Harvest Journey.md~~ **DONE 2026-07-18 (same session):** three additions landed in the
@@ -36,6 +43,7 @@ You are building **Phase 5 (UI overhaul)** of the PillSafe app × brains integra
 7. **Do not commit or push.** Leave changes in the working tree; Muthu commits.
 8. **Verification is not optional.** Run the phase's verification bar exactly; report actual outputs (counts, not adjectives). Every prior build's mandated smoke test caught ≥1 real bug.
 9. Match the existing codebase's idioms (FastAPI route/service/model layering; React page/component/api-wrapper layering; Tailwind utility classes; existing error envelope `{"detail": {"error": {"code": ..., "message": ...}}}`).
+10. **Brand rename (user-facing only): the product name is "MyPillSafe".** The content pack and the assistant KB are ALREADY renamed — transcribe them verbatim as instructed. Additionally sweep all pre-existing user-visible "PillSafe" strings in the app (page titles, headers, footers, auth pages, PWA manifest, aria-labels, toasts) to "MyPillSafe". Do NOT rename: code identifiers, file/directory names, API route paths, env var names, backend config keys, test ids, or any text returned by the frozen packages (e.g. the sidecar's `disclaimer` field passes through unmodified).
 
 # Read FIRST, before writing any code
 
@@ -48,7 +56,7 @@ You are building **Phase 5 (UI overhaul)** of the PillSafe app × brains integra
    - `D:\Projects\PathoIntern_MVP\frontend\src\components\AboutNav.tsx` (prev/next chain)
    - `D:\Projects\PathoIntern_MVP\frontend\src\components\VoiceChatbot.tsx` (chat widget UX — your widget mirrors this)
    - `D:\Projects\PathoIntern_MVP\backend\app\api\chatbot.py` (confidence-zone endpoint design)
-4. Current app: `dev/frontend/src/` (router, layouts, pages, tailwind.config.ts, ui components), `dev/backend/app/` (routes, services, config, tests). New logo assets already exist: `dev/frontend/public/logo.svg`, `logo-white.svg`, `logo-mark.svg`.
+4. Current app: `dev/frontend/src/` (router, layouts, pages, tailwind.config.ts, ui components), `dev/backend/app/` (routes, services, config, tests). Logo assets already exist in `dev/frontend/public/`: `logo.png`, `logo-mark.png` (see §B).
 
 # Build spec
 
@@ -60,16 +68,20 @@ In `dev/frontend/tailwind.config.ts` + `src/styles/globals.css`:
 - **FROZEN, byte-identical: the `success`, `warning`, `danger` token values.** verify=green / abstain=amber / reject=red decision semantics are binding (Phase 3). Do not restyle `PillResultPanel` decision colours, and never use coral on any decision-bearing surface (it reads as red).
 - Add PathoIntern niceties: card-hover lift, page fade-in, teal `:focus-visible` ring. Base font ≥16px, touch targets ≥44px, WCAG 2.2 AA contrast.
 
-## B. Logo wiring + icons
-- Wire the three SVGs: `logo-white.svg` in the (navy) Topbar + any dark surface; `logo.svg` on login/register + landing hero (hero shows it inside a white rounded panel like PathoIntern's); `logo-mark.svg` in the Sidebar collapsed state and as favicon.
-- `index.html`: title "PillSafe — Canadian medication safety, verified", favicon = `/logo-mark.svg` + PNG fallbacks, `theme-color` #1E3A5F, Inter font link if not present.
-- Icon generation: add `dev/frontend/scripts/generate-icons.mjs` using `sharp` (devDependency) to render from `logo-mark.svg`: `favicon-32.png`, `apple-touch-icon.png` (180), `pwa-192.png`, `pwa-512.png`, `pwa-maskable-512.png` (mark scaled to ~80% centered on navy). Run it; commit outputs to `public/`.
-- There is no old logo file in the app repo (the old one lives in the dev-workspace archive and is being retired) — just ensure no dangling references.
+## B. Logo wiring + icons (AMENDED 2026-07-19 — Muthu's logo, MyPillSafe brand)
+- Brand assets already in `dev/frontend/public/` (SA-prepared; use as-is, never re-derive or edit):
+  - `logo.png` (653×521, transparent, trimmed lockup: mark + "MyPillSafe" wordmark) — the default logo in UI.
+  - `logo-mark.png` (400×400, transparent, mark only) — Sidebar collapsed state; source for favicon + PWA icons.
+  - `MyPillSafe_Logo.png` — the original source asset; keep untouched, do NOT reference it in code.
+  - The three earlier SVGs (`logo.svg`, `logo-white.svg`, `logo-mark.svg`) are DELETED — ensure no references.
+- **BINDING dark-surface rule:** the wordmark and mark linework are navy — `logo.png`/`logo-mark.png` must NEVER sit directly on navy/dark surfaces. On any dark surface (navy Topbar, hero, dark footer) the logo sits inside a white rounded chip/panel (PathoIntern hero pattern; e.g. `bg-white rounded-lg px-3 py-1`, logo ~`h-8` in the Topbar chip). On white/light surfaces use it directly.
+- `index.html`: title "MyPillSafe — Canadian medication safety, verified", favicon links → the generated PNGs below, `theme-color` #1E3A5F, Inter font link if not present.
+- Icon generation: add `dev/frontend/scripts/generate-icons.mjs` using `sharp` (devDependency) rendering from `logo-mark.png`: `favicon-32.png`, `apple-touch-icon.png` (180), `pwa-192.png`, `pwa-512.png`, `pwa-maskable-512.png` (mark scaled to ~78% centered on WHITE #FFFFFF — not navy: the mark's linework is navy). Run it; leave outputs in `public/` (uncommitted, like everything else).
 
 ## C. Public content chain (PathoIntern-style)
 Routes (update `src/router/index.tsx`; all under `PublicLayout`):
-- `/` LandingPage — REBUILD per content pack §1: navy hero (badge, headline, sub, CTAs, white logo panel right), "How PillSafe Works" 4 step cards (border-t-4 accent pattern), "Three-Outcome Safety Design" 4-card grid **using the real semantic decision colours** (green/amber/red/navy per pack), Scientific Foundation strip (navy section, 4 border-l-4 cards, links to /about/science), closing CTA, footer disclaimer.
-- `/about` AboutPage — rewrite per pack §2 (What PillSafe Is, Five Brains as 5 cards, Why this architecture, scope note).
+- `/` LandingPage — REBUILD per content pack §1: navy hero (badge, headline, sub, CTAs, white logo panel right), "How MyPillSafe Works" 4 step cards (border-t-4 accent pattern), "Three-Outcome Safety Design" 4-card grid **using the real semantic decision colours** (green/amber/red/navy per pack), Scientific Foundation strip (navy section, 4 border-l-4 cards, links to /about/science), closing CTA, footer disclaimer.
+- `/about` AboutPage — rewrite per pack §2 (What MyPillSafe Is, Five Brains as 5 cards, Why this architecture, scope note).
 - `/about/vision` VisionPage — pack §3 (mission hero, vision, 4 value cards).
 - `/about/problem` ProblemPage — pack §4 (2 CIHI stat cards, body sections, closing line).
 - `/about/science` SciencePage — pack §5 (Section A: 8 citation cards; Section B: "In Preparation" badge block with the working title + honest status VERBATIM incl. the pending-confirmatory-study sentence; Section C: 3 principle cards).
@@ -77,7 +89,7 @@ Routes (update `src/router/index.tsx`; all under `PublicLayout`):
 - New `src/components/AboutNav.tsx` mirroring PathoIntern's prev/next chain, order per pack §7 (last Next = "Get Started" → /register, coral button). Public navbar in `PublicLayout` gains an About dropdown/links + hamburger on mobile. ContactPage: restyle only, linked from footer.
 - New public pages ship in English exactly as in the pack (no i18n keys needed for them).
 
-## D. PillSafe Assistant (floating explainer chatbot — PathoIntern parity)
+## D. MyPillSafe Assistant (floating explainer chatbot — PathoIntern parity)
 **Backend** (`dev/backend`):
 - `app/services/assistant_kb.py`: load `app/data/assistant_kb.json`; retrieval = rapidfuzz `token_set_ratio` of the query against each entry's `question` + `question_fr` (best of the two), score 0–100. Confidence zones (mirroring PathoIntern's design, calibrated for fuzzy scores): ≥60 → LLM answer path (top-3 entries as context, suggested_questions = next-best KB questions); 40–59 → clarification (top-3 KB questions as options, no LLM call); <40 → out-of-scope fallback string (from content pack §8) + suggestions.
 - Medication-intent gate BEFORE retrieval: a keyword/regex heuristic (dose, dosage, mg, take/prendre, interaction, side effect/effet secondaire, pregnant, alcohol, plus a "looks like a drug name question" pattern like "can I take X"). On trigger → return the med-redirect string (pack §8) with `redirect_to_qa: true`, no LLM call. The CB4 system prompt ALSO enforces the redirect (belt and suspenders).
@@ -91,7 +103,7 @@ Routes (update `src/router/index.tsx`; all under `PublicLayout`):
 - Mount in `PublicLayout` and `AppShell` — but HIDE on `/dashboard/qa` (never two chat UIs on one screen).
 
 ## E. PWA + mobile pass
-- `vite-plugin-pwa` (autoUpdate): manifest name "PillSafe", short_name "PillSafe", description from pack hero sub-headline, `theme_color #1E3A5F`, `background_color #FFFFFF`, display standalone, icons 192/512 + maskable. **Precache the static shell only; `/api/**` must be NetworkOnly — no offline-API pretense.**
+- `vite-plugin-pwa` (autoUpdate): manifest name "MyPillSafe", short_name "MyPillSafe", description from pack hero sub-headline, `theme_color #1E3A5F`, `background_color #FFFFFF`, display standalone, icons 192/512 + maskable. **Precache the static shell only; `/api/**` must be NetworkOnly — no offline-API pretense.**
 - Mobile-first pass on key flows (auth, dashboard, analyze/camera, medications, Q&A, records, public pages): dashboard gets a bottom-tab bar under `md:` (Home, Analyze, Meds, Q&A, Records; sidebar hidden), public navbar hamburger, single-column cards, camera capture full-bleed, no horizontal scroll at 360px.
 - Restyle remaining dashboard/auth/admin pages to the new tokens (Cards/Buttons/Alerts refresh). Do NOT change page logic. QAChatPage/DinLinkPanel: token restyle only. **PillResultPanel: do not touch its decision colour semantics.**
 - Small deferred fix from Phase 3 (in scope now): Safety Records "Drug Detected" column must show the matched product/DIN on verify rows instead of "Unknown" (data already persisted on the scan row).
@@ -102,9 +114,10 @@ BB3/sidecar changes (not needed this phase — do NOT start the sidecar or Ollam
 # Verification bar (run ALL, report actual counts/outputs)
 1. Backend: full pytest suite green in `dev/backend/venv` (was 93 passing; report new total).
 2. Frontend: `npm run type-check` and `npm run build` clean; icon script ran (list generated files); build output contains the PWA manifest + service worker.
-3. Live smoke (backend on :8000 via venv uvicorn, frontend dev server): (a) one REAL `/assistant/chat` call with the live CB4 key from `dev/backend/.env` — ask "What is PillSafe?" — assert `used_llm: true` and an on-scope answer; (b) one med-intent query ("can I take ibuprofen with warfarin?") — assert `redirect_to_qa: true` and NO LLM call; (c) one clarification-zone and one fallback-zone query; (d) `/assistant/voice`: generate a short WAV via PowerShell `System.Speech` saying "What is PillSafe" and POST it — assert transcript contains "pillsafe" (case-insensitive, fuzzy ok). Kill servers after.
+3. Live smoke (backend on :8000 via venv uvicorn, frontend dev server): (a) one REAL `/assistant/chat` call with the live CB4 key from `dev/backend/.env` — ask "What is MyPillSafe?" — assert `used_llm: true` and an on-scope answer; (b) one med-intent query ("can I take ibuprofen with warfarin?") — assert `redirect_to_qa: true` and NO LLM call; (c) one clarification-zone and one fallback-zone query; (d) `/assistant/voice`: generate a short WAV via PowerShell `System.Speech` saying "What is My Pill Safe" and POST it — assert the transcript fuzzy-contains "pill safe"/"pillsafe" (case/space-insensitive). Kill servers after.
 4. Confirm frozen decision tokens: `success/warning/danger` values in tailwind config unchanged (diff vs git HEAD) and PillResultPanel imports/classes untouched except inherited font/spacing.
-5. `git status` summary of changed/added files. Commit NOTHING.
+5. Brand sweep check: `grep -rn "PillSafe" dev/frontend/src dev/frontend/index.html` — report every remaining occurrence that is NOT part of "MyPillSafe" and justify each (must be code identifiers or frozen-package pass-through only, never user-visible copy).
+6. `git status` summary of changed/added files. Commit NOTHING.
 
 # Report back
 Files created/modified (grouped), all verification outputs with real counts, any deviations from this spec with reasons, any bugs found in existing code (report, don't silently fix unless trivial and in-scope), and anything the SA must re-verify by hand.

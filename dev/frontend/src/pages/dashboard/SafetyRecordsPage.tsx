@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ShieldCheck, ScanLine, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -14,7 +15,8 @@ const STATUS_META: Record<ScanRecord['match_status'], { label: string; icon: typ
 };
 
 export default function SafetyRecordsPage() {
-  useVoicePageAnnounce('Safety Records');
+  const { t } = useTranslation();
+  useVoicePageAnnounce(t('nav.safety'));
   const [records, setRecords] = useState<ScanRecord[] | null>(null);
 
   useEffect(() => {
@@ -23,7 +25,7 @@ export default function SafetyRecordsPage() {
 
   return (
     <div className="space-y-6 page-enter max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-slate-900">Safety Records</h1>
+      <h1 className="text-2xl font-bold text-slate-900">{t('nav.safety')}</h1>
 
       {records && records.length === 0 && (
         <Card className="text-center py-14">
@@ -31,9 +33,9 @@ export default function SafetyRecordsPage() {
             <ShieldCheck className="h-8 w-8 text-teal-600" />
           </div>
           <p className="font-semibold text-slate-900">No scans yet</p>
-          <p className="text-sm text-slate-500 mt-1.5">Use Analyze to scan your first pill.</p>
-          <Link to="/dashboard/analyze" className="inline-block mt-5">
-            <Button size="lg"><ScanLine className="h-4 w-4" /> Go to Analyze</Button>
+          <p className="text-sm text-slate-500 mt-1.5">Use Scan Pill to check your first pill.</p>
+          <Link to="/dashboard/scan-pill" className="inline-block mt-5">
+            <Button size="lg"><ScanLine className="h-4 w-4" /> Go to Scan Pill</Button>
           </Link>
         </Card>
       )}

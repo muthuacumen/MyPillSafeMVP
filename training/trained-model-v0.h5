@@ -1,8 +1,0 @@
-PLACEHOLDER — trained-model-v0.h5
-
-This file will be replaced by the actual HDF5/ONNX model artifact
-after Sprint-0 training completes.
-
-Training target: YOLOv8n trained on MEDISEG (3-pill subset)
-Expected size: ~6 MB (YOLOv8n weights)
-Key metric: mAP@50 >= 80%

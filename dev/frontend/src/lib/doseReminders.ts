@@ -61,7 +61,7 @@ function fireAlert(e: DoseEvent): void {
       : `It's time to take ${e.drugName}${e.dosage ? ` ${e.dosage}` : ''}.`;
 
   if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-    new Notification('PillSafe', { body: text, tag: eventKey(e) });
+    new Notification('MyPillSafe', { body: text, tag: eventKey(e) });
   }
   if (voice.isEnabled()) {
     voice.speak(text);

@@ -45,7 +45,7 @@ export function TimeAwareHeader({ firstName, tagline, analyzeLabel }: TimeAwareH
           <p className="text-white/50 text-xs mt-1">{dateLabel}</p>
         </div>
         <Link
-          to="/dashboard/analyze"
+          to="/dashboard/scan-prescription"
           className="inline-flex items-center gap-2 bg-white text-slate-900 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors shrink-0 shadow-lg min-h-[44px]"
         >
           <ScanLine className="h-4 w-4" />

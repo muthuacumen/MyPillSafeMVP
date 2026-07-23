@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Pill, Mail, Calendar, CheckCircle2, UserRound } from 'lucide-react';
+import { Mail, Calendar, CheckCircle2, UserRound, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/Input';
 import { PasswordField } from '@/components/ui/PasswordField';
@@ -11,6 +11,7 @@ import { PasswordStrengthMeter } from '@/components/ui/PasswordStrengthMeter';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
+import { Logo } from '@/components/ui/Logo';
 import { useAuth } from '@/hooks/useAuth';
 
 const schema = z.object({
@@ -53,10 +54,10 @@ export default function RegisterPage() {
   };
 
   const stats = [
-    { value: '100K+', label: 'Deaths prevented annually' },
-    { value: '< 5s', label: 'Verification speed' },
-    { value: '95%+', label: 'Accuracy rate' },
-    { value: '12+', label: 'Languages supported' },
+    { value: '1 in 4', label: 'Canadian seniors are prescribed 10+ drug classes (CIHI)' },
+    { value: '~5×', label: 'higher risk of medication-related hospitalization at 10+ medications (CIHI)' },
+    { value: '3', label: 'honest outcomes for every pill check — verified, needs a closer look, doesn’t match' },
+    { value: 'EN · FR', label: 'interface languages — medication answers in the language you choose' },
   ];
 
   return (
@@ -67,19 +68,13 @@ export default function RegisterPage() {
         <div className="absolute bottom-0 left-0 h-96 w-96 rounded-full bg-white/8 blur-3xl" />
 
         <div className="relative z-10 flex flex-col justify-between p-10 w-full">
-          <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-2xl bg-white/20 flex items-center justify-center">
-              <Pill className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-white">PillSafe</p>
-              <p className="text-xs text-teal-100">Medication Auditor</p>
-            </div>
-          </div>
+          <Link to="/" className="inline-flex w-fit focus-visible:ring" aria-label="Back to home">
+            <Logo onDark className="h-9" />
+          </Link>
 
           <div className="space-y-5">
             <h1 className="text-3xl font-extrabold text-white leading-tight tracking-tight">
-              Join thousands protecting their medication safety
+              The wrong pill should never go unnoticed
             </h1>
 
             <div className="grid grid-cols-2 gap-4">
@@ -92,9 +87,9 @@ export default function RegisterPage() {
             </div>
 
             <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-teal-100/60">
-              <span>🔒 Bank-level encryption</span>
+              <span>Capstone MVP</span>
               <span>·</span>
-              <span>No data sold, ever</span>
+              <span>Decision-support only</span>
             </div>
           </div>
 
@@ -103,10 +98,11 @@ export default function RegisterPage() {
               <div className="h-6 w-6 rounded-full bg-white/20 flex items-center justify-center">
                 <CheckCircle2 className="h-3.5 w-3.5 text-white" />
               </div>
-              <span className="text-sm font-medium text-white">No raw patient data stored</span>
+              <span className="text-sm font-medium text-white">When it isn&apos;t sure, it says so</span>
             </div>
             <p className="text-xs text-teal-100/70">
-              Only structured, de-identified pipeline outputs reach our AI layer. HIPAA-aware design.
+              MyPillSafe is tuned so that a wrong pill being called &quot;verified&quot; is the rarest
+              possible event — even at the cost of asking you to try again more often.
             </p>
           </div>
         </div>
@@ -119,15 +115,20 @@ export default function RegisterPage() {
 
         <div className="relative w-full max-w-lg animate-fade-in">
           {/* Mobile logo */}
-          <div className="flex items-center gap-3 mb-8 lg:hidden">
-            <div className="h-10 w-10 rounded-xl bg-teal-600 flex items-center justify-center">
-              <Pill className="h-5 w-5 text-white" />
-            </div>
-            <p className="text-xl font-bold text-slate-900">PillSafe</p>
+          <div className="flex items-center mb-8 lg:hidden">
+            <Link to="/" aria-label="Back to home">
+              <Logo className="h-9" />
+            </Link>
           </div>
 
-          {/* Language switcher */}
-          <div className="flex justify-end mb-6">
+          {/* Back to home + language switcher */}
+          <div className="flex items-center justify-between mb-6">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" /> {t('auth.backHome')}
+            </Link>
             <LanguageSwitcher />
           </div>
 

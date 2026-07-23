@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Pill, FileText, Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
 import { CameraCapture } from '@/components/CameraCapture';
 import { DisclaimerModal } from '@/components/DisclaimerModal';
@@ -43,10 +44,17 @@ const SLOT_BADGE: Record<string, string> = {
 };
 
 export default function AnalyzePage() {
-  useVoicePageAnnounce('Analyze Medication');
+  const { t } = useTranslation();
+
+  // Mode is forced by the route (Phase 6 -- the in-page switcher is gone;
+  // `/dashboard/scan-prescription` and `/dashboard/scan-pill` both render
+  // this component, `/dashboard/analyze` redirects to scan-pill). See
+  // router/index.tsx.
+  const { pathname } = useLocation();
+  const mode: Mode = pathname.includes('scan-prescription') ? 'prescription' : 'pill';
+  useVoicePageAnnounce(t(mode === 'prescription' ? 'nav.scanRx' : 'nav.scanPill'));
 
   const navigate = useNavigate();
-  const [mode, setMode] = useState<Mode>('prescription');
   const [stage, setStage] = useState<Stage>('capture');
   const [errorMsg, setErrorMsg] = useState('');
   const [showResultDisclaimer, setShowResultDisclaimer] = useState(false);
@@ -63,10 +71,13 @@ export default function AnalyzePage() {
     setPillResult(null);
   }, []);
 
-  const switchMode = (next: Mode) => {
-    setMode(next);
+  // Route changed under us (e.g. the "scanning a pill instead?" cross-link,
+  // or the PillResultPanel "no confirmed medications" CTA navigating to
+  // scan-prescription) -- clear any in-flight/previous-mode state.
+  useEffect(() => {
     reset();
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
 
   // Staged progress copy while a pill scan is in flight (first call per
   // sidecar process is commonly 30s+ -- a single static spinner reads as
@@ -158,31 +169,23 @@ export default function AnalyzePage() {
 
   return (
     <div className="space-y-6 page-enter max-w-4xl mx-auto">
-      <div className="flex gap-2" role="tablist" aria-label="Scan mode">
-        <button
-          role="tab"
-          aria-selected={mode === 'prescription'}
-          onClick={() => switchMode('prescription')}
-          className={`flex-1 min-h-[44px] flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors ${
-            mode === 'prescription' ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300'
-          }`}
-        >
-          <FileText className="h-4 w-4" /> Scan Prescription
-        </button>
-        <button
-          role="tab"
-          aria-selected={mode === 'pill'}
-          onClick={() => switchMode('pill')}
-          className={`flex-1 min-h-[44px] flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors ${
-            mode === 'pill' ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300'
-          }`}
-        >
-          <Pill className="h-4 w-4" /> Scan Pill
-        </button>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          {mode === 'prescription' ? <FileText className="h-6 w-6 text-teal-600" /> : <Pill className="h-6 w-6 text-teal-600" />}
+          {t(mode === 'prescription' ? 'nav.scanRx' : 'nav.scanPill')}
+        </h1>
+        {stage === 'capture' && (
+          <Link
+            to={mode === 'prescription' ? '/dashboard/scan-pill' : '/dashboard/scan-prescription'}
+            className="text-sm font-semibold text-teal-700 underline"
+          >
+            {mode === 'prescription' ? 'Checking a pill instead?' : 'Scanning a prescription instead?'}
+          </Link>
+        )}
       </div>
 
       {stage === 'capture' && (
-        <Card>
+        <Card padding="none" className="p-0 sm:p-6 rounded-none sm:rounded-2xl border-x-0 sm:border-x -mx-4 sm:mx-0">
           <CameraCapture
             captureLabel={mode === 'prescription' ? 'Capture prescription label' : 'Capture pill photo'}
             onConfirm={(blob) => (mode === 'prescription' ? handlePrescriptionCapture(blob) : handlePillCapture(blob))}
@@ -309,7 +312,7 @@ export default function AnalyzePage() {
         <PillResultPanel
           result={pillResult}
           onRetake={reset}
-          onGoToPrescriptions={() => switchMode('prescription')}
+          onGoToPrescriptions={() => navigate('/dashboard/scan-prescription')}
         />
       )}
     </div>

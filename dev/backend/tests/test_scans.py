@@ -1,15 +1,38 @@
 import pytest
 from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.analysis import Analysis
 
 
 @pytest.mark.asyncio
-async def test_scan_recorded_from_analyze_appears_unmatched(client: AsyncClient, auth_headers: dict):
-    analyze_resp = await client.post(
-        "/api/v1/analyze",
-        headers=auth_headers,
-        files={"image": ("pill.jpg", b"fake-bytes", "image/jpeg")},
+async def test_scan_recorded_from_legacy_shaped_analysis_appears_unmatched(
+    client: AsyncClient, auth_headers: dict, db_session: AsyncSession
+):
+    """`GET /scans/me` must still correctly classify a legacy-shaped Analysis
+    row (label_info-based, no SB2 `decision`/`detected`) as 'unmatched' when
+    its drug isn't one of the patient's active prescriptions. The `/analyze`
+    demo-stub that used to create rows like this via the API was removed
+    (legacy cleanup) -- this test creates the row directly so scans.py's
+    non-pill-v2 branch stays covered.
+    """
+    me_resp = await client.get("/api/v1/auth/me", headers=auth_headers)
+    assert me_resp.status_code == 200
+    user_id = me_resp.json()["id"]
+
+    db_session.add(
+        Analysis(
+            user_id=user_id,
+            status="completed",
+            image_filename="pill.jpg",
+            pills_detected=[],
+            label_info={"drug_name": "Metformin HCl"},
+            guidance="Take with food.",
+            safety_alerts=[],
+            ml_pipeline_enabled=False,
+        )
     )
-    assert analyze_resp.status_code == 200
+    await db_session.flush()
 
     scans_resp = await client.get("/api/v1/scans/me", headers=auth_headers)
     assert scans_resp.status_code == 200

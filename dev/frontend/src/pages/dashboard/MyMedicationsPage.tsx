@@ -61,7 +61,7 @@ export default function MyMedicationsPage() {
     <div className="space-y-6 page-enter max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900">My Medications</h1>
-        <Link to="/dashboard/analyze">
+        <Link to="/dashboard/scan-prescription">
           <Button>
             <ScanLine className="h-4 w-4" /> Add Prescription
           </Button>
@@ -79,7 +79,7 @@ export default function MyMedicationsPage() {
           <p className="text-sm text-slate-500 mt-1.5 max-w-sm mx-auto">
             Scan your first prescription label and we&apos;ll keep track of your dosage and schedule.
           </p>
-          <Link to="/dashboard/analyze" className="inline-block mt-5">
+          <Link to="/dashboard/scan-prescription" className="inline-block mt-5">
             <Button size="lg">
               <ScanLine className="h-4 w-4" /> Scan Your First Prescription
             </Button>
