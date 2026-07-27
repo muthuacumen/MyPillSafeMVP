@@ -18,7 +18,10 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      # Host port remapped 5432 -> 5433 to avoid a clash with another local
+      # Postgres already bound to 5432. Inside pillsafe_net the app still
+      # reaches this DB at postgres:5432 (unchanged) — only host access moved.
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pillsafe_user} -d ${POSTGRES_DB:-pillsafe}"]
       interval: 10s

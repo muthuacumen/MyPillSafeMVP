@@ -28,6 +28,7 @@ from app.core.config import settings
 from app.models.user import User
 from app.schemas.qa import QAChatRequest
 from app.services import cb4_service, din_utils
+from app.services.brains_registry import resolve_brains_url
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/qa", tags=["qa"])
@@ -38,14 +39,14 @@ CONTEXT_MODE_TIMEOUT_SECONDS = 60.0
 FULL_MODE_TIMEOUT_SECONDS = 180.0
 
 
-def _brains_unreachable_error() -> HTTPException:
+def _brains_unreachable_error(url: str) -> HTTPException:
     return HTTPException(
         status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
         detail={
             "error": {
                 "code": "BRAINS_UNAVAILABLE",
                 "message": "The brains sidecar service could not be reached. Make sure it is running "
-                f"at {settings.BRAINS_SERVICE_URL}.",
+                f"at {url}.",
             }
         },
     )
@@ -73,17 +74,23 @@ async def qa_chat(
     _: Annotated[User, Depends(get_current_patient)],
 ):
     din_token = _din_bypass(body.din)
+    # Resolve once per request and reuse for both the call and its error
+    # message (Task A3.3) -- the pool could resolve to a different URL on a
+    # second call, which would produce a misleading error.
+    brains_url = await resolve_brains_url()
 
     if cb4_service.cb4_enabled():
-        return await _context_mode(body, din_token)
-    return await _full_mode(body, din_token)
+        return await _context_mode(body, din_token, brains_url)
+    return await _full_mode(body, din_token, brains_url)
 
 
-async def _sidecar_qa_chat(body: QAChatRequest, din_token: str | None, mode: str, timeout: float) -> httpx.Response:
+async def _sidecar_qa_chat(
+    body: QAChatRequest, din_token: str | None, mode: str, timeout: float, brains_url: str
+) -> httpx.Response:
     try:
         async with httpx.AsyncClient(timeout=timeout) as http_client:
             return await http_client.post(
-                f"{settings.BRAINS_SERVICE_URL}/qa/chat",
+                f"{brains_url}/qa/chat",
                 json={
                     "message": body.message,
                     "din": din_token,
@@ -93,7 +100,7 @@ async def _sidecar_qa_chat(body: QAChatRequest, din_token: str | None, mode: str
             )
     except httpx.HTTPError as exc:
         logger.warning("Brains sidecar unreachable for /qa/chat (mode=%s): %s", mode, exc)
-        raise _brains_unreachable_error() from exc
+        raise _brains_unreachable_error(brains_url) from exc
 
 
 def _parse_sidecar_json(response: httpx.Response) -> dict:
@@ -103,8 +110,8 @@ def _parse_sidecar_json(response: httpx.Response) -> dict:
         return {"detail": {"error": {"code": "BRAINS_INVALID_RESPONSE", "message": response.text}}}
 
 
-async def _context_mode(body: QAChatRequest, din_token: str | None):
-    response = await _sidecar_qa_chat(body, din_token, "context", CONTEXT_MODE_TIMEOUT_SECONDS)
+async def _context_mode(body: QAChatRequest, din_token: str | None, brains_url: str):
+    response = await _sidecar_qa_chat(body, din_token, "context", CONTEXT_MODE_TIMEOUT_SECONDS, brains_url)
     payload = _parse_sidecar_json(response)
 
     if response.status_code != 200:
@@ -157,8 +164,8 @@ async def _context_mode(body: QAChatRequest, din_token: str | None):
     }
 
 
-async def _full_mode(body: QAChatRequest, din_token: str | None):
-    response = await _sidecar_qa_chat(body, din_token, "full", FULL_MODE_TIMEOUT_SECONDS)
+async def _full_mode(body: QAChatRequest, din_token: str | None, brains_url: str):
+    response = await _sidecar_qa_chat(body, din_token, "full", FULL_MODE_TIMEOUT_SECONDS, brains_url)
     payload = _parse_sidecar_json(response)
 
     if response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE:

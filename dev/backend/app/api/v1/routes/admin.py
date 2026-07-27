@@ -8,10 +8,13 @@ from app.core.database import get_db
 from app.models.user import User
 from app.schemas.admin import (
     AnalysisSummary,
+    BrainsPinRequest,
+    BrainsPoolEntry,
     PlatformStats,
     RoleUpdate,
     UserListItem,
 )
+from app.services import brains_registry
 from app.services.admin_service import (
     delete_user,
     get_platform_stats,
@@ -126,3 +129,34 @@ async def admin_list_analyses(
     limit: int = 100,
 ) -> list[AnalysisSummary]:
     return await list_all_analyses(db, skip, limit)  # type: ignore[return-value]
+
+
+# ── Brains sidecar pool (Task A3.4) ──────────────────────────────────────────
+
+_INVALID_PIN = {
+    "error": {
+        "code": "INVALID_PIN_URL",
+        "message": "url must be one of the configured BRAINS_SERVICE_URLS pool entries, or null to unpin.",
+    }
+}
+
+
+@router.get("/brains", response_model=list[BrainsPoolEntry])
+async def admin_brains_pool(
+    _: Annotated[User, Depends(get_current_admin)],
+) -> list[BrainsPoolEntry]:
+    return await brains_registry.pool_status()  # type: ignore[return-value]
+
+
+@router.post("/brains/pin")
+async def admin_brains_pin(
+    payload: BrainsPinRequest,
+    _: Annotated[User, Depends(get_current_admin)],
+) -> dict:
+    # Never accept an arbitrary URL here -- that would be an SSRF hole behind
+    # an admin-authenticated endpoint. null always unpins; any non-null value
+    # must already be in the configured pool.
+    if payload.url is not None and payload.url not in brains_registry.configured_urls():
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=_INVALID_PIN)
+    brains_registry.set_pin(payload.url)
+    return {"pinned": brains_registry.get_pin()}

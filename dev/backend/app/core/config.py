@@ -46,5 +46,13 @@ class Settings(BaseSettings):
     BRAINS_SERVICE_URL: str = "http://127.0.0.1:8100"
     PILL_V2_ENABLED: bool = True
 
+    # Sidecar pool (Task A3, deploy-readiness build): comma-separated URLs for
+    # a team of laptop-hosted sidecars, health-checked so a closed laptop
+    # doesn't take the demo down. Empty (the default) is the back-compat
+    # single-sidecar path -- `brains_registry.resolve_brains_url()` returns
+    # BRAINS_SERVICE_URL directly with NO health check in that case, so every
+    # existing dev setup / test stays byte-identical in behaviour and latency.
+    BRAINS_SERVICE_URLS: str = ""
+
 
 settings = Settings()

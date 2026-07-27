@@ -82,8 +82,22 @@ alongside this service (GPU contention; unrelated to this phase anyway).
 ## Endpoints
 
 - `GET /health` -- import status of imb1/sb2 (errors reported as strings,
-  never a crash), reference row count, CUDA availability, resolved package
-  roots.
+  never a crash), reference row count, CUDA availability, `ocr_worker`
+  (`"present"`/`"missing"` -- a file-exists check on `rx_ocr_sub.py`, never a
+  paddle import or a probe subprocess, since this is polled every 30s),
+  resolved package roots.
+- `POST /ocr/prescription` (Task A1, deploy-readiness build) -- multipart
+  `image` (required), a prescription LABEL photo. Spawns `rx_ocr_sub.py` --
+  a second, independent, torch-free subprocess (mirrors `imb1.ocr_sub`'s
+  pattern) -- via `sys.executable`, so this process still never imports
+  paddle. Returns `{"raw_text": str, "line_count": int, "elapsed_seconds":
+  float}`. 503 on any subprocess failure/timeout (with the subprocess's
+  stderr tail in the message) -- never an empty-but-200 response, so the
+  backend (`app/services/ocr_service.py`) can always tell "no text found"
+  apart from "OCR did not run". Measured ~10-45s per call on this machine's
+  GPU (subprocess spawn + model load + inference every time -- there is no
+  persistent OCR worker, by design, matching `imb1.ocr_sub`'s own
+  per-subprocess model load).
 - `POST /pill/analyze` -- multipart `image` (required) + form `profile_dins`
   (optional JSON array of DIN strings, e.g. `["DIN4596","DIN13285"]`). Runs
   `imb1.analyze_pill` on a temp copy of the upload (cleaned up after), then

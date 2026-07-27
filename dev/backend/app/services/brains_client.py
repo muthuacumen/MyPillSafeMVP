@@ -19,8 +19,8 @@ import logging
 
 import httpx
 
-from app.core.config import settings
 from app.services import din_utils
+from app.services.brains_registry import resolve_brains_url
 
 logger = logging.getLogger(__name__)
 
@@ -49,9 +49,10 @@ async def search_reference(q: str, limit: int = 10) -> list[dict]:
         return []
 
     try:
+        brains_url = await resolve_brains_url()
         async with httpx.AsyncClient(timeout=SUGGESTION_TIMEOUT_SECONDS) as http_client:
             response = await http_client.get(
-                f"{settings.BRAINS_SERVICE_URL}/reference/search",
+                f"{brains_url}/reference/search",
                 params={"q": q, "limit": limit},
             )
             response.raise_for_status()
@@ -102,9 +103,10 @@ async def get_reference_candidates(dins: list[str]) -> dict[str, dict]:
         return {}
 
     try:
+        brains_url = await resolve_brains_url()
         async with httpx.AsyncClient(timeout=CANDIDATES_TIMEOUT_SECONDS) as http_client:
             response = await http_client.get(
-                f"{settings.BRAINS_SERVICE_URL}/reference/candidates",
+                f"{brains_url}/reference/candidates",
                 params={"dins": ",".join(dins)},
             )
             response.raise_for_status()

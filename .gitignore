@@ -2,6 +2,11 @@
 .env
 .env.local
 .env.*.local
+# Real production secrets (Task A5.3) -- .env.production.example (tracked,
+# placeholders only) is a DIFFERENT filename and is unaffected by this exact
+# match. Found untracked/unignored while verifying this build; DEPLOY_GUIDE.md
+# §1.1's pre-push secrets sweep assumes this file is never trackable.
+.env.production
 
 # â”€â”€ Python â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 __pycache__/

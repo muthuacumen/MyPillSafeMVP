@@ -1,76 +1,77 @@
-"""PaddleOCR wrapper for prescription label text extraction (Priority 1B).
+"""Prescription-label OCR client (Priority 1B; rewritten Task A2.1).
 
-Gated by OCR_PIPELINE_ENABLED. PaddleOCR/PaddlePaddle are heavy native
-dependencies that are not installed in every dev environment — import is
-lazy and failures degrade to the demo path instead of crashing the request.
+PaddleOCR no longer runs inside this backend process/image at all -- on the
+deploy target (a 4 GB droplet co-tenanted with a live site) that was a ~3 GB
+image and a ~1.5 GB RAM spike per scan (measured ~2m21s CPU per label). The
+work now happens on a team-run `dev/brains` sidecar reachable over the
+private Tailscale tailnet (see `app/services/brains_registry.py`): this
+module POSTs the uploaded image there and returns whatever text the sidecar
+extracted.
+
+Failure here is not degraded silently -- `OcrUnavailableError` is raised on
+ANY failure (connection error, timeout, non-200 response, malformed JSON, or
+a response missing `raw_text`) and the caller (`routes/prescriptions.py`)
+turns that into an honest HTTP 503, never a fabricated prescription. See
+that route's module docstring for the abstain-over-guess rationale.
 """
+from __future__ import annotations
+
 import logging
-import threading
+
+import httpx
+
+from app.services.brains_registry import resolve_brains_url
 
 logger = logging.getLogger(__name__)
 
-_ocr_engine = None
-_engine_lock = threading.Lock()
+# OCR is genuinely slow (subprocess spawn + model load + inference; measured
+# ~10-45s on GPU depending on whether the sidecar's model cache is warm, and
+# potentially much longer on a CPU-only sidecar) -- a short timeout here
+# would manufacture failures for a pipeline that is actually still working.
+OCR_TIMEOUT_SECONDS = 300.0
 
 
 class OcrUnavailableError(Exception):
     pass
 
 
-def _get_engine():
-    global _ocr_engine
-    if _ocr_engine is not None:
-        return _ocr_engine
-    with _engine_lock:
-        if _ocr_engine is None:
-            try:
-                from paddleocr import PaddleOCR  # noqa: PLC0415
-            except ImportError as exc:
-                raise OcrUnavailableError(
-                    "paddleocr is not installed — run `pip install paddleocr paddlepaddle` "
-                    "to enable the real OCR pipeline."
-                ) from exc
-            # paddleocr 3.x removed `use_angle_cls`/`show_log` (constructor
-            # raises ValueError on unknown kwargs, it doesn't just warn) --
-            # the doc-orientation/unwarping/textline-orientation extras are
-            # disabled since prescription label photos are already
-            # upright-ish and it keeps CPU inference fast.
-            # `enable_mkldnn=False` works around a real bug found while
-            # installing this into the backend's CPU-only venv (Phase 3):
-            # with oneDNN on, the text-detection model crashes with
-            # `NotImplementedError: ConvertPirAttribute2RuntimeAttribute
-            # not support [pir::ArrayAttribute<pir::DoubleAttribute>]` on
-            # every call (paddlepaddle 3.3.1 CPU build) -- disabling oneDNN
-            # avoids the broken code path entirely.
-            _ocr_engine = PaddleOCR(
-                lang="en",
-                use_doc_orientation_classify=False,
-                use_doc_unwarping=False,
-                use_textline_orientation=False,
-                enable_mkldnn=False,
+async def extract_text(image_bytes: bytes, filename: str, content_type: str) -> str:
+    """POST the prescription photo to the brains sidecar's
+    `/ocr/prescription` and return its `raw_text`.
+
+    Raises `OcrUnavailableError` on any failure -- connection error, timeout,
+    non-200 status, malformed JSON, or a response missing `raw_text`. Never
+    returns a fabricated/placeholder string; the caller decides what to do
+    with a failure (Task A2.2: a user-safe 503, not demo text).
+    """
+    brains_url = await resolve_brains_url()
+
+    try:
+        async with httpx.AsyncClient(timeout=OCR_TIMEOUT_SECONDS) as http_client:
+            response = await http_client.post(
+                f"{brains_url}/ocr/prescription",
+                files={"image": (filename or "prescription.jpg", image_bytes, content_type or "image/jpeg")},
             )
-    return _ocr_engine
+    except httpx.HTTPError as exc:
+        logger.warning("Brains sidecar unreachable for /ocr/prescription at %s: %s", brains_url, exc)
+        raise OcrUnavailableError(f"Brains sidecar unreachable at {brains_url}: {exc}") from exc
 
+    if response.status_code != 200:
+        logger.warning(
+            "Brains sidecar /ocr/prescription returned %s from %s: %s",
+            response.status_code, brains_url, response.text,
+        )
+        raise OcrUnavailableError(
+            f"Brains sidecar OCR failed ({response.status_code}) at {brains_url}: {response.text}"
+        )
 
-def extract_text(image_bytes: bytes) -> str:
-    """Run PaddleOCR over raw image bytes and return concatenated text lines."""
-    engine = _get_engine()  # raises OcrUnavailableError before touching numpy/PIL
+    try:
+        body = response.json()
+    except ValueError as exc:
+        raise OcrUnavailableError(f"Brains sidecar returned a non-JSON OCR response from {brains_url}") from exc
 
-    import io
-    import numpy as np
-    from PIL import Image
+    raw_text = body.get("raw_text") if isinstance(body, dict) else None
+    if raw_text is None:
+        raise OcrUnavailableError(f"Brains sidecar OCR response from {brains_url} is missing 'raw_text'")
 
-    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    # paddleocr 3.x's `.ocr()`/`.predict()` returns a list of dict-like
-    # `OCRResult` objects (one per page), each carrying a flat `rec_texts`
-    # list -- a different shape from the pre-3.x nested
-    # `[[box, (text, conf)], ...]` per-page format this used to parse.
-    result = engine.ocr(np.array(image))
-
-    lines: list[str] = []
-    for page in result or []:
-        texts = page.get("rec_texts") if isinstance(page, dict) else None
-        for text in texts or []:
-            if text:
-                lines.append(text)
-    return "\n".join(lines)
+    return raw_text

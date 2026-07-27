@@ -2,7 +2,7 @@
 
 **Scan a pill before you take it. Understand your medication in your own language.**
 
-[![CI](https://github.com/muthuacumen/mypillsafe/actions/workflows/ci.yml/badge.svg)](https://github.com/muthuacumen/mypillsafe/actions/workflows/ci.yml)
+[![CI](https://github.com/muthuacumen/MyPillSafeMVP/actions/workflows/ci.yml/badge.svg)](https://github.com/muthuacumen/MyPillSafeMVP/actions/workflows/ci.yml)
 
 MyPillSafe is the application surface of **PillSafe**, a medication-safety capstone project
 (Conestoga College Graduate AI/ML program, AIML-6900). It is built for **seniors and people

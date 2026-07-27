@@ -14,13 +14,24 @@ own OCR subprocess internally via `sys.executable -m imb1.ocr_sub` -- since
 this service runs under the sidecar venv's python, that subprocess correctly
 reuses the same venv (which has paddleocr/paddlepaddle-gpu installed) without
 this process ever importing paddle itself. Do not import paddle here.
+
+`POST /ocr/prescription` (Task A1, app x brains deploy-readiness build) is
+the same pattern applied to prescription-LABEL OCR (as opposed to pill-
+imprint OCR): it spawns `rx_ocr_sub.py` -- a second, independent, torch-free
+subprocess -- via `sys.executable`, so this process still never imports
+paddle even though the backend now sends prescription photos here instead of
+running PaddleOCR in-process itself (see backend/app/services/ocr_service.py).
 """
 from __future__ import annotations
 
 import json as json_mod
 import math
 import os
+import subprocess
+import sys
 import tempfile
+import time
+from pathlib import Path
 from typing import Any
 
 import config  # noqa: F401  -- side effect: inserts IMB1_ROOT/SB2_ROOT/BB3_ROOT onto sys.path
@@ -31,6 +42,11 @@ import pandas as pd
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
+
+# Prescription-label OCR (Task A1). A standalone, paddle-only, torch-free
+# subprocess -- see its module docstring for why it must never be imported
+# directly into this (torch-holding, via imb1) process.
+RX_OCR_SUB = Path(__file__).resolve().parent / "rx_ocr_sub.py"
 
 # --- Import the frozen packages defensively -------------------------------
 # Per spec: import checks must never crash the service. If either package (or
@@ -134,12 +150,112 @@ def health() -> dict:
         "ollama_up": qa.ollama_up(),
         "reference_rows": reference_rows,
         "torch_cuda_available": torch_cuda_available,
+        # File-exists check ONLY -- deliberately never imports paddle or spawns
+        # a probe subprocess here. /health is polled by the pool checker every
+        # 30s (see backend/app/services/brains_registry.py); a slow/heavy
+        # check on that path would make health-checking itself a liability.
+        "ocr_worker": "present" if RX_OCR_SUB.exists() else "missing",
         "roots": {
             "IMB1_ROOT": config.IMB1_ROOT,
             "SB2_ROOT": config.SB2_ROOT,
             "BB3_ROOT": config.BB3_ROOT,
         },
     }
+
+
+# --- /ocr/prescription -------------------------------------------------------
+
+@app.post("/ocr/prescription")
+async def ocr_prescription(image: UploadFile = File(...)) -> dict:
+    """Prescription-label OCR (Task A1), proxied by the backend's
+    `ocr_service.extract_text` (Task A2.1). Spawns `rx_ocr_sub.py` as a
+    torch-free subprocess (see that module's docstring) via `sys.executable`
+    -- this process itself never imports paddle.
+
+    Never returns an empty-but-successful response for a failed run: any
+    subprocess failure/timeout/malformed output raises HTTP 503 with the
+    subprocess's stderr tail attached, so the caller can tell "OCR found no
+    text" apart from "OCR did not run".
+    """
+    suffix = os.path.splitext(image.filename or "")[1] or ".jpg"
+    image_bytes = await image.read()
+
+    img_tmp_path: str | None = None
+    out_tmp_path: str | None = None
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as img_tmp:
+            img_tmp.write(image_bytes)
+            img_tmp_path = img_tmp.name
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as out_tmp:
+            out_tmp_path = out_tmp.name
+
+        start = time.monotonic()
+        try:
+            proc = await run_in_threadpool(
+                subprocess.run,
+                [sys.executable, str(RX_OCR_SUB), "--image", img_tmp_path, "--out-json", out_tmp_path],
+                capture_output=True,
+                text=True,
+                timeout=300,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "error": {
+                        "code": "OCR_TIMEOUT",
+                        "message": "Prescription OCR timed out after 300s.",
+                    }
+                },
+            ) from exc
+        elapsed_seconds = time.monotonic() - start
+
+        if proc.returncode != 0:
+            stderr_tail = "\n".join((proc.stderr or "").strip().splitlines()[-20:])
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "error": {
+                        "code": "OCR_SUBPROCESS_FAILED",
+                        "message": f"rx_ocr_sub exited {proc.returncode}: {stderr_tail or '(no stderr)'}",
+                    }
+                },
+            )
+
+        try:
+            with open(out_tmp_path, encoding="utf-8") as fh:
+                result = json_mod.load(fh)
+        except (OSError, json_mod.JSONDecodeError) as exc:
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "error": {
+                        "code": "OCR_OUTPUT_UNREADABLE",
+                        "message": f"rx_ocr_sub produced no readable output JSON: {exc!r}",
+                    }
+                },
+            ) from exc
+
+        if "raw_text" not in result:
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "error": {
+                        "code": "OCR_OUTPUT_MALFORMED",
+                        "message": "rx_ocr_sub output JSON is missing 'raw_text'.",
+                    }
+                },
+            )
+
+        return {
+            "raw_text": result["raw_text"],
+            "line_count": result.get("line_count", len(result.get("lines", []))),
+            "elapsed_seconds": round(elapsed_seconds, 3),
+        }
+    finally:
+        for p in (img_tmp_path, out_tmp_path):
+            if p and os.path.exists(p):
+                os.remove(p)
 
 
 # --- /pill/analyze -----------------------------------------------------------

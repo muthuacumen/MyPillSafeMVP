@@ -1,7 +1,26 @@
+import httpx
 import pytest
 from httpx import AsyncClient
 
 from app.core.config import settings
+from app.services import ocr_service
+
+
+class _UnreachableAsyncClient:
+    """Stands in for httpx.AsyncClient -- every call raises, simulating the
+    brains sidecar being down/unreachable (matches test_pill_v2.py's idiom)."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *exc_info):
+        return False
+
+    async def post(self, url, **kwargs):
+        raise httpx.ConnectError("connection refused", request=httpx.Request("POST", url))
 
 
 def _fake_image() -> tuple[str, bytes, str]:
@@ -57,17 +76,19 @@ async def test_list_update_and_soft_delete_prescription(client: AsyncClient, aut
 
 
 @pytest.mark.asyncio
-async def test_upload_prescription_degrades_gracefully_on_bad_image_when_ocr_enabled(
+async def test_upload_prescription_returns_503_when_ocr_unavailable(
     client: AsyncClient, auth_headers: dict, monkeypatch: pytest.MonkeyPatch
 ):
-    """A corrupt/non-image upload must fall back to demo text, not crash the
-    request, once real OCR is switched on."""
+    """Task A2.2: once OCR is a remote sidecar call, ANY failure (corrupt
+    image, sidecar down, timeout) must return an honest 503 OCR_UNAVAILABLE
+    -- never the old silent fallback to a fabricated demo prescription. This
+    is the abstain-over-guess principle's central enforcement point."""
     monkeypatch.setattr(settings, "OCR_PIPELINE_ENABLED", True)
 
-    def _raise(image_bytes: bytes):
-        raise OSError("Truncated File Read")
+    async def _raise(image_bytes: bytes, filename: str, content_type: str) -> str:
+        raise ocr_service.OcrUnavailableError("sidecar unreachable at http://100.x.y.z:8100")
 
-    monkeypatch.setattr("app.services.ocr_service.extract_text", _raise)
+    monkeypatch.setattr(ocr_service, "extract_text", _raise)
 
     name, content, ctype = _fake_image()
     response = await client.post(
@@ -75,8 +96,32 @@ async def test_upload_prescription_degrades_gracefully_on_bad_image_when_ocr_ena
         headers=auth_headers,
         files={"image": (name, content, ctype)},
     )
-    assert response.status_code == 201
-    assert response.json()[0]["drug_name"]
+    assert response.status_code == 503
+    error = response.json()["detail"]["error"]
+    assert error["code"] == "OCR_UNAVAILABLE"
+    # User-facing message must stay generic -- never leak the sidecar host.
+    assert "100.x.y.z" not in error["message"]
+    assert "sidecar" not in error["message"].lower()
+
+
+@pytest.mark.asyncio
+async def test_upload_prescription_returns_503_when_sidecar_unreachable_end_to_end(
+    client: AsyncClient, auth_headers: dict, monkeypatch: pytest.MonkeyPatch
+):
+    """Same as above but exercises the real `ocr_service.extract_text` HTTP
+    path (not mocked) against a simulated-unreachable httpx.AsyncClient --
+    the honest-degradation bar from the deploy-readiness verification list."""
+    monkeypatch.setattr(settings, "OCR_PIPELINE_ENABLED", True)
+    monkeypatch.setattr(httpx, "AsyncClient", _UnreachableAsyncClient)
+
+    name, content, ctype = _fake_image()
+    response = await client.post(
+        "/api/v1/prescriptions",
+        headers=auth_headers,
+        files={"image": (name, content, ctype)},
+    )
+    assert response.status_code == 503
+    assert response.json()["detail"]["error"]["code"] == "OCR_UNAVAILABLE"
 
 
 @pytest.mark.asyncio
@@ -84,9 +129,9 @@ async def test_upload_prescription_creates_one_row_per_medication(
     client: AsyncClient, auth_headers: dict, monkeypatch: pytest.MonkeyPatch
 ):
     monkeypatch.setattr(settings, "OCR_PIPELINE_ENABLED", True)
-    monkeypatch.setattr(
-        "app.services.ocr_service.extract_text",
-        lambda image_bytes: (
+
+    async def _fake_extract_text(image_bytes: bytes, filename: str, content_type: str) -> str:
+        return (
             "CONESTOGA MEDICAL CENTRE\n"
             "RX 1\nAcetaminophen 500mg (Tylenol Extra Strength).\n"
             "Take 2 tablets every 6 hours as needed for pain or fever - do not exceed 8 tablets in 24 hours\n"
@@ -97,8 +142,9 @@ async def test_upload_prescription_creates_one_row_per_medication(
             "RX 3\nLoratadine 10mg (Claritin).\n"
             "Take 1 tablet ONCE DAILY in the morning for seasonal allergies.\n"
             "Qty: 30 tablets\nRefills: 3\nDIN: 00782696\n"
-        ),
-    )
+        )
+
+    monkeypatch.setattr(ocr_service, "extract_text", _fake_extract_text)
     name, content, ctype = _fake_image()
     response = await client.post(
         "/api/v1/prescriptions",

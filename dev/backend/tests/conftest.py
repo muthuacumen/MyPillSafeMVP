@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from app.main import app as fastapi_app
+from app.core.config import settings
 from app.core.database import Base, get_db
 from app.core.security import create_access_token
 from app.models.user import User, UserRole
@@ -29,6 +30,22 @@ TestSessionLocal = async_sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False,
 )
+
+
+@pytest.fixture(autouse=True)
+def _ocr_pipeline_disabled_by_default(monkeypatch: pytest.MonkeyPatch):
+    """Task A2.2: prescription OCR now calls a real HTTP sidecar
+    (`ocr_service.extract_text`) instead of an in-process PaddleOCR engine
+    that gracefully degraded to demo text whenever `paddleocr` wasn't
+    installed (as it isn't in this test venv) -- so most tests, which only
+    care that a prescription upload succeeds and don't care what OCR said,
+    would otherwise depend on a live sidecar being reachable at
+    `BRAINS_SERVICE_URL`. Default every test to the explicit
+    `OCR_PIPELINE_ENABLED=false` local-dev demo-text path instead; tests that
+    exercise real OCR behaviour (test_prescriptions.py) explicitly
+    re-enable it and mock `ocr_service.extract_text` directly.
+    """
+    monkeypatch.setattr(settings, "OCR_PIPELINE_ENABLED", False)
 
 
 @pytest_asyncio.fixture(scope="session", autouse=True)

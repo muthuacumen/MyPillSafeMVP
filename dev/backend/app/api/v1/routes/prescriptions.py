@@ -1,11 +1,24 @@
-"""Prescription OCR capture + My Medications CRUD (Priority 1)."""
+"""Prescription OCR capture + My Medications CRUD (Priority 1).
+
+Task A2.2 (deploy-readiness build) removed the old behaviour where ANY OCR
+failure -- sidecar down, timeout, corrupt image -- silently fell back to
+`_DEMO_RAW_TEXT`, a canned "Metformin HCl 500mg..." string. In a medication-
+safety app, silently inventing a prescription from a failed scan is the
+worst available failure mode: it directly contradicts this project's
+abstain-over-guess principle, and once OCR became a remote call to the
+brains sidecar (Task A1), that fallback became reachable in ordinary
+operation (a closed laptop, a slow network), not just a missing local
+dependency. Real OCR failure now raises a clean, honest 503 instead. The
+demo text survives ONLY behind `OCR_PIPELINE_ENABLED=false`, an explicit
+local-dev opt-out that must never be set in production (see that flag's
+comment in `.env.example`).
+"""
 import logging
 import os
 import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
-from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -32,8 +45,14 @@ async def _get_patient_or_404(db: AsyncSession, user: User):
     return patient
 
 
-# Demo data returned when OCR_PIPELINE_ENABLED=false, per build spec 1B.
+# Demo data returned ONLY when OCR_PIPELINE_ENABLED=false -- an explicit
+# local-dev opt-out switch (per build spec 1B) that fabricates prescription
+# text regardless of the uploaded image. Must NEVER be set false in
+# production: a real OCR failure must surface as OCR_UNAVAILABLE (503), not
+# silently substitute this text (Task A2.2 -- see module docstring).
 _DEMO_RAW_TEXT = "Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2."
+
+_OCR_UNAVAILABLE_MESSAGE = "Prescription scanning is temporarily unavailable. Please try again shortly."
 
 
 @router.post("", response_model=list[PrescriptionWithSuggestions], status_code=status.HTTP_201_CREATED)
@@ -55,19 +74,23 @@ async def upload_prescription(
 
     if settings.OCR_PIPELINE_ENABLED:
         try:
-            # PaddleOCR inference is a slow, synchronous, CPU-bound call — run it
-            # off the event loop so it doesn't freeze every other request (other
-            # users' logins, page loads, etc.) for the duration of this scan.
-            raw_text = await run_in_threadpool(ocr_service.extract_text, image_bytes)
+            # The sidecar call is itself async (httpx) and already runs off
+            # any CPU-bound work in-process -- the actual OCR inference now
+            # happens on the remote sidecar's subprocess, not here.
+            raw_text = await ocr_service.extract_text(
+                image_bytes, image.filename or "prescription.jpg", image.content_type or "image/jpeg"
+            )
         except ocr_service.OcrUnavailableError as exc:
-            logger.warning("OCR pipeline unavailable, falling back to demo data: %s", exc)
-            raw_text = _DEMO_RAW_TEXT
-        except Exception as exc:
-            # A bad/corrupt/non-image upload shouldn't crash the request — degrade
-            # to demo text just like the "OCR not installed" path.
-            logger.warning("OCR extraction failed, falling back to demo data: %s", exc)
-            raw_text = _DEMO_RAW_TEXT
+            # Honest failure, not a fabricated prescription (see module
+            # docstring). Log the real cause (including the sidecar URL)
+            # server-side only -- the user-facing message stays generic.
+            logger.warning("OCR pipeline unavailable: %s", exc)
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail={"error": {"code": "OCR_UNAVAILABLE", "message": _OCR_UNAVAILABLE_MESSAGE}},
+            ) from exc
     else:
+        # Explicit local-dev opt-out only -- see _DEMO_RAW_TEXT's comment.
         raw_text = _DEMO_RAW_TEXT
 
     medications = prescription_parser.parse_medications(raw_text)

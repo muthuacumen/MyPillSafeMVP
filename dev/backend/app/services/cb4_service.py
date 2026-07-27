@@ -24,6 +24,7 @@ import httpx
 from fastapi.concurrency import run_in_threadpool
 
 from app.core.config import settings
+from app.services.brains_registry import resolve_brains_url
 
 logger = logging.getLogger(__name__)
 
@@ -167,15 +168,17 @@ def _call_claude(client, system_prompt: str, packed_sources: str, question: str,
 
 
 async def _check_guards(answer: str, sources_used: list[str], abstained: bool, entity_names: list[str],
-                        question: str | None = None, packed_context: str | None = None) -> dict:
+                        question: str | None, packed_context: str | None, brains_url: str) -> dict:
     """POSTs the sidecar's /qa/guard (single-shot BB3 guard checks). Raises
     on failure -- guard checks are safety-critical and must never be
     silently skipped; the route catches and returns a clean error envelope.
 
-    question + packed_context (WP2.5) enable the claim-source polarity guard."""
+    question + packed_context (WP2.5) enable the claim-source polarity guard.
+    `brains_url` is resolved once by the caller (`answer_question`) and
+    reused across every guard check in this call, per Task A3.3."""
     async with httpx.AsyncClient(timeout=GUARD_CHECK_TIMEOUT_SECONDS) as http_client:
         response = await http_client.post(
-            f"{settings.BRAINS_SERVICE_URL}/qa/guard",
+            f"{brains_url}/qa/guard",
             json={
                 "answer": answer,
                 "sources_used": sources_used,
@@ -229,6 +232,11 @@ async def answer_question(
     if client is None:
         raise RuntimeError("cb4_service.answer_question called with no LLM_API_KEY configured")
 
+    # Resolve once per request and reuse across every guard check below
+    # (Task A3.3) -- the pool could otherwise resolve to a different sidecar
+    # mid-request.
+    brains_url = await resolve_brains_url()
+
     system_prompt = SYSTEM_PROMPT_TEMPLATE.format(language=language or "English")
     flags = dict(_DEFAULT_GUARD_FLAGS)
 
@@ -275,7 +283,7 @@ async def answer_question(
     for flag_name, kind, result_key, refusal in guard_loop:
         guard_result = await _check_guards(
             parsed["answer"], parsed["sources_used"], parsed["abstained"], entity_names,
-            question, packed_sources)
+            question, packed_sources, brains_url)
         offender = guard_result.get(result_key)
         if not offender:
             continue
@@ -289,7 +297,7 @@ async def answer_question(
         retried["sources_used"] = [t for t in retried["sources_used"] if t in offered_tags]
         recheck = await _check_guards(
             retried["answer"], retried["sources_used"], retried["abstained"], entity_names,
-            question, packed_sources)
+            question, packed_sources, brains_url)
         if recheck.get(result_key):
             flags["guard_refused"] = True
             return _refused_response(flags, sources, refusal)
@@ -300,7 +308,7 @@ async def answer_question(
     # never retries (same as guards.check_and_fix / BB3Engine.chat()).
     final_guard = await _check_guards(
         parsed["answer"], parsed["sources_used"], parsed["abstained"], entity_names,
-        question, packed_sources)
+        question, packed_sources, brains_url)
     if final_guard.get("structural_inconsistency"):
         flags["structural_inconsistency"] = True
 

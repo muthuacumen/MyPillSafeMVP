@@ -1,4 +1,10 @@
 # ── Stage 1: builder ──────────────────────────────────────────────────────────
+# Task A4 (deploy-readiness build): PaddleOCR/PaddlePaddle no longer live in
+# this image at all -- prescription OCR is a remote call to the `dev/brains`
+# sidecar over the tailnet (see app/services/ocr_service.py). That removed
+# ~3 GB and every paddle-only apt package / pip pin below (LD_PRELOAD zlib
+# workaround, the cython<3.0 pin, libgl1/libglib2.0-0). See A4 report for the
+# measured before/after image size.
 FROM python:3.11-slim AS builder
 
 WORKDIR /app
@@ -8,38 +14,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
     libpq-dev \
-    libgl1 \
-    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt requirements-optional.txt ./
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt \
-    # requirements-optional.txt installs PaddleOCR — real prescription-label
-    # reading. Without it, OCR_PIPELINE_ENABLED silently falls back to demo
-    # text for every upload regardless of image content (see ocr_service.py).
-    && pip install --no-cache-dir -r requirements-optional.txt \
-    # paddle eagerly imports paddle.utils.cpp_extension at package-init time,
-    # which pulls in Cython's compiled internals — Cython 3.x segfaults on
-    # import in this stack (observed: SIGSEGV inside Cython.Compiler.Errors).
-    # Pin back to the 0.29.x line, which doesn't have this binary-compat issue.
-    && pip install --no-cache-dir "cython<3.0"
+    # requirements-optional.txt now installs only the Claude SDK (CB4) and
+    # faster-whisper (assistant voice input) -- see that file's header.
+    && pip install --no-cache-dir -r requirements-optional.txt
 
 # ── Stage 2: runtime ──────────────────────────────────────────────────────────
 FROM python:3.11-slim AS runtime
 
 WORKDIR /app
 
-# Runtime system deps only
-# libgomp1 is required by paddlepaddle's compiled core (libpaddle.so links
-# against libgomp.so.1) — without it, paddle fails to import at all and OCR
-# silently falls back to demo text.
+# Runtime system deps only.
+# libgomp1 is a real, still-needed dependency: faster-whisper's ctranslate2
+# backend (assistant voice input, Priority 5) uses OpenMP and links against
+# libgomp.so.1 -- keep it even though paddle (its original reason for being
+# here) is gone.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
-    libgl1 \
-    libglib2.0-0 \
     libgomp1 \
-    zlib1g \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
@@ -49,18 +45,6 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application source
 COPY . .
-
-# libpaddle.so statically bundles its own copy of zlib and exports those
-# symbols globally (confirmed via `nm -D libpaddle.so`), which silently
-# hijacks every other library's zlib calls process-wide once paddle is
-# imported — any later-loaded compiled extension that also calls
-# inflate/inflateReset2 (pyclipper, scipy._lib._ccallback_c, ...) gets routed
-# to paddle's bundled copy instead of the real system zlib and fails with
-# "zlib.error: Error -2 while decompressing data: inconsistent stream state"
-# (or segfaults outright). Preloading the real libz.so.1 first forces the
-# dynamic linker to resolve those symbols to it instead. Not a PillSafe bug —
-# a symbol-visibility defect in the upstream paddlepaddle 2.6.2 wheel.
-ENV LD_PRELOAD=/lib/x86_64-linux-gnu/libz.so.1
 
 # Non-root user for security
 RUN adduser --disabled-password --gecos "" pillsafe && chown -R pillsafe /app

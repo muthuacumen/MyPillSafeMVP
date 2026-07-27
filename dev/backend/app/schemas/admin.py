@@ -52,3 +52,19 @@ class AnalysisSummary(BaseModel):
     guidance: str | None
     ml_pipeline_enabled: bool
     created_at: datetime
+
+
+class BrainsPoolEntry(BaseModel):
+    url: str
+    healthy: bool
+    latency_ms: float
+    checked_at: str
+    pinned: bool
+
+
+class BrainsPinRequest(BaseModel):
+    # Explicit `str | None` (never an arbitrary free-form field) -- the route
+    # validates this against the configured pool and 422s otherwise, so this
+    # endpoint can never be used to make the backend call an arbitrary host
+    # (Task A3.4 -- an admin-authenticated SSRF hole would still be a hole).
+    url: str | None = None

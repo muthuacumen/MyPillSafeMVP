@@ -23,6 +23,7 @@ from app.core.database import get_db
 from app.models.analysis import Analysis
 from app.models.user import User
 from app.services import brains_client, din_utils, prescription_service
+from app.services.brains_registry import resolve_brains_url
 from app.services.patient_service import get_patient_by_user_id
 
 logger = logging.getLogger(__name__)
@@ -118,22 +119,27 @@ async def analyze_pill_v2(
 
     image_bytes = await image.read()
 
+    # Resolve once per request and reuse for both the call and its error
+    # message (Task A3.3) -- the pool could resolve to a different URL on a
+    # second call, which would produce a misleading error.
+    brains_url = await resolve_brains_url()
+
     try:
         async with httpx.AsyncClient(timeout=180.0) as http_client:
             response = await http_client.post(
-                f"{settings.BRAINS_SERVICE_URL}/pill/analyze",
+                f"{brains_url}/pill/analyze",
                 files={"image": (image.filename or "pill.jpg", image_bytes, image.content_type or "image/jpeg")},
                 data={"profile_dins": json.dumps(profile_dins)},
             )
     except httpx.HTTPError as exc:
-        logger.warning("Brains sidecar unreachable at %s: %s", settings.BRAINS_SERVICE_URL, exc)
+        logger.warning("Brains sidecar unreachable at %s: %s", brains_url, exc)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail={
                 "error": {
                     "code": "BRAINS_UNAVAILABLE",
                     "message": "The brains sidecar service could not be reached. Make sure it is running "
-                    f"at {settings.BRAINS_SERVICE_URL}.",
+                    f"at {brains_url}.",
                 }
             },
         ) from exc

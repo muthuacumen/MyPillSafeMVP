@@ -1,0 +1,110 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# PillSafe — Production overlay (Task A5.1, Part A of the mypillsafe.ca deploy)
+# Usage (from the REPO ROOT -- see DEPLOY_GUIDE.md §7):
+#   docker compose -f docker/docker-compose.yml -f docker/docker-compose.prod.yml
+#     --env-file .env up -d
+# The production secrets file MUST be named `.env` at the repo root -- the
+# base compose file hardcodes the service-level `env_file: ../.env` path
+# (relative to docker/), so any other name (e.g. `.env.production`) makes
+# compose fail with "env file not found". `.env` is gitignored.
+#
+# This overlay turns the local dev compose file into the production shape for
+# the shared DigitalOcean droplet, which ALREADY serves two other live sites
+# on host :80 (JidokaAcumen + PathoIntern QA) and has ~1.5 GB of free RAM.
+# Three jobs:
+#   1. Nothing binds 0.0.0.0 -- only the gateway nginx publishes a port at
+#      all, and only on 127.0.0.1, so it can never collide with (or be
+#      reached around) the droplet's own host nginx, which is what actually
+#      terminates mypillsafe.ca traffic and reverse-proxies to 127.0.0.1:8080
+#      (see docker/nginx/mypillsafe.ca.conf, Task A5.2).
+#   2. Pull pre-built images from GHCR instead of building on the droplet.
+#   3. Cap every container's memory (cgroup `mem_limit`) so a PillSafe
+#      balloon can never OOM-kill the neighbouring live sites.
+#
+# IMPORTANT: `ports` and `extra_hosts` use the `!override`/`!reset` merge
+# tags (Compose Specification, supported v2.24+/v5+) deliberately -- plain
+# Compose file merging CONCATENATES multi-value list options like `ports`
+# and `extra_hosts` across `-f` files by default, it does not replace them.
+# Without the tags, the base file's `"80:80"` etc. would survive alongside
+# whatever this overlay adds, silently reintroducing the exact public bind
+# this file exists to remove. Verified empirically with
+# `docker compose ... config` before relying on it here -- see Task A5
+# verification bar #11.
+# ──────────────────────────────────────────────────────────────────────────────
+
+# Explicit project name (SA verification fix, 2026-07-27): without it,
+# Compose derives the project name from the FIRST compose file's directory
+# basename -- "docker" -- a generic name that on the shared droplet risks
+# label/volume cross-talk with any other stack ever launched from a docker/
+# folder (volumes would be docker_postgres_data etc., verified empirically).
+# Prod-only: the local dev flow (base file alone) keeps its existing
+# default-named project untouched.
+name: mypillsafe
+
+services:
+
+  postgres:
+    mem_limit: 384m
+    restart: always
+    ports: !reset []
+
+  redis:
+    mem_limit: 64m
+    restart: always
+    ports: !reset []
+
+  backend:
+    image: ghcr.io/muthuacumen/mypillsafe-backend:${IMAGE_TAG:-latest}
+    pull_policy: always
+    mem_limit: 800m
+    restart: always
+    ports: !reset []
+    # In production the sidecar is reached at a raw Tailscale IP
+    # (100.x.y.z, set via BRAINS_SERVICE_URL/BRAINS_SERVICE_URLS in
+    # .env.production -- see .env.production.example), never a MagicDNS
+    # hostname or `host.docker.internal` -- containers use Docker's own
+    # resolver and will not resolve tailnet names. The base file's
+    # `extra_hosts: host.docker.internal -> host-gateway` mapping (needed
+    # for the LOCAL dev story, where the sidecar runs on the same machine as
+    # Docker Desktop) is meaningless here and is dropped.
+    extra_hosts: !reset []
+    # BUG FOUND while verifying this overlay (Task A5, `docker compose ...
+    # config`): the base file hard-codes
+    # `environment.BRAINS_SERVICE_URL: http://host.docker.internal:8100`
+    # (a dev-only value). Compose's explicit `environment:` mapping always
+    # wins over `env_file:` for the same key, so without this override
+    # PRODUCTION WOULD SILENTLY IGNORE `.env.production`'s BRAINS_SERVICE_URL
+    # and keep sending the backend a hostname that (with extra_hosts dropped
+    # above) doesn't resolve to anything in a Linux container. Harmless
+    # today only because `.env.production.example` populates the
+    # `BRAINS_SERVICE_URLS` pool, and `brains_registry.resolve_brains_url()`
+    # never falls back to the single URL while the pool is non-empty -- but
+    # a misconfigured/empty pool would silently regress to a broken host.
+    # Route this key through normal Compose variable substitution instead
+    # (sourced from `.env.production` at the `docker compose --env-file`
+    # level) so the single-URL fallback stays sane even if the pool is
+    # ever empty.
+    environment:
+      BRAINS_SERVICE_URL: ${BRAINS_SERVICE_URL:-http://127.0.0.1:8100}
+
+  frontend:
+    image: ghcr.io/muthuacumen/mypillsafe-frontend:${IMAGE_TAG:-latest}
+    pull_policy: always
+    mem_limit: 96m
+    restart: always
+    ports: !reset []
+    # spa.conf is still bind-mounted from THIS file's own directory
+    # (docker/nginx/spa.conf) -- inherited unchanged from the base compose
+    # file, which lives in the same docker/ directory, so the relative path
+    # still resolves correctly under `-f docker/docker-compose.yml -f
+    # docker/docker-compose.prod.yml`.
+
+  nginx:
+    mem_limit: 64m
+    restart: always
+    # Replaces (not appends to) the base file's `"80:80"` -- the droplet's
+    # OWN host nginx (Task A5.2) is what listens on the real :80 and reverse
+    # proxies to 127.0.0.1:8080; this gateway must never itself be reachable
+    # from outside the droplet.
+    ports: !override
+      - "127.0.0.1:8080:80"
