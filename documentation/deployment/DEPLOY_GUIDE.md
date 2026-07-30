@@ -660,9 +660,21 @@ the droplet would keep calling a sidecar still running the old code. `BB3/` in p
 laptop-local and **not in git at all** (settled 2026-07-30), so the repo is no record of its state.
 
 ```powershell
-# [LAPTOP] — Ctrl-C the sidecar, start it again (§3.1), then re-confirm CHECKPOINT 11
-#            from the droplet before calling the deploy done.
+# [LAPTOP] The sidecar runs under the Task Scheduler task "MyPillSafe Sidecar"
+# (D:\Projects\PillSafe\ops\start_sidecar.cmd), so it is NOT a terminal you can
+# Ctrl-C. Restart it through the task, ALWAYS /end before /run:
+schtasks /end /tn "MyPillSafe Sidecar"
+schtasks /run /tn "MyPillSafe Sidecar"
+
+# VERIFY IT ACTUALLY RESTARTED -- do not skip this.
+# `schtasks /run` SILENTLY NO-OPS if the old instance still holds port 8100:
+# it reports Last Result: 1 and starts nothing, so a brain change you believe
+# you deployed is still not live. Proof of a real restart is a NEW banner:
+Get-Content D:\Projects\PillSafe\logs\sidecar.log -Tail 5   # expect a fresh "---- sidecar start ... ----"
+schtasks /query /tn "MyPillSafe Sidecar" /v /fo LIST | Select-String "Last Result"  # expect 0, not 1
 ```
+
+Then re-confirm CHECKPOINT 11 from the droplet before calling the deploy done.
 
 **Roll back** — set `IMAGE_TAG` to the previous tag and re-run the last command.
 
