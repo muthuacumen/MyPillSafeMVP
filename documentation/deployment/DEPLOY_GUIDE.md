@@ -467,22 +467,25 @@ calls, which looks exactly like a broken scanner rather than a missing column.
 
 ```bash
 # [DROPLET] every column the models declare must exist in Postgres
-sudo docker exec pillsafe_backend python - <<'PY'
+sudo docker exec -i pillsafe_backend python - <<'PY'
 import asyncio
+from sqlalchemy import inspect
 from app.core.database import engine, Base
 import app.models.user, app.models.patient, app.models.analysis, app.models.prescription  # noqa
 
 async def main():
     async with engine.begin() as conn:
+        live_tables = await conn.run_sync(lambda c: set(inspect(c).get_table_names()))
+        bad = 0
         for table in Base.metadata.sorted_tables:
-            rows = await conn.exec_driver_sql(
-                "SELECT column_name FROM information_schema.columns "
-                "WHERE table_schema = current_schema() AND table_name = %s", (table.name,))
-            live = {r[0] for r in rows.fetchall()}
-            if not live:
-                continue
-            missing = {c.name for c in table.columns} - live
-            print(f"{'MISSING ' + str(sorted(missing)) if missing else 'ok':<40} {table.name}")
+            if table.name not in live_tables:
+                print(f"{'TABLE MISSING':<42} {table.name}"); bad += 1; continue
+            cols = await conn.run_sync(
+                lambda c, n=table.name: {col["name"] for col in inspect(c).get_columns(n)})
+            missing = {c.name for c in table.columns} - cols
+            print(f"{('MISSING ' + str(sorted(missing))) if missing else 'ok':<42} {table.name}")
+            bad += bool(missing)
+        print("SCHEMA PARITY: FAIL" if bad else "SCHEMA PARITY: OK")
 
 asyncio.run(main())
 PY
