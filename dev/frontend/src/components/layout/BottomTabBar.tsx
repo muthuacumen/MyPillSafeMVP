@@ -25,7 +25,7 @@ export default function BottomTabBar() {
 
   return (
     <nav
-      aria-label="Primary"
+      aria-label={t('nav.primary')}
       className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-navy border-t border-white/10 grid grid-cols-5"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Pill, FileText, Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Pill, FileText, Loader2, ArrowRight } from 'lucide-react';
 import { CameraCapture } from '@/components/CameraCapture';
 import { DisclaimerModal } from '@/components/DisclaimerModal';
-import { DinLinkPanel } from '@/components/DinLinkPanel';
+import { MedicationReviewCard } from '@/components/MedicationReviewCard';
 import { PillResultPanel } from '@/components/PillResultPanel';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -13,35 +13,27 @@ import { prescriptionsApi } from '@/api/prescriptions';
 import { pillApi } from '@/api/pill';
 import { voice } from '@/lib/voiceAssistant';
 import { useVoicePageAnnounce } from '@/hooks/useVoicePageAnnounce';
-import type { PrescriptionWithSuggestions, PillAnalysisV2Response } from '@/types';
-
-/** Staged copy shown while a pill scan is in flight -- the first sidecar
- * call per process is slow (model load + a fresh Paddle OCR subprocess
- * spawn), commonly 30s+, so a single static spinner reads as broken. */
-const PILL_PROGRESS_MESSAGES = [
-  'Analyzing photo… this can take up to a minute.',
-  'Reading colour, shape, and imprint…',
-  'Comparing against your medications…',
-  'Still working — almost there…',
-];
-
-/** Per-prescription DIN-link UI state, tracked client-side after a scan so
- * the confirm step can be shown/dismissed without another round trip. */
-interface DinLinkState {
-  din: string | null;
-  confirmed: boolean;
-  open: boolean;
-}
+import type { Prescription, PrescriptionWithSuggestions, PillAnalysisV2Response } from '@/types';
 
 type Mode = 'prescription' | 'pill';
 type Stage = 'capture' | 'uploading' | 'done' | 'error';
 
-const SLOT_BADGE: Record<string, string> = {
-  morning: 'slot-badge-morning',
-  afternoon: 'slot-badge-afternoon',
-  evening: 'slot-badge-evening',
-  night: 'slot-badge-night',
-};
+interface ApiErrorInfo {
+  status?: number;
+  code?: string;
+  message?: string;
+}
+
+function extractApiError(err: unknown): ApiErrorInfo {
+  const response = (
+    err as { response?: { status?: number; data?: { detail?: { error?: { code?: string; message?: string } } } } }
+  )?.response;
+  return {
+    status: response?.status,
+    code: response?.data?.detail?.error?.code,
+    message: response?.data?.detail?.error?.message,
+  };
+}
 
 export default function AnalyzePage() {
   const { t } = useTranslation();
@@ -59,15 +51,43 @@ export default function AnalyzePage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [showResultDisclaimer, setShowResultDisclaimer] = useState(false);
   const [prescriptionResults, setPrescriptionResults] = useState<PrescriptionWithSuggestions[] | null>(null);
-  const [dinLinks, setDinLinks] = useState<Record<string, DinLinkState>>({});
+  /** Server rows for the just-scanned medications, keyed by id, updated in
+   * place as the user confirms a DIN or approves. The create response is the
+   * seed; every later PATCH response replaces its entry, so the review cards
+   * always render what the SERVER says rather than optimistic local state. */
+  const [reviewRows, setReviewRows] = useState<Record<string, Prescription>>({});
   const [pillResult, setPillResult] = useState<PillAnalysisV2Response | null>(null);
   const [pillProgressStep, setPillProgressStep] = useState(0);
+
+  // Staged copy shown while a pill scan is in flight -- the first sidecar
+  // call per process is slow (model load + a fresh Paddle OCR subprocess
+  // spawn), commonly 30s+, so a single static spinner reads as broken.
+  const pillProgressMessages = t('analyze.pillProgress', { returnObjects: true }) as string[];
+
+  // FixbySonnet1 Task 4b: sidecar-down (503 OCR_UNAVAILABLE/BRAINS_UNAVAILABLE),
+  // backend crash (500), and a genuine unreadable-photo outcome must read
+  // differently -- previously all three rendered the same generic
+  // "retake the photo" text, which was actively misleading when the photo
+  // was fine and the sidecar was simply unreachable.
+  const resolveErrorMessage = useCallback((err: unknown, fallbackKey: string): string => {
+    const { status, code, message } = extractApiError(err);
+    if (status === 503 || code === 'OCR_UNAVAILABLE' || code === 'BRAINS_UNAVAILABLE') {
+      return t('analyze.errorOcrUnavailable');
+    }
+    if (status !== undefined && status >= 500) {
+      return t('analyze.errorServerGeneric');
+    }
+    // Genuine no-text/bad-photo outcome (4xx, or no response at all) --
+    // keep the existing retake-in-good-lighting guidance, still preferring
+    // the backend's own message when it provided one.
+    return message ?? t(fallbackKey);
+  }, [t]);
 
   const reset = useCallback(() => {
     setStage('capture');
     setErrorMsg('');
     setPrescriptionResults(null);
-    setDinLinks({});
+    setReviewRows({});
     setPillResult(null);
   }, []);
 
@@ -88,9 +108,10 @@ export default function AnalyzePage() {
       return;
     }
     const id = window.setInterval(() => {
-      setPillProgressStep((s) => Math.min(s + 1, PILL_PROGRESS_MESSAGES.length - 1));
+      setPillProgressStep((s) => Math.min(s + 1, pillProgressMessages.length - 1));
     }, 6000);
     return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage, mode]);
 
   const handlePrescriptionCapture = async (blob: Blob) => {
@@ -98,43 +119,24 @@ export default function AnalyzePage() {
     try {
       const { data } = await prescriptionsApi.upload(blob);
       setPrescriptionResults(data);
-      setDinLinks(
-        Object.fromEntries(
-          data.map((p) => [
-            p.id,
-            { din: p.din, confirmed: p.din_confirmed, open: !p.din_confirmed } satisfies DinLinkState,
-          ]),
-        ),
-      );
+      setReviewRows(Object.fromEntries(data.map((p) => [p.id, p as Prescription])));
       setStage('done');
       setShowResultDisclaimer(true);
+      // "read", not "saved": nothing is on the schedule until it is approved.
       voice.speak(
         data.length === 1
-          ? `${data[0].drug_name} detected. Saved to your medications.`
-          : `${data.length} medications detected: ${data.map((p) => p.drug_name).join(', ')}. Saved to your medications.`,
+          ? `${data[0].drug_name} detected. Please review it before it is added to your schedule.`
+          : `${data.length} medications detected: ${data.map((p) => p.drug_name).join(', ')}. Please review each one before it is added to your schedule.`,
       );
     } catch (err: unknown) {
-      const message = (err as { response?: { data?: { detail?: { error?: { message?: string } } } } })
-        ?.response?.data?.detail?.error?.message;
-      setErrorMsg(message ?? 'Could not read that prescription label. Please retake the photo in good lighting.');
+      setErrorMsg(resolveErrorMessage(err, 'analyze.errorPrescriptionDefault'));
       setStage('error');
     }
   };
 
   const confirmDin = async (prescriptionId: string, din: string) => {
     const { data } = await prescriptionsApi.update(prescriptionId, { din });
-    setDinLinks((prev) => ({
-      ...prev,
-      [prescriptionId]: { din: data.din, confirmed: data.din_confirmed, open: false },
-    }));
-  };
-
-  const skipDin = (prescriptionId: string) => {
-    setDinLinks((prev) => ({ ...prev, [prescriptionId]: { ...prev[prescriptionId], open: false } }));
-  };
-
-  const reopenDin = (prescriptionId: string) => {
-    setDinLinks((prev) => ({ ...prev, [prescriptionId]: { ...prev[prescriptionId], open: true } }));
+    setReviewRows((prev) => ({ ...prev, [prescriptionId]: data }));
   };
 
   const handlePillCapture = async (blob: Blob) => {
@@ -160,9 +162,7 @@ export default function AnalyzePage() {
         voice.speak("We're not fully certain. Please check the shortlist.");
       }
     } catch (err: unknown) {
-      const code = (err as { response?: { data?: { detail?: { error?: { code?: string; message?: string } } } } })
-        ?.response?.data?.detail?.error;
-      setErrorMsg(code?.message ?? 'Could not analyze that pill. Try a plain, well-lit background.');
+      setErrorMsg(resolveErrorMessage(err, 'analyze.errorPillDefault'));
       setStage('error');
     }
   };
@@ -179,7 +179,7 @@ export default function AnalyzePage() {
             to={mode === 'prescription' ? '/dashboard/scan-pill' : '/dashboard/scan-prescription'}
             className="text-sm font-semibold text-teal-700 underline"
           >
-            {mode === 'prescription' ? 'Checking a pill instead?' : 'Scanning a prescription instead?'}
+            {t(mode === 'prescription' ? 'analyze.crossLinkToPill' : 'analyze.crossLinkToRx')}
           </Link>
         )}
       </div>
@@ -187,7 +187,11 @@ export default function AnalyzePage() {
       {stage === 'capture' && (
         <Card padding="none" className="p-0 sm:p-6 rounded-none sm:rounded-2xl border-x-0 sm:border-x -mx-4 sm:mx-0">
           <CameraCapture
-            captureLabel={mode === 'prescription' ? 'Capture prescription label' : 'Capture pill photo'}
+            captureLabel={t(mode === 'prescription' ? 'analyze.captureRxLabel' : 'analyze.capturePillLabel')}
+            // FixbySonnet1 Task 8: forced illumination is pill-imprint-scoped
+            // evidence (NB08) -- Rx-scan (a flat printed document) never
+            // forces the torch.
+            forceFlash={mode === 'pill'}
             onConfirm={(blob) => (mode === 'prescription' ? handlePrescriptionCapture(blob) : handlePillCapture(blob))}
           />
         </Card>
@@ -198,10 +202,10 @@ export default function AnalyzePage() {
           <div className="flex flex-col items-center justify-center gap-3 py-12" role="status" aria-live="polite">
             <Loader2 className="h-10 w-10 text-teal-600 animate-spin" />
             <p className="text-slate-900 font-semibold text-center">
-              {mode === 'prescription' ? 'Reading your prescription label…' : PILL_PROGRESS_MESSAGES[pillProgressStep]}
+              {mode === 'prescription' ? t('analyze.uploadingRx') : pillProgressMessages[pillProgressStep]}
             </p>
             <p className="text-slate-500 text-sm">
-              {mode === 'prescription' ? 'This usually takes a few seconds.' : 'The first scan can take up to a minute.'}
+              {mode === 'prescription' ? t('analyze.uploadingRxSub') : t('analyze.pillProgressSub')}
             </p>
           </div>
         </Card>
@@ -210,7 +214,7 @@ export default function AnalyzePage() {
       {stage === 'error' && (
         <div className="space-y-4">
           <Alert variant="error" message={errorMsg} />
-          <Button onClick={reset}>Try Again</Button>
+          <Button onClick={reset}>{t('analyze.tryAgain')}</Button>
         </div>
       )}
 
@@ -220,89 +224,31 @@ export default function AnalyzePage() {
 
       {stage === 'done' && !showResultDisclaimer && prescriptionResults && prescriptionResults.length > 0 && (
         <div className="space-y-5 animate-slide-up">
-          <Card className="border-success-border bg-success-bg">
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="h-6 w-6 text-success-text shrink-0" />
-              <div className="flex-1">
-                <p className="font-semibold text-slate-900">
-                  {prescriptionResults.length === 1
-                    ? 'Prescription saved'
-                    : `${prescriptionResults.length} medications saved`}
-                </p>
-                <div className="space-y-3 mt-3">
-                  {prescriptionResults.map((p) => (
-                    <div key={p.id} className="border-t border-success-border/50 pt-3 first:border-t-0 first:pt-0">
-                      <p className="text-sm text-slate-700">
-                        <strong>{p.drug_name}</strong>
-                        {p.dosage ? ` · ${p.dosage}` : ''}
-                      </p>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {p.frequency_type === 'PRN' ? (
-                          <span className="badge bg-amber-50 text-amber-700 border border-amber-200">
-                            As needed{p.max_daily_dose ? ` · max ${p.max_daily_dose}/24h` : ''}
-                          </span>
-                        ) : (
-                          p.time_slots.map((slot) => (
-                            <span key={slot} className={`badge ${SLOT_BADGE[slot] ?? ''}`}>
-                              {slot.charAt(0).toUpperCase() + slot.slice(1)}
-                            </span>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </Card>
+          {/* Deliberately NOT a green "saved" card. Nothing has been added to
+              the user's schedule yet -- these are proposals awaiting review
+              (FixbyOPUS3 §0.1), and success-green for a pending proposal
+              would be the app telling a comfortable lie. */}
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">{t('review.title')}</h2>
+            <p className="text-sm text-slate-600 mt-1">{t('review.subtitle')}</p>
+          </div>
 
-          <div className="space-y-3">
-            {prescriptionResults.map((p) => {
-              const link = dinLinks[p.id];
-              if (!link) return null;
-              if (link.open) {
-                return (
-                  <div key={p.id}>
-                    <p className="text-xs font-semibold text-slate-500 mb-1.5">{p.drug_name}</p>
-                    <DinLinkPanel
-                      drugName={p.drug_name}
-                      dosage={p.dosage}
-                      initialSuggestions={p.din_suggestions}
-                      onConfirm={(din) => confirmDin(p.id, din)}
-                      onSkip={() => skipDin(p.id)}
-                    />
-                  </div>
-                );
-              }
-              return (
-                <div
-                  key={p.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2"
-                >
-                  <p className="text-xs text-slate-600">
-                    <strong>{p.drug_name}</strong>{' '}
-                    {link.confirmed && link.din ? (
-                      <span className="text-success-text">Linked to DIN {link.din}</span>
-                    ) : (
-                      <span className="text-slate-400">Not linked to a DIN yet</span>
-                    )}
-                  </p>
-                  <button
-                    type="button"
-                    className="text-xs font-semibold text-teal-700 underline shrink-0"
-                    onClick={() => reopenDin(p.id)}
-                  >
-                    {link.confirmed ? 'Change' : 'Link DIN'}
-                  </button>
-                </div>
-              );
-            })}
+          <div className="space-y-4">
+            {prescriptionResults.map((p) => (
+              <MedicationReviewCard
+                key={p.id}
+                prescription={reviewRows[p.id] ?? p}
+                initialDinSuggestions={p.din_suggestions}
+                onApproved={(updated) => setReviewRows((prev) => ({ ...prev, [p.id]: updated }))}
+                onDinConfirmed={(din) => confirmDin(p.id, din)}
+              />
+            ))}
           </div>
 
           <div className="flex gap-3">
-            <Button variant="secondary" onClick={reset}>Scan Another</Button>
+            <Button variant="secondary" onClick={reset}>{t('pillResult.scanAnother')}</Button>
             <Button onClick={() => navigate('/dashboard/medications')}>
-              View My Medications <ArrowRight className="h-4 w-4" />
+              {t('analyze.viewMyMedications')} <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
         </div>

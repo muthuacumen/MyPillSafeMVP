@@ -4,7 +4,6 @@ import Navbar from './Navbar';
 import { AppFooter } from './AppFooter';
 import BottomTabBar from './BottomTabBar';
 import { DisclaimerModal } from '@/components/DisclaimerModal';
-import { AssistantWidget } from '@/components/AssistantWidget';
 import { startDoseReminderEngine } from '@/lib/doseReminders';
 
 // Phase 6 (Muthu's decision): the desktop Sidebar + Topbar are gone. Every
@@ -40,7 +39,6 @@ export default function AppShell() {
       {/* Mobile-only fixed tab bar -- content padding above (pb-20) clears
           it; the bar itself adds env(safe-area-inset-bottom). */}
       <BottomTabBar />
-      <AssistantWidget />
     </div>
   );
 }

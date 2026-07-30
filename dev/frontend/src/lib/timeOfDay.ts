@@ -18,11 +18,14 @@ export const TIME_SLOT_ICON: Record<TimeSlot, LucideIcon> = {
   night: Moon,
 };
 
-export const TIME_SLOT_GREETING: Record<TimeSlot, string> = {
-  morning: 'Good morning',
-  afternoon: 'Good afternoon',
-  evening: 'Good evening',
-  night: 'Good night',
+// Greeting copy lives in i18n (`dashboard.greetings.*`, i18n/locales/{en,fr}.json)
+// -- TIME_SLOT_GREETING_KEY maps a slot to its translation key; consumers
+// (TimeAwareHeader) resolve it via `t()` at render time.
+export const TIME_SLOT_GREETING_KEY: Record<TimeSlot, string> = {
+  morning: 'dashboard.greetings.morning',
+  afternoon: 'dashboard.greetings.afternoon',
+  evening: 'dashboard.greetings.evening',
+  night: 'dashboard.greetings.night',
 };
 
 /** Hero gradient per time of day — soft sunrise, bright calm teal, warm amber

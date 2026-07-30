@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MyPillSafe — Capstone Poster</title>
+<style>
+  /* A0 landscape. Every number on this poster is a measured, recorded value —
+     provenance table in PillSafe_Poster.md beside this file. */
+  @page { size: 1189mm 841mm; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1189mm; height: 841mm; }
+  body {
+    font-family: "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color: #1A202C; background: #E8EEF2; overflow: hidden;
+  }
+  .poster { width: 1189mm; height: 841mm; display: flex; flex-direction: column; }
+
+  /* ---------- header ---------- */
+  .banner {
+    background: #1E3A5F; color: #fff; padding: 14mm 18mm 12mm;
+    display: flex; align-items: center; gap: 14mm;
+  }
+  .banner .brand { flex: 0 0 auto; }
+  .banner .brand .logo {
+    font-size: 16mm; font-weight: 800; letter-spacing: -0.5mm;
+  }
+  .banner .brand .logo .pill { color: #5FC0B2; }
+  .banner .brand .sub { font-size: 6mm; color: #C7EBE6; margin-top: 2mm; }
+  .banner .title { flex: 1 1 auto; text-align: center; }
+  .banner .title h1 { font-size: 21mm; font-weight: 800; line-height: 1.05; }
+  .banner .title p { font-size: 7.2mm; color: #E8EEF2; margin-top: 3mm; }
+  .banner .meta { flex: 0 0 auto; text-align: right; font-size: 5.6mm; line-height: 1.6; color: #C7EBE6; }
+  .banner .meta .url { font-size: 7mm; font-weight: 700; color: #fff; background: #23847A; padding: 2mm 5mm; border-radius: 3mm; display: inline-block; margin-top: 2mm; }
+  .badge {
+    display: inline-block; background: #D64045; color: #fff; font-weight: 700;
+    font-size: 5mm; letter-spacing: 0.8mm; text-transform: uppercase;
+    padding: 1.8mm 4mm; border-radius: 2.5mm;
+  }
+
+  /* ---------- layout ---------- */
+  .cols { flex: 1; display: grid; grid-template-columns: 292mm 1fr 292mm; gap: 8mm; padding: 8mm 10mm; min-height: 0; }
+  .col { display: flex; flex-direction: column; gap: 8mm; min-height: 0; }
+  .card { background: #fff; border-radius: 5mm; padding: 8mm 9mm; box-shadow: 0 1mm 3mm rgba(30,58,95,.12); }
+  .card h2 {
+    font-size: 8.6mm; color: #1E3A5F; font-weight: 800; margin-bottom: 4mm;
+    padding-bottom: 2.5mm; border-bottom: 1.2mm solid #2A9D8F;
+  }
+  .card p, .card li { font-size: 6mm; line-height: 1.42; color: #4A5568; }
+  .card ul { list-style: none; }
+  .card ul li { padding-left: 7mm; position: relative; margin-bottom: 2.6mm; }
+  .card ul li::before { content: "▸"; color: #2A9D8F; position: absolute; left: 0; font-size: 6mm; }
+  .card .em { color: #1A202C; font-weight: 700; }
+
+  /* ---------- left specifics ---------- */
+  .bigfact { display: flex; gap: 6mm; margin-top: 4mm; }
+  .bigfact .bf { flex: 1; background: #E8EEF2; border-left: 2mm solid #2A9D8F; border-radius: 0 3mm 3mm 0; padding: 4mm 5mm; }
+  .bigfact .bf .v { font-size: 11mm; font-weight: 800; color: #1A202C; }
+  .bigfact .bf .l { font-size: 4.8mm; color: #4A5568; margin-top: 1mm; line-height: 1.3; }
+  .stack .row { display: flex; align-items: baseline; gap: 4mm; margin-bottom: 2.4mm; }
+  .stack .k { flex: 0 0 46mm; font-size: 5.2mm; font-weight: 700; color: #1E3A5F; text-transform: uppercase; letter-spacing: .3mm; }
+  .stack .v { font-size: 5.6mm; color: #4A5568; }
+
+  /* ---------- architecture diagram ---------- */
+  .lane { margin-bottom: 6mm; }
+  .lane .lane-title { font-size: 5.6mm; font-weight: 800; color: #23847A; text-transform: uppercase; letter-spacing: .5mm; margin-bottom: 2.5mm; }
+  .flow { display: flex; align-items: center; flex-wrap: nowrap; gap: 3mm; }
+  .chip {
+    border-radius: 3mm; padding: 3mm 4.5mm; font-size: 5.4mm; line-height: 1.25;
+    text-align: center; flex: 1 1 0;
+  }
+  .chip small { display: block; font-size: 4.3mm; font-weight: 400; opacity: .85; margin-top: 1mm; }
+  .chip.brain { background: #1E3A5F; color: #fff; font-weight: 700; }
+  .chip.det { background: #2A9D8F; color: #fff; font-weight: 700; }
+  .chip.user { background: #fff; border: 1.2mm solid #D64045; color: #1A202C; font-weight: 700; }
+  .chip.input { background: #E8EEF2; color: #1A202C; font-weight: 600; }
+  .arrow { flex: 0 0 auto; font-size: 8mm; color: #718096; }
+  .outcomes { display: flex; gap: 4mm; margin-top: 3mm; }
+  .oc { flex: 1; border-radius: 3mm; padding: 2.6mm 4mm; font-size: 5.2mm; font-weight: 700; text-align: center; border: 0.8mm solid; }
+  .oc.ok  { background: #F0FDF4; color: #166534; border-color: #BBF7D0; }
+  .oc.mid { background: #FFFBEB; color: #92400E; border-color: #FDE68A; }
+  .oc.bad { background: #FEF2F2; color: #991B1B; border-color: #FECACA; }
+  .archnote { font-size: 5.4mm; color: #4A5568; margin-top: 4mm; padding: 4mm 5mm; background: #E9F7F5; border-radius: 3mm; }
+  .archnote b { color: #1C6B63; }
+
+  /* ---------- stat tiles ---------- */
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5mm; }
+  .tile { background: #F8F9FA; border-radius: 3.5mm; padding: 5mm 5.5mm 4.5mm; border-top: 2mm solid #2A9D8F; }
+  .tile .v { font-size: 13.6mm; font-weight: 800; color: #1A202C; letter-spacing: -0.3mm; }
+  .tile .l { font-size: 4.9mm; color: #4A5568; line-height: 1.32; margin-top: 1.4mm; }
+  .honesty { margin-top: 5mm; font-size: 5.2mm; color: #92400E; background: #FFFBEB; border: 0.8mm solid #FDE68A; border-radius: 3mm; padding: 3.5mm 5mm; }
+  .negative { margin-top: 5mm; font-size: 5.8mm; color: #1A202C; background: #E8EEF2; border-left: 2.4mm solid #D64045; border-radius: 0 3mm 3mm 0; padding: 4mm 5.5mm; }
+  .negative b { color: #D64045; }
+
+  /* ---------- right specifics ---------- */
+  .wip-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3mm; }
+  .tray-img { width: 100%; border-radius: 3mm; display: block; }
+  .caption { font-size: 4.6mm; color: #718096; font-style: italic; margin: 2mm 0 3.5mm; }
+  .cite { font-size: 5.1mm; color: #4A5568; line-height: 1.45; margin-bottom: 2.2mm; padding-left: 6mm; position: relative; }
+  .cite::before { content: "❞"; color: #2A9D8F; position: absolute; left: 0; }
+  .cite b { color: #1A202C; }
+  .team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.6mm 6mm; }
+  .tm { font-size: 5.3mm; color: #1A202C; font-weight: 700; }
+  .tm small { display: block; font-weight: 400; font-size: 4.6mm; color: #718096; }
+
+  /* ---------- footer ---------- */
+  .strip {
+    background: #162B47; color: #E8EEF2; font-size: 5.8mm;
+    padding: 5mm 18mm; display: flex; justify-content: space-between; align-items: center;
+  }
+  .strip b { color: #fff; }
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <div class="banner">
+    <div class="brand">
+      <div class="logo">My<span class="pill">Pill</span>Safe</div>
+      <div class="sub">Five brains. Three honest outcomes.</div>
+    </div>
+    <div class="title">
+      <h1>The Wrong Pill Should Never Go Unnoticed</h1>
+      <p>A medication-safety assistant for seniors and Canadians with language barriers —
+         it reads the prescription, verifies pills by photo, and answers questions in your language.
+         When it isn't sure, it says so.</p>
+      <span class="badge">Capstone MVP · Decision-Support Only</span>
+    </div>
+    <div class="meta">
+      Conestoga College<br>Graduate Program in AI &amp; ML<br>Capstone Project · 2026
+      <br><span class="url">mypillsafe.ca</span>
+    </div>
+  </div>
+
+  <div class="cols">
+
+    <!-- ================= LEFT ================= -->
+    <div class="col">
+      <div class="card">
+        <h2>The Question</h2>
+        <p>The riskiest moment in home medication use is mundane: <span class="em">a loose pill out of
+           its bottle.</span> In a weekly organizer or a shared household, many tablets are small, white
+           and round — and "which pill is this?" is a daily question with a non-trivial cost of
+           getting it wrong.</p>
+        <div class="bigfact">
+          <div class="bf"><div class="v">1 in 4</div><div class="l">Canadian seniors is prescribed 10+ drug classes (CIHI)</div></div>
+          <div class="bf"><div class="v">~5×</div><div class="l">adverse-drug-reaction hospitalization risk at 10+ medications (CIHI)</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Verify, Don't Identify</h2>
+        <ul>
+          <li>Open-set pill ID from consumer photos is unreliable — the NLM challenge winner reached only <span class="em">43% top-5</span>.</li>
+          <li>Our measured ceiling on the 7,055 marketed Canadian tablets &amp; capsules: <span class="em">38.4%</span> with a perfect imprint read, <span class="em">1.3%</span> without.</li>
+          <li>Canadian pills genuinely collide: <span class="em">13 different products</span> are all the same "blue diamond tablet, SIL 25".</li>
+          <li>Within one patient's 5-medication profile, collision odds fall to <span class="em">~0.3%</span> — so MyPillSafe verifies against <span class="em">your list</span>, with an explicit right to abstain, and never guesses against the whole formulary.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Objectives</h2>
+        <ul>
+          <li>Turn a prescription photo into a DIN-linked medication profile the <span class="em">user approves line by line</span>.</li>
+          <li>Warn when a photographed pill <span class="em">does not match</span> the profile — tuned so a false "verified" is the rarest event.</li>
+          <li>Answer medication questions <span class="em">only</span> from Health Canada monographs, cited, in the user's language.</li>
+          <li>Abstain honestly whenever the evidence is thin — <span class="em">abstention is a designed outcome, not a failure</span>.</li>
+        </ul>
+      </div>
+
+      <div class="card stack">
+        <h2>Technology</h2>
+        <div class="row"><div class="k">Frontend</div><div class="v">React 18 · TypeScript · PWA · EN/FR i18n (756 keys, lockstep-guarded)</div></div>
+        <div class="row"><div class="k">Backend</div><div class="v">FastAPI · PostgreSQL · 227 automated tests</div></div>
+        <div class="row"><div class="k">Vision</div><div class="v">FastSAM (zero-shot) · ResNet18 shape · colorimetric colour · PP-OCR dual-read imprint</div></div>
+        <div class="row"><div class="k">Language</div><div class="v">qwen2.5:7b local proposer + 6 deterministic guardrails · Claude Haiku 4.5 cloud voice</div></div>
+        <div class="row"><div class="k">Data</div><div class="v">Health Canada DPD · 6,803 product monographs · 3.9 M passages</div></div>
+        <div class="row"><div class="k">Ops</div><div class="v">Docker · nginx/TLS · GPU brains sidecar over Tailscale</div></div>
+      </div>
+    </div>
+
+    <!-- ================= CENTER ================= -->
+    <div class="col">
+      <div class="card">
+        <h2>The Five-Brain Architecture — the AI that talks is never the AI that decides</h2>
+
+        <div class="lane">
+          <div class="lane-title">1 · Prescription → Profile</div>
+          <div class="flow">
+            <div class="chip input">Label photo</div><div class="arrow">→</div>
+            <div class="chip brain">Prescription Reader<small>local OCR + local LLM proposer</small></div><div class="arrow">→</div>
+            <div class="chip det">6 deterministic guardrails<small>catalogue cross-check · no invented times</small></div><div class="arrow">→</div>
+            <div class="chip user">YOU approve<small>nothing auto-committed</small></div><div class="arrow">→</div>
+            <div class="chip input">DIN-linked profile</div>
+          </div>
+        </div>
+
+        <div class="lane">
+          <div class="lane-title">2 · Pill photo → Verdict</div>
+          <div class="flow">
+            <div class="chip input">Pill on capture card</div><div class="arrow">→</div>
+            <div class="chip brain">Pill Vision<small>colour · shape · imprint ×2</small></div><div class="arrow">→</div>
+            <div class="chip det">Deterministic Matcher<small>weights 55/25/15/5 · auditable formula, not ML</small></div><div class="arrow">→</div>
+            <div class="chip input">vs YOUR profile only</div>
+          </div>
+          <div class="outcomes">
+            <div class="oc ok">✓ Verified</div>
+            <div class="oc mid">? Needs a closer look — abstain</div>
+            <div class="oc bad">✗ Doesn't match — stop</div>
+          </div>
+        </div>
+
+        <div class="lane">
+          <div class="lane-title">3 · Question → Cited answer</div>
+          <div class="flow">
+            <div class="chip input">Question, any of EN·FR·…</div><div class="arrow">→</div>
+            <div class="chip brain">Monograph Retrieval<small>DIN-scoped · dosing refused outright</small></div><div class="arrow">→</div>
+            <div class="chip brain">Answer Voice<small>cloud LLM · phrases only, decides nothing</small></div><div class="arrow">→</div>
+            <div class="chip det">Claim-source re-check<small>polarity guard</small></div><div class="arrow">→</div>
+            <div class="chip input">Cited answer, your language</div>
+          </div>
+        </div>
+
+        <div class="archnote"><b>Why the split is deterministic-first:</b> in evaluation, a language model answered a
+          sulfa-allergy question against its own cited contraindication source. Every decision on this
+          poster's flows is made by an auditable rule; the only generative step is phrasing — and it is
+          re-checked against its sources.</div>
+      </div>
+
+      <div class="card">
+        <h2>Measured Results — reported honestly</h2>
+        <div class="tiles">
+          <div class="tile"><div class="v">180/180</div><div class="l">pills detected on real phone photos (15 OTC products)</div></div>
+          <div class="tile"><div class="v">1.25%</div><div class="l">false-accept rate, 9 of 720 wrong-profile trials (1.15% held-out CV)</div></div>
+          <div class="tile"><div class="v">31.1%</div><div class="l">first-shot verify — deliberately low; the system prefers to abstain</div></div>
+          <div class="tile"><div class="v">1 → 0</div><div class="l">safety events, shipped Rx parser (24 labels): the one recorded event was closed by a label-side guard (G6)</div></div>
+          <div class="tile"><div class="v">81%</div><div class="l">answers surfaced in top-5 passages after intent routing (was 70%)</div></div>
+          <div class="tile"><div class="v">$0.49</div><div class="l">cloud cost for the full 120-question Q&amp;A evaluation (~½¢ each)</div></div>
+        </div>
+        <div class="negative"><b>The finding we didn't expect:</b> zero-shot models beat our fine-tuned ones on
+          2 of 3 vision heads on real photos. Studio benchmarks overstated real-world transfer — a
+          negative result that now shapes the pipeline and anchors the paper.</div>
+        <div class="honesty">All figures are development-set diagnostics with pre-registered pass/fail bars —
+          quoted as evidence of method, never as product claims. Confirmatory capture study: pending (right panel).</div>
+      </div>
+    </div>
+
+    <!-- ================= RIGHT ================= -->
+    <div class="col">
+      <div class="card">
+        <div class="wip-head"><h2 style="border:none;margin:0;padding:0;">PillSafeTray v2</h2><span class="badge">Work in progress</span></div>
+        <img class="tray-img" src="pillsafe-tray-render.jpg" alt="Design render of the PillSafeTray v2 next to a bank card for scale">
+        <p class="caption">Design render — not a photograph. Tray body is print-ready; the confirmatory capture study is pre-registered and pending.</p>
+        <ul>
+          <li>Bank-card footprint (<span class="em">85.6 × 54 mm</span>); six wells, imprint-up; doses of 7–8 use two loads.</li>
+          <li>Calibrated colour patches + four corner markers → the phone photo becomes a small, repeatable studio shot.</li>
+          <li>Flash forced on: measured to rescue a dim room to ≈ daylight verify rates — lighting is the dominant capture lever measured (12/29 first-shot proxy; hard debossed imprints fail most).</li>
+          <li><span class="em">Pending:</span> 88-photo pilot → pre-registered 600-photo confirmatory; endpoints M1 usability, M2 safety (0 false accepts over ~630 strays ⇒ ≤0.48% by rule of three).</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Scientific Foundation</h2>
+        <div class="cite"><b>NLM Pill Image Recognition Challenge</b> — IEEE AIPR 2016 · the 43% that reframed the task</div>
+        <div class="cite"><b>MobileDeepPill</b> — MobiSys 2017 · attribute decomposition on-phone</div>
+        <div class="cite"><b>ePillID</b> — CVPR-W 2020 · the low-shot reality of pill imagery</div>
+        <div class="cite"><b>GO-PILL</b> — MDPI Mathematics 2026 · debossed imprints are the hard OCR case</div>
+        <div class="cite"><b>MEDIC</b> — Nature Medicine 2024 · guarded, catalogue-checked Rx extraction beats raw LLMs; our six guardrails descend from its five</div>
+        <div class="cite"><b>Hanley &amp; Lippman-Hand</b> — JAMA 1983 · the rule of three sizes our safety claims</div>
+        <p style="margin-top:3mm"><span class="em">In preparation:</span> <i>"Verify, Don't Identify: Profile-Constrained
+          Pill Verification from Consumer Photos with a Printed Capture Card"</i> — the negative results are contributions.</p>
+      </div>
+
+      <div class="card">
+        <h2>Future Work</h2>
+        <ul>
+          <li>Print the tray + run the pre-registered capture study (NB08, incl. multi-pill scenes).</li>
+          <li>The imprint decision: stay zero-shot, or fine-tune on independent hand-keyed labels.</li>
+          <li>Colour-boundary refinement (white/grey split first) · cheque-deposit-style auto-capture.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Team</h2>
+        <div class="team-grid">
+          <div class="tm">Muthuraj Jayakumar<small>Project Lead · ML Architecture</small></div>
+          <div class="tm">Sumanth Reddy<small>Backend &amp; Systems Integration</small></div>
+          <div class="tm">Lohith Reddy<small>Frontend &amp; User Experience</small></div>
+          <div class="tm">Ali Ozdemir<small>Data Engineering · Reference Pipeline</small></div>
+          <div class="tm">Abdullah Mohammed<small>Quality Assurance &amp; Evaluation</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="strip">
+    <div><b>Decision-support only.</b> Not a medical device — always confirm with a licensed pharmacist or physician.</div>
+    <div>Interface in <b>EN · FR</b> — answers in the language you choose</div>
+    <div>Live at <b>mypillsafe.ca</b></div>
+  </div>
+</div>
+</body>
+</html>

@@ -59,7 +59,7 @@ export default function AdminDashboardPage() {
 
       <div className="card overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100">
-          <h2 className="font-semibold text-slate-900 text-sm">Recent Analyses</h2>
+          <h2 className="font-semibold text-slate-900 text-sm">{t('admin.recentAnalyses')}</h2>
         </div>
         {analyses.length === 0 ? (
           <p className="px-5 py-8 text-center text-sm text-slate-400">{t('common.noData')}</p>
@@ -79,6 +79,8 @@ export default function AdminDashboardPage() {
                   <span className={`badge ${a.status === 'completed' ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'bg-slate-100 text-slate-500'}`}>
                     {a.status}
                   </span>
+                  {/* "ML" is a technical abbreviation on an admin-only surface
+                      and reads the same in both locales, so it is not keyed. */}
                   {a.ml_pipeline_enabled && (
                     <span className="badge bg-purple-50 text-purple-700 border border-purple-200">ML</span>
                   )}

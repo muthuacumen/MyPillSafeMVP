@@ -146,6 +146,22 @@ The reference table is loaded once at process startup (shared with SB2's own
 
 ## Test
 
+The sidecar's **own** suite (offline -- no live service, no Ollama, no GPU;
+runs in-process through FastAPI's TestClient):
+
+```powershell
+cd dev\brains
+.\.venv\Scripts\python.exe -m pytest tests -v
+```
+
+Covers the reference/search/profile/candidates HTTP contract, including the
+`SEARCH_SCORE_CUTOFF` regression guard -- absent medications must return an
+EMPTY list, because the app's `not_in_reference` guardrail flag fires only on
+an empty list. Anything unavailable in the environment (no profile CSV, no
+SB2 package) is skipped with a reason rather than failed. Pill analysis is
+deliberately NOT here -- it needs real images and a Paddle subprocess, so it
+stays in `smoke_test.py` below.
+
 SB2's own suite, run from the SB2 package directory using this venv's python
 (matches how SB2/README says to run it):
 

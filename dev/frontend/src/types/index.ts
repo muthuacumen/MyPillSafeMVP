@@ -69,9 +69,51 @@ export interface Prescription {
   /** Canonical 8-digit zero-padded Health Canada DIN, e.g. "00013803". */
   din: string | null;
   din_confirmed: boolean;
+  /** Task B3: whether a photo can verify this medication at all. `null`
+   * means it could not be established -- render nothing, never a guess. */
+  pill_verifiable: boolean | null;
   created_at: string;
   updated_at: string;
+
+  /* --- Review workflow (FixbyOPUS3). A scanned medication is a PROPOSAL
+   * until the patient approves it: nothing auto-commits a drug name, DIN or
+   * schedule, and no reminder fires for a pending row. */
+  review_status: ReviewStatus;
+  /** Which proposer produced this row -- 'qwen' (local LLM) or 'regex'. */
+  parse_source: string | null;
+  /** Deterministic guardrail flags raised at parse time. */
+  parse_flags: ParseFlag[];
 }
+
+export type ReviewStatus = 'pending' | 'approved';
+
+/** Guardrail flags (backend `app/services/rx_guardrails.py`).
+ * `not_on_label` and `needs_schedule` BLOCK approval until the user edits or
+ * explicitly confirms the field; the rest are informational.
+ *
+ * `as_needed` (G6) is informational because it EXPLAINS the `needs_schedule`
+ * that always accompanies it — the label said "as needed", so no reminder
+ * time was derived. Two acknowledgements for one fact would be noise. */
+export type ParseFlag =
+  | 'not_in_reference'
+  | 'not_on_label'
+  | 'needs_schedule'
+  | 'conflict'
+  | 'as_needed';
+
+export const BLOCKING_PARSE_FLAGS: ParseFlag[] = ['not_on_label', 'needs_schedule'];
+
+/** How well a candidate's product name covers the words the LABEL printed
+ * (backend `app/services/lasa.py`).
+ * - `exact`        — keeps every word the label printed; safe to one-tap.
+ * - `manufacturer` — only a generic-manufacturer prefix differs (APO vs
+ *   TEVA): a real difference, because the pill looks different and SB2
+ *   matches on appearance, but not a wrong-medicine risk.
+ * - `look_alike`   — dropped a real word from the label. ZOLTIRAX→ZOVIRAX,
+ *   TYLENOL PM→TYLENOL EXTRA STRENGTH. No score cutoff separates these
+ *   (the second scores a perfect 100), so the UI, not a threshold, is what
+ *   stands between the user and a wrong DIN. */
+export type NameMatch = 'exact' | 'manufacturer' | 'look_alike';
 
 /** One candidate row from the brains sidecar's reference search, DIN
  * already in the app's canonical 8-digit form. */
@@ -80,6 +122,18 @@ export interface DinSuggestion {
   product: string;
   strength: string | null;
   score: number;
+  /** Optional so a response from before the 2026-07-30 LASA work — or any
+   * caller that does not annotate — degrades to `exact`, i.e. the previous
+   * behaviour, rather than warning about everything. */
+  name_match?: NameMatch;
+  /** The label's own words this candidate's name does not contain. */
+  missing_tokens?: string[];
+  /** FixbyOPUS3 Task B2: false when this DIN is in the 11,609-DIN profile
+   * tier but NOT in the 7,055-DIN appearance tier -- i.e. a real medication
+   * that simply cannot be checked from a photo (insulin pens, inhalers,
+   * creams, drops, patches). Optional so an older sidecar that does not
+   * send the field degrades to "unknown", never to a wrong badge. */
+  pill_verifiable?: boolean;
 }
 
 /** Response shape for `POST /prescriptions` only -- adds the sidecar's top

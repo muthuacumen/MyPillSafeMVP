@@ -13,7 +13,12 @@
     "inactive": "Inactive",
     "joinDate": "Join Date",
     "actions": "Actions",
-    "noData": "No data found."
+    "noData": "No data found.",
+    "home": "Home",
+    "about": "About",
+    "close": "Close",
+    "on": "On",
+    "off": "Off"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -35,7 +40,15 @@
       "scanPill": "Scan Pill",
       "medications": "Meds",
       "qa": "Ask"
-    }
+    },
+    "about": "About",
+    "admin": "Admin",
+    "signIn": "Sign In",
+    "getStarted": "Get Started",
+    "primary": "Primary",
+    "voiceToggle": "Voice Assistant On/Off",
+    "voiceOn": "Voice Assistant On",
+    "voiceOff": "Voice Assistant Off"
   },
   "auth": {
     "backHome": "Back to home",
@@ -70,12 +83,73 @@
       "description": "MyPillSafe is a medication-safety assistant for seniors and Canadians with language barriers. It reads your prescription, verifies your pills from a photo, and answers medication questions in your language — and when it isn't sure, it says so.",
       "principle": "Built to warn, designed to abstain, never to guess.",
       "principleNote": "— the MyPillSafe design principle"
+    },
+    "badge": "Capstone MVP",
+    "decisionSupportOnly": "Decision-support only",
+    "alwaysConfirm": "Always confirm with your pharmacist",
+    "registerHeroTitle": "The wrong pill should never go unnoticed",
+    "abstainTitle": "When it isn't sure, it says so",
+    "abstainBody": "MyPillSafe is tuned so that a wrong pill being called \"verified\" is the rarest possible event — even at the cost of asking you to try again more often.",
+    "features": {
+      "feature1": {
+        "title": "Prescription Scanning",
+        "desc": "Reads your prescription and builds your personal medication profile"
+      },
+      "feature2": {
+        "title": "Pill Verification",
+        "desc": "Checks a pill photo's colour, shape, and imprint against your profile — not the whole formulary"
+      },
+      "feature3": {
+        "title": "Cited Answers",
+        "desc": "Medication questions answered from Health Canada monographs, with citations, in your language"
+      }
+    },
+    "stats": {
+      "stat1": {
+        "value": "1 in 4",
+        "label": "Canadian seniors are prescribed 10+ drug classes (CIHI)"
+      },
+      "stat2": {
+        "value": "~5×",
+        "label": "higher risk of medication-related hospitalization at 10+ medications (CIHI)"
+      },
+      "stat3": {
+        "value": "3",
+        "label": "honest outcomes for every pill check — verified, needs a closer look, doesn't match"
+      },
+      "stat4": {
+        "value": "EN · FR",
+        "label": "interface languages — medication answers in the language you choose"
+      }
+    },
+    "placeholders": {
+      "email": "you@example.com",
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "newPassword": "Create a strong password"
+    }
+  },
+  "about": {
+    "nav": {
+      "about": "About MyPillSafe",
+      "vision": "Vision & Mission",
+      "problem": "Problem Statement",
+      "science": "Scientific Foundation",
+      "team": "Team",
+      "backToHome": "Back to Home",
+      "getStarted": "Get Started"
     }
   },
   "dashboard": {
     "greeting": "Good to see you,",
     "tagline": "Your medication dashboard is ready. Upload a prescription photo to get an instant safety check.",
     "analyzeNow": "Analyze Now",
+    "greetings": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening",
+      "night": "Good night"
+    },
     "stats": {
       "safetyScore": "Safety Score",
       "safetyScoreSub": "Scan to generate score",
@@ -109,7 +183,100 @@
       "routine": "Take medications at the same time each day to build a routine.",
       "crush": "Never crush or split pills without asking your pharmacist first.",
       "list": "Keep an updated medication list with you at all times."
+    },
+    "scanAPrescription": "Scan a prescription",
+    "nextDose": "Next dose",
+    "upcoming": "Upcoming",
+    "dueNow": "Due now",
+    "past": "Past",
+    "safetyAlerts": "Safety alerts",
+    "noSafetyAlerts": "No safety alerts — your recent scans matched your prescriptions.",
+    "reminders": "Reminders",
+    "remindersOn": "Reminders are on",
+    "remindersOff": "Reminders are off",
+    "manageInSettings": "Manage in Settings",
+    "noSchedTitle": "No medications scheduled yet",
+    "noSchedDesc": "Scan a prescription label to start tracking your daily schedule and reminders.",
+    "inMinutes": "in {{n}} min",
+    "inHoursMinutes": "in {{h}}h {{m}}m"
+  },
+  "analyze": {
+    "captureRxLabel": "Capture prescription label",
+    "capturePillLabel": "Capture pill photo",
+    "crossLinkToPill": "Checking a pill instead?",
+    "crossLinkToRx": "Scanning a prescription instead?",
+    "uploadingRx": "Reading your prescription label…",
+    "uploadingRxSub": "This usually takes a few seconds.",
+    "pillProgress": [
+      "Analyzing photo… this can take up to a minute.",
+      "Reading colour, shape, and imprint…",
+      "Comparing against your medications…",
+      "Still working — almost there…"
+    ],
+    "pillProgressSub": "The first scan can take up to a minute.",
+    "tryAgain": "Try Again",
+    "errorOcrUnavailable": "Scanning is temporarily unavailable — the analysis service can't be reached. Your photo was fine; please try again in a few minutes.",
+    "errorServerGeneric": "Something went wrong on our side. Please try again.",
+    "errorPrescriptionDefault": "Could not read that prescription label. Please retake the photo in good lighting.",
+    "errorPillDefault": "Could not analyze that pill. Try a plain, well-lit background.",
+    "viewMyMedications": "View My Medications"
+  },
+  "pillResult": {
+    "disclaimerDefault": "Decision support only — always confirm with your pharmacist or physician.",
+    "unknownProduct": "Unknown product",
+    "noProfile": {
+      "title": "No confirmed medications yet",
+      "defaultMessage": "Pill checking works against your confirmed medications. Scan a prescription and confirm its DIN, then come back here.",
+      "cta": "Scan a Prescription"
+    },
+    "notDetected": {
+      "alert": "Couldn't find a pill in that photo.",
+      "tipsTitle": "Tips for a clearer photo",
+      "tip1": "Make sure the capture card is fully inside the frame",
+      "tip2": "Turn on your camera flash, or use bright, even lighting",
+      "tip3": "Place the pill on a flat surface, away from shadows",
+      "tip4": "Photograph one pill at a time",
+      "tryAgain": "Try Again"
+    },
+    "breakdown": {
+      "imprintExact": "imprint matched exactly",
+      "imprintAskToFlip": "imprint couldn't be read on this side",
+      "imprintFuzzy": "imprint matched closely",
+      "imprintUnconfirmed": "imprint couldn't be confirmed",
+      "colourAndShapeMatched": "colour and shape matched",
+      "colourMatchedShapeUncertain": "colour matched, shape was uncertain",
+      "shapeMatchedColourUncertain": "shape matched, colour was uncertain",
+      "colourAndShapeUncertain": "colour and shape were uncertain"
+    },
+    "shadowFusionHint": "Image quality note: possible shadow interference — consider retaking on a flat, well-lit surface.",
+    "verify": {
+      "askAboutMedication": "Ask about this medication"
+    },
+    "scanAnother": "Scan Another",
+    "reject": {
+      "alert": "This doesn't match any medication in your profile.",
+      "warning": "If you were about to take this pill, stop and verify with a pharmacist before taking it."
+    },
+    "askToFlip": {
+      "alert": "We couldn't read a clear imprint on this side.",
+      "instructions": "Turn the pill over and photograph the other side so we can check its imprint.",
+      "cta": "Photograph Other Side"
+    },
+    "shortlist": {
+      "alert": "We're not fully certain — is it one of these?",
+      "notConfirmed": "This is not a confirmed match — verify with a pharmacist before taking this pill."
     }
+  },
+  "camera": {
+    "captureDefault": "Capture",
+    "or": "or",
+    "retake": "Retake",
+    "confirm": "Confirm",
+    "startingCamera": "Starting camera…",
+    "uploadInstead": "upload a photo instead",
+    "uploadAPhoto": "Upload a Photo",
+    "deniedMessage": "Camera access was denied or isn't available. You can upload a photo instead.",
+    "capturedPreviewAlt": "Captured photo preview"
   },
   "admin": {
     "dashboard": "Admin Dashboard",
@@ -125,6 +292,805 @@
     "changeRole": "Change Role",
     "confirmDeactivate": "Deactivate this user? They will not be able to log in.",
     "confirmDelete": "Permanently delete this user and all their data?",
-    "noPatient": "No profile"
+    "noPatient": "No profile",
+    "recentAnalyses": "Recent Analyses"
+  },
+  "din": {
+    "title": "Is this your medication?",
+    "why": "Linking the right product lets you check this pill with your camera later. You can skip this — the medication is still saved either way.",
+    "loading": "Looking up matching products…",
+    "confirm": "Confirm",
+    "pickDifferent": "Pick a different one",
+    "backToSuggestions": "Back to suggestions",
+    "skip": "Skip for now",
+    "cancel": "Never mind",
+    "search": "Search",
+    "searchPlaceholder": "Search by medication name",
+    "noMatches": "No matches. Try a different spelling.",
+    "notInList": "We couldn't find this one in the Canadian medication list. Search by name above, or skip — you can still keep this medication, you just won't be able to check it by photo.",
+    "saveError": "Could not save that selection. Please try again.",
+    "disclaimer": "Decision-support only — not medical advice. Verify with a pharmacist.",
+    "differentMaker": "Made by a different company — your pill may look different.",
+    "lookAlike": {
+      "title": "These names look alike",
+      "body": "Your label says \"{{label}}\", but none of the products below match it exactly — they are missing: {{tokens}}. Medicines with similar names can contain different drugs. Please read your label letter by letter before you choose.",
+      "rowBadge": "Your label says \"{{tokens}}\" — this product does not.",
+      "acknowledge": "I read my label and this is the right medication"
+    }
+  },
+  "review": {
+    "title": "Review your medications",
+    "subtitle": "We read these from your label. Nothing is saved to your schedule and no reminder is set until you approve each one.",
+    "pendingBadge": "Needs your review",
+    "drugName": "Medication name",
+    "dosage": "Strength",
+    "dosagePlaceholder": "e.g. 500 mg",
+    "frequency": "How often",
+    "times": "Reminder times",
+    "noTimes": "No reminder time set yet.",
+    "addTime": "Add a time",
+    "removeTime": "Remove this time",
+    "timeAt": "Reminder time {{n}}",
+    "useSuggested": "Use the usual times ({{times}})",
+    "withFood": "Take with food",
+    "approve": "Approve",
+    "approveBlocked": "Check the highlighted items above first.",
+    "saveError": "Could not save that. Please try again.",
+    "linkDin": "Link this medication to a DIN",
+    "dinLinked": "Linked to DIN {{din}}",
+    "notPillVerifiable": "Not pill-verifiable — this medication type can't be checked by photo",
+    "disclaimer": "Decision-support only — not medical advice. Check against your label and your pharmacist.",
+    "freq": {
+      "ONCE_DAILY": "Once a day",
+      "BID": "Twice a day",
+      "TID": "Three times a day",
+      "QID": "Four times a day",
+      "BEDTIME": "At bedtime",
+      "WITH_MEALS": "With meals",
+      "PRN": "Only as needed",
+      "WEEKLY": "Once a week",
+      "EVERY_N_HOURS": "Every few hours",
+      "TAPER": "A changing (tapering) dose",
+      "UNKNOWN": "Not sure yet"
+    },
+    "flags": {
+      "not_in_reference": {
+        "title": "Not found in our medication list",
+        "detail": "Our Canadian medication reference doesn't include this name. It may still be correct — the reference doesn't cover everything.",
+        "confirm": ""
+      },
+      "not_on_label": {
+        "title": "We couldn't match this to the label text",
+        "detail": "Part of what we read — the name, the strength, or a reminder time — doesn't clearly appear on your label. We kept the name and strength so you can correct them, and removed any time we couldn't find. Please check this against your label.",
+        "confirm": "I checked this against my label"
+      },
+      "needs_schedule": {
+        "title": "No reminder time yet",
+        "detail": "This medication's instructions don't map to a fixed daily time, so we did not invent one. Choose your own time, or confirm it has no fixed time.",
+        "confirm": "As needed — no fixed reminder time"
+      },
+      "conflict": {
+        "title": "Conflicting details",
+        "detail": "We read more than one version of this medication. Keep the correct one and remove the other.",
+        "confirm": ""
+      },
+      "as_needed": {
+        "title": "Taken only as needed",
+        "detail": "Your label says to take this only as needed, so we did not set a reminder time — even though the label also names a time of day. Add a time only if you actually take it on a schedule.",
+        "confirm": ""
+      }
+    }
+  },
+  "footer": {
+    "tagline": "A medication-safety assistant for seniors and Canadians with language barriers — decision-support only.",
+    "explore": "Explore",
+    "aboutHeading": "About",
+    "account": "Account",
+    "home": "Home",
+    "contact": "Contact",
+    "dashboard": "Dashboard",
+    "signIn": "Sign In",
+    "getStarted": "Get Started",
+    "disclaimer": "Decision-support only — not medical advice. Always verify with a pharmacist or physician.",
+    "credits": "MyPillSafe · 2026 · Muthuraj Jayakumar, Sumanth Reddy, Lohith Reddy, Ali Ozdemir, Abdullah Mohammed"
+  },
+  "disclaimerModal": {
+    "title": "Important Notice",
+    "body": "MyPillSafe is a decision support tool only. It does not replace professional medical advice. Always confirm medication information with a licensed pharmacist or physician before taking any medication.",
+    "accept": "I Understand"
+  },
+  "instructions": {
+    "readMine": "Read my instructions",
+    "error": "Could not load instructions. Please try again."
+  },
+  "rxImage": {
+    "title": "Original Prescription",
+    "alt": "Prescription label",
+    "error": "Could not load the prescription image."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The page you're looking for doesn't exist or has been moved.",
+    "back": "Back to Dashboard"
+  },
+  "meds": {
+    "title": "My Medications",
+    "add": "Add Prescription",
+    "loadError": "Could not load your medications. Please try again.",
+    "removeConfirm": "Remove this medication from your active list?",
+    "announceOne": "You have 1 active prescription.",
+    "announceMany": "You have {{count}} active prescriptions.",
+    "emptyTitle": "No medications yet",
+    "emptyBody": "Scan your first prescription label and we'll keep track of your dosage and schedule.",
+    "emptyCta": "Scan Your First Prescription",
+    "viewOriginal": "View original prescription for {{name}}",
+    "remove": "Remove {{name}}",
+    "asNeeded": "As needed",
+    "maxPerDay": "max {{dose}}/24h",
+    "slots": {
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening",
+      "night": "Night"
+    },
+    "askAbout": "Ask about this medication",
+    "linkedToDin": "Linked to DIN {{din}}",
+    "change": "Change",
+    "linkToDin": "Link this medication to a DIN"
+  },
+  "profile": {
+    "title": "My Profile",
+    "loadError": "Could not load your profile. Please refresh and try again.",
+    "uploadPhoto": "Upload photo",
+    "uploadUnavailable": "Avatar uploads aren't available yet.",
+    "edit": "Edit Profile",
+    "saved": "Profile updated.",
+    "saveError": "Could not save your profile. Please try again.",
+    "summaryTitle": "Medication Summary",
+    "activePrescriptions": "Active Prescriptions",
+    "lastScan": "Last Scan",
+    "viewMedications": "View my medications →",
+    "detailsTitle": "Personal Details",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "phoneNumber": "Phone number",
+    "preferredLanguage": "Preferred language",
+    "dob": "Date of birth",
+    "phone": "Phone",
+    "language": "Language",
+    "caregiverTitle": "Caregiver / Emergency Contact",
+    "caregiverEmptyTitle": "No caregiver or emergency contact on file",
+    "caregiverEmptyBody": "This information isn't collected yet. Contact support if you'd like to add a caregiver to your account.",
+    "preferencesTitle": "Preferences & Accessibility",
+    "editInSettings": "Edit in Settings",
+    "reminders": "Medication reminders",
+    "voiceAssistant": "Voice assistant",
+    "securityTitle": "Security",
+    "changePassword": "Change Password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "updatePassword": "Update Password",
+    "pwMismatch": "New passwords do not match.",
+    "pwChanged": "Password changed successfully.",
+    "pwError": "Could not change your password."
+  },
+  "settings": {
+    "title": "Settings",
+    "loadError": "Could not load your settings. Please refresh and try again.",
+    "saveError": "Could not save that preference.",
+    "notificationsTitle": "Notification Preferences",
+    "reminders": "Medication reminders",
+    "remindersDesc": "Get reminded about your scheduled medications.",
+    "voiceTitle": "Voice Assistant",
+    "voiceLabel": "Read pages and results aloud",
+    "voiceDesc": "Stored on this device only.",
+    "languageTitle": "Language",
+    "dangerTitle": "Danger Zone",
+    "deleteAccount": "Delete Account",
+    "deleteDesc": "Permanently deletes your account and all medication data.",
+    "deleteConfirmTitle": "Delete your account?",
+    "deleteConfirmBody": "This permanently deletes your account, prescriptions, and scan history. This cannot be undone."
+  },
+  "qa": {
+    "title": "Ask about my medication",
+    "askingAbout": "Asking about",
+    "answerLanguage": "Answer language",
+    "emptyTitle": "Ask a question about a medication",
+    "emptyBody": "For example: \"what foods should I avoid with warfarin\" or \"can I take this with food\". Name the medication, or pick one from your profile.",
+    "thinking": "Thinking this through — this can take a few seconds…",
+    "placeholder": "Ask about a medication…",
+    "ask": "Ask",
+    "yesIMeant": "Yes, I meant {{name}}",
+    "no": "No",
+    "declined": "(declined)",
+    "notFound": "I couldn't find that medication in the Canadian formulary — please check the spelling, give the ingredient name, or the DIN from the package.",
+    "genericError": "Something went wrong asking that question. Please try again.",
+    "formularyList": "Formulary list",
+    "offlineFallback": "Offline fallback (local model)",
+    "disclaimer": "Decision-support only — not medical advice. Verify with a pharmacist."
+  },
+  "public": {
+    "fiveBrains": {
+      "ocr": {
+        "title": "Prescription Reader (OCR)",
+        "desc": "reads the prescription image, extracts medications and schedule, and proposes Health Canada DIN matches that the user confirms — never auto-committed."
+      },
+      "vision": {
+        "title": "Pill Vision",
+        "desc": "isolates the pill on the capture card and reads its colour (calibrated against the card's printed patches), shape, and imprint. The imprint is read twice by complementary methods."
+      },
+      "matcher": {
+        "title": "Deterministic Matcher",
+        "desc": "a transparent, formula-based scorer (deliberately not machine learning) that compares the pill's attributes against the user's confirmed medications and returns exactly one of: verify, abstain, or reject. Its thresholds are tuned to make false accepts the rarest event."
+      },
+      "retrieval": {
+        "title": "Monograph Retrieval",
+        "desc": "finds the relevant, DIN-scoped passages of Health Canada product monographs, with deterministic safety guards — including a hard refusal to answer dosing questions."
+      },
+      "voice": {
+        "title": "Answer Voice (cloud AI)",
+        "desc": "the only cloud component. It phrases the final answer in the user's language, strictly from the retrieved cited passages, and its answers are re-checked by the same deterministic guards."
+      }
+    },
+    "landing": {
+      "badge": "Capstone MVP · Decision-Support Only",
+      "heroTitle": "The wrong pill should never go unnoticed.",
+      "heroBody": "MyPillSafe is a medication-safety assistant for seniors and Canadians with language barriers. It reads your prescription, verifies your pills from a photo, and answers medication questions in your language — and when it isn't sure, it says so.",
+      "getStarted": "Get Started",
+      "learnMore": "Learn More",
+      "howTitle": "How MyPillSafe Works",
+      "steps": {
+        "scan": {
+          "title": "Scan Your Prescription",
+          "desc": "Photograph your prescription. MyPillSafe reads the medications and schedule and builds your personal medication profile."
+        },
+        "confirm": {
+          "title": "Confirm Your Medications",
+          "desc": "Each medication is matched against Health Canada's Drug Identification Numbers (DINs). You confirm with one tap — MyPillSafe never guesses on your behalf."
+        },
+        "verify": {
+          "title": "Verify a Pill",
+          "desc": "Photograph a loose pill on the MyPillSafe capture card. Its colour, shape, and imprint are checked against your profile — not the whole formulary."
+        },
+        "ask": {
+          "title": "Ask in Your Language",
+          "desc": "Ask questions about your medications. Answers come only from Health Canada product monographs, with citations, in the language you choose."
+        }
+      },
+      "outcomesTitle": "The Three-Outcome Safety Design",
+      "outcomesIntro": "Every pill check ends in one of three honest outcomes — and when the photo contains no readable pill at all, MyPillSafe says that too, with tips to retake, rather than guessing. When MyPillSafe isn't sure, abstaining is the design — not a failure.",
+      "outcomes": {
+        "verified": {
+          "label": "Verified",
+          "desc": "This pill matches a medication in your profile. You'll see exactly which attributes matched."
+        },
+        "closer": {
+          "label": "Needs a Closer Look",
+          "desc": "MyPillSafe isn't sure yet. It may ask you to flip the pill and photograph the other side, or show you a short list to confirm."
+        },
+        "noMatch": {
+          "label": "Doesn't Match",
+          "desc": "This pill doesn't match anything in your profile. A clear warning, because a stray pill is exactly what MyPillSafe exists to catch."
+        },
+        "nothing": {
+          "label": "Nothing Detected",
+          "desc": "No pill found in the photo, with capture tips to try again."
+        }
+      },
+      "outcomesNote": "MyPillSafe is tuned so that a wrong pill being called “verified” is the rarest possible event — even at the cost of asking you to try again more often.",
+      "whyVerifyTitle": "Why verify instead of identify?",
+      "whyVerifyBody": "Because Canadian pills genuinely collide. In building our reference data we found more than a dozen different products that are all the same “blue diamond tablet, SIL 25” — cross-licensed generics no camera could ever tell apart. Against the whole formulary, that problem is unsolvable; against the handful of medications <em>you</em> actually take, it is tractable. That reframing — verify, don't identify — is the project's core idea.",
+      "scienceTitle": "Scientific Foundation",
+      "scienceIntro": "MyPillSafe's design decisions rest on peer-reviewed evidence — including the evidence that told us what NOT to build.",
+      "science": {
+        "nlm": {
+          "journal": "IEEE AIPR",
+          "point": "Even the winning system found the right pill among its top five guesses only 43% of the time. Open-set pill identification is the wrong task for a safety app — so MyPillSafe verifies against your profile instead."
+        },
+        "epillid": {
+          "journal": "CVPR Workshops",
+          "point": "The benchmark for fine-grained pill recognition with few examples per pill: most medications have almost no photos to learn from. MyPillSafe's attribute-based design avoids depending on per-pill image galleries."
+        },
+        "gopill": {
+          "journal": "MDPI Mathematics",
+          "point": "Reading the tiny imprint pressed into a pill is the hardest and most decisive step. MyPillSafe reads every imprint twice, with two complementary methods, before trusting it."
+        },
+        "cihi": {
+          "journal": "Population evidence",
+          "point": "1 in 4 Canadian seniors is prescribed 10 or more drug classes, and seniors on 10+ medications are about five times more likely to be hospitalized for an adverse drug reaction."
+        }
+      },
+      "scienceCta": "Read the full Scientific Foundation",
+      "closingTitle": "Built to warn, designed to abstain, never to guess.",
+      "closingBody": "MyPillSafe is a capstone research project. It supports your decisions — it does not make them. Every screen carries the same rule: verify with your pharmacist.",
+      "readVision": "Read the Vision"
+    },
+    "about": {
+      "breadcrumb": "About",
+      "title": "About MyPillSafe",
+      "subtitle": "A medication-safety assistant built as five cooperating brains — each one doing the job the evidence says it can actually do.",
+      "whatTitle": "What MyPillSafe Is",
+      "whatBody": "MyPillSafe helps two groups the medication system underserves: seniors managing many medications, and Canadians who read medical information more comfortably in a language other than English or French. It turns a prescription into a personal medication profile, verifies loose pills by photo against that profile, and answers medication questions from Health Canada product monographs — with citations, in the user's language.",
+      "brainsTitle": "The Five Brains",
+      "learnMore": "Learn more",
+      "whyTitle": "Why this architecture",
+      "whyBody": "The split is deliberate: everything that decides is deterministic and auditable; the AI that talks is never the AI that decides. That separation came from measurement, not taste — during evaluation, a smaller language model answered a safety-critical allergy question incorrectly <em>against its own retrieved source</em>. The architecture makes that class of failure detectable and containable.",
+      "howTitle": "How we worked",
+      "how": {
+        "measure": {
+          "title": "Measure the assumption before building on it.",
+          "desc": "The project's first reference dataset was rebuilt from scratch after a check revealed it described products that were approved in Canada but never actually sold — pills no patient could possess."
+        },
+        "prereg": {
+          "title": "Pre-register the bar, then report honestly.",
+          "desc": "Every evaluation had its pass/fail criteria written down before the run. Some runs failed their gates; the failures are documented, not reframed."
+        },
+        "data": {
+          "title": "Let the data decide.",
+          "desc": "Candidate models competed against simple zero-shot baselines — and on real phone photos, the baselines won two of three vision components. The trained models that looked better on studio benchmarks shipped only where they earned it."
+        },
+        "test": {
+          "title": "Test everything.",
+          "desc": "A mandatory smoke test or spot-check ran on every build of the project — and every single one caught at least one real bug. The deterministic safety guards have a combined zero failures across all evaluation rounds; every incident came from the model-judgment layer, which is exactly why models don't make the decisions."
+        }
+      },
+      "scopeNote": "MyPillSafe is a Conestoga College capstone project, built for Canada (DIN-based, Health Canada monographs). It is decision-support only."
+    },
+    "vision": {
+      "breadcrumb": "Vision & Mission",
+      "eyebrow": "About MyPillSafe",
+      "title": "Vision & Mission",
+      "missionTitle": "Mission",
+      "mission": "To help seniors and Canadians with language barriers take the right medication at the right time — by verifying what's in their hand, warning when something is wrong, and explaining in the language they think in.",
+      "visionTitle": "Vision",
+      "vision": "A Canada where a language barrier or a crowded pill organizer never turns into a medication error — where every household has a safety layer that is honest about what it knows and what it doesn't.",
+      "valuesTitle": "Values",
+      "values": {
+        "safety": {
+          "title": "Safety before convenience",
+          "desc": "When evidence is thin, MyPillSafe abstains. An honest \"I'm not sure — check with your pharmacist\" beats a confident guess every time."
+        },
+        "evidence": {
+          "title": "Evidence before features",
+          "desc": "Every component earned its place through measurement. Features that failed evaluation were removed, not shipped."
+        },
+        "language": {
+          "title": "Language is a safety feature",
+          "desc": "Medication information you can't fully understand is a risk factor. Answering in the user's own language is core to the mission, not a nice-to-have."
+        },
+        "honesty": {
+          "title": "Honesty about limits",
+          "desc": "MyPillSafe is research-grade decision support with mandatory disclaimers, not a medical device. It says so on every screen."
+        }
+      }
+    },
+    "problem": {
+      "breadcrumb": "Problem Statement",
+      "eyebrow": "About MyPillSafe",
+      "title": "The Problem",
+      "subtitle": "Polypharmacy is normal, pills look alike, and medication information assumes you read English fluently.",
+      "stat1Value": "1 in 4",
+      "stat1Body": "Canadian seniors is prescribed 10 or more drug classes.",
+      "stat1Source": "(CIHI, Drug Use Among Seniors in Canada — 2021 data)",
+      "stat2Value": "~5×",
+      "stat2Body": "Seniors prescribed 10+ medications are about five times more likely to be hospitalized for an adverse drug reaction than seniors prescribed fewer.",
+      "stat2Source": "(CIHI, 2016 data)",
+      "loosePillTitle": "The loose-pill moment",
+      "loosePillBody": "The riskiest moment in home medication use is mundane: a pill out of its bottle. In a weekly organizer, on a counter, in a shared household — many tablets are small, white, and round, and look-alike pairs are common. For a senior managing ten medications, “which pill is this?” is a daily question with a non-trivial cost of getting it wrong.",
+      "identifyTitle": "Why “just identify the pill” fails",
+      "identifyBody": "The obvious answer — an app that identifies any pill from a photo — has been tried at research scale, and the results argue against it. In the U.S. National Library of Medicine's Pill Image Recognition Challenge, the winning system placed the correct pill in its top five candidates only 43% of the time on consumer photos. Against thousands of candidate products, that is not a safety tool. MyPillSafe's reframing: don't identify against everything — verify against the handful of medications <em>you actually take</em>, and refuse to guess beyond that.",
+      "languageTitle": "The language barrier",
+      "languageBody": "Many Canadians manage medications in a language they did not grow up with. Monographs, labels, and pharmacy counselling largely assume English or French fluency. When comprehension drops, adherence and safety drop with it. MyPillSafe treats translation into the user's own language — grounded in the official monograph, never free-styled — as a first-class safety function.",
+      "closing": "MyPillSafe exists for the moment a hand hesitates over an open pill organizer. Its job is to say “yes, that's yours”, “no — stop”, or “I'm not sure — check”, and to be trustworthy in all three."
+    },
+    "science": {
+      "breadcrumb": "Scientific Foundation",
+      "eyebrow": "About MyPillSafe",
+      "title": "Scientific Foundation",
+      "subtitle": "Every design decision in MyPillSafe traces to published evidence or to our own measured experiments — including the negative results.",
+      "publishedTitle": "Published evidence MyPillSafe stands on",
+      "citations": {
+        "nlm": {
+          "journal": "IEEE AIPR 2016",
+          "point": "The founding evidence that open-set pill identification from consumer photos is unreliable: the challenge winner achieved only 43% top-5 accuracy. This is why MyPillSafe verifies against a personal profile instead of identifying against the full formulary."
+        },
+        "mobiledeeppill": {
+          "journal": "ACM MobiSys 2017",
+          "point": "The NLM challenge winner, showing pill recognition can run on a phone — and that colour, shape, and imprint each carry complementary signal, the same attribute decomposition MyPillSafe uses."
+        },
+        "epillid": {
+          "journal": "CVPR Workshops 2020",
+          "point": "Established the low-shot reality of pill recognition: most products have almost no training photos. MyPillSafe's text-attribute matching against Health Canada's registry avoids depending on per-pill image galleries."
+        },
+        "fewshot": {
+          "journal": "CVPR 2020",
+          "point": "Reinforces the few-shot framing with the CURE dataset and shows real-world capture conditions dominate difficulty — motivation for MyPillSafe's controlled capture card."
+        },
+        "gopill": {
+          "journal": "MDPI Mathematics 2026",
+          "point": "Documents that low-contrast, debossed imprints are the hardest OCR case in pill imaging. Our own evaluation independently confirmed the imprint is the decisive, hardest attribute — MyPillSafe reads it twice with complementary methods and never trusts a single read."
+        },
+        "medic": {
+          "journal": "Nature Medicine 2024",
+          "point": "Production evidence from an online pharmacy that a raw language model — however capable — invents and drops medication details, and that a guarded system which cross-checks every extraction against a medication catalogue and halts rather than guesses prevents more errors. The Prescription Reader's five safety guardrails are transplanted directly from this paper's design."
+        },
+        "medsnap": {
+          "journal": "Commercial prior art (MedSnap ID, ~2013; related US patents)",
+          "point": "Prior commercial art pairing a capture tray with a phone pill app — for medication authentication (counterfeit detection), not patient-profile verification. MyPillSafe cites it as prior art; our open, ablated capture-card design and verification-with-rejection task are the differences."
+        },
+        "hanley": {
+          "journal": "JAMA 1983",
+          "point": "\"If nothing goes wrong, is everything all right?\" The rule of three: how we size our safety evaluations, so \"no false accepts observed\" comes with an honest statistical upper bound instead of a marketing claim."
+        },
+        "cihi": {
+          "journal": "Population evidence",
+          "point": "The population evidence behind the problem statement: 1 in 4 Canadian seniors on 10+ drug classes (2021 data); about five times the adverse-drug-reaction hospitalization risk at 10+ medications (2016 data)."
+        }
+      },
+      "ourResearchTitle": "Our own research",
+      "inPreparation": "In Preparation",
+      "workingTitleLabel": "Working title",
+      "workingTitle": "“Verify, Don't Identify: Profile-Constrained Pill Verification from Consumer Photos with a Printed Capture Card.”",
+      "researchBody": "MyPillSafe's pill-vision pipeline is itself a research contribution in preparation. The paper formalizes verification-with-rejection against a patient's own medication profile as the right task for consumer pill safety; introduces a printed capture card that turns an uncontrolled phone photo into a calibrated one (white-balance patches, known geometry, forced flash); contributes a harmonized, human-adjudicated appearance reference for over 7,000 marketed Canadian DINs; and reports the negative results that shaped the system — most notably that on real phone photos, zero-shot models beat our fine-tuned ones on two of three vision heads, a caution for anyone trusting studio benchmarks.",
+      "statusLabel": "Status:",
+      "statusBody": "in preparation. The design-phase experiments are complete; a pre-registered confirmatory capture study (the “tray v2” campaign — a pilot shoot followed by a 600-photo protocol with defined usability and safety endpoints) is still pending, and the paper will be drafted from those results. Until then, MyPillSafe's measured performance figures remain development-set diagnostics, and we deliberately do not quote them as product claims.",
+      "principlesTitle": "Design principles the evidence forced",
+      "principles": {
+        "verify": {
+          "title": "Verify, don't identify",
+          "desc": "the NLM challenge's 43% is the argument in one number."
+        },
+        "separation": {
+          "title": "The AI that talks is never the AI that decides",
+          "desc": "deterministic matching and guards decide; the language model only phrases, strictly from cited sources, and is re-checked. Measurement forced this: a medication's name appears many times more often in other drugs' documents than in its own, so only deterministic scoping — not clever ranking — reliably prevents wrong-drug answers."
+        },
+        "abstention": {
+          "title": "Abstention is a feature",
+          "desc": "the system is tuned so a false \"verified\" is the rarest event, at the accepted cost of more \"I'm not sure\" outcomes."
+        }
+      }
+    },
+    "team": {
+      "breadcrumb": "Team",
+      "eyebrow": "About MyPillSafe",
+      "title": "The Team",
+      "subtitle": "A five-person capstone team at Conestoga College.",
+      "responsibilities": "Responsibilities",
+      "members": {
+        "mj": {
+          "role": "Project Lead · ML Architecture",
+          "focus1": "Designed the five-brain architecture — prescription reading, pill vision, deterministic matching, monograph retrieval, and the cited answer voice.",
+          "focus2": "Set the verify / abstain / reject safety model, including why abstaining is treated as a correct outcome, not a failure.",
+          "focus3": "Directed the research grounding behind the pill-vision pipeline and its citation trail on the Scientific Foundation page.",
+          "focus4": "Wrote the disclaimer policy enforced on every decision-bearing screen: pill-scan results, Q&A answers, and DIN confirmations."
+        },
+        "sr": {
+          "role": "Backend & Systems Integration",
+          "focus1": "Built the FastAPI backend service layer — authentication, prescriptions, pill scans, and Q&A routes.",
+          "focus2": "Wired the brains sidecar service so the app can call pill-vision and matching over HTTP.",
+          "focus3": "Implemented DIN linking at prescription save: fuzzy-matching a scanned drug name, then requiring the patient to confirm before anything is committed.",
+          "focus4": "Maintained the automated backend test suite across every build."
+        },
+        "lr": {
+          "role": "Frontend & User Experience",
+          "focus1": "Built the dashboard, the pill-scan capture flow, and the Scan History views in React and Tailwind.",
+          "focus2": "Designed the verify / needs-a-closer-look / doesn't-match result panel so each of the three outcomes reads distinctly at a glance.",
+          "focus3": "Implemented the mobile-first responsive layout, the bottom tab bar, and PWA installability.",
+          "focus4": "Built the public About / Vision / Problem / Scientific Foundation / Team pages."
+        },
+        "ao": {
+          "role": "Data Engineering · Reference Pipeline",
+          "focus1": "Built and harmonized the Canadian DIN appearance reference table the pill matcher checks scans against.",
+          "focus2": "Assembled the Health Canada product-monograph corpus behind the cited Q&A answers.",
+          "focus3": "Maintained the DIN reference-search endpoint used for one-tap suggestions at prescription save.",
+          "focus4": "Curated the evaluation photo sets used to test the matcher end-to-end before each build."
+        },
+        "am": {
+          "role": "Quality Assurance & Evaluation",
+          "focus1": "Ran the mandatory smoke tests and end-to-end verification pass on every build.",
+          "focus2": "Wrote and maintained the automated test suites covering prescriptions, pill scans, and Q&A.",
+          "focus3": "Verified English/French locale parity across the app's user-facing copy.",
+          "focus4": "Documented deviations and bugs surfaced during verification passes, rather than letting them go unreported."
+        }
+      },
+      "footerNote": "MyPillSafe is a capstone project of the Conestoga College graduate program in AI & Machine Learning."
+    },
+    "contact": {
+      "title": "Contact Us",
+      "subtitle": "Questions, feedback, or accessibility concerns — we'd like to hear from you.",
+      "fullName": "Full name",
+      "email": "Email address",
+      "message": "Message",
+      "send": "Send Message",
+      "success": "Thank you — we received your message and will respond soon.",
+      "error": "Could not send your message. Please try again later.",
+      "nameRequired": "Full name is required",
+      "emailInvalid": "Enter a valid email",
+      "messageRequired": "Message is required"
+    },
+    "brains": {
+      "backToAbout": "Back to About",
+      "rxReader": {
+        "breadcrumb": "Prescription Reader",
+        "heroLead": "The first of MyPillSafe's five brains. It {{desc}}",
+        "whatTitle": "What it does",
+        "whatBody1": "You photograph the label on your prescription. The Prescription Reader turns that photo into a proposed medication list — what the medication is, how strong it is, and how often you take it — and suggests the matching Health Canada Drug Identification Number (DIN) so the rest of the app knows exactly which product you have.",
+        "whatBody2": "It is a <strong>proposal</strong>, not a decision. Everything it produces is shown to you for review first, in your own words, with anything it was unsure about marked. A medication only joins your list — and only starts reminding you — after you approve it.",
+        "howTitle": "How it works",
+        "how": {
+          "read": {
+            "title": "1. Read the label",
+            "body": "Optical character recognition turns the photo of your pharmacy label into plain text. It runs on our own machine, not in the cloud, and your photo is not sent to any outside service."
+          },
+          "propose": {
+            "title": "2. Propose the medications",
+            "body": "A small language model running locally reads that text and proposes a list: medication name, strength, how often, and whether to take it with food. It is asked for what the label says — never for a reminder time."
+          },
+          "check": {
+            "title": "3. Check the proposal",
+            "body": "Fixed, non-AI rules then check every proposal against the label text: a name or strength that cannot be found on the label is kept but marked for you to check, and a time that is not printed on the label is removed. Reminder times are calculated by a fixed table, not by the model. If the instructions do not map to a daily time — once weekly, as needed, a tapering dose — no time is set at all, and you are asked to choose."
+          },
+          "confirm": {
+            "title": "4. You confirm",
+            "body": "Nothing is added to your medication list, linked to a Health Canada DIN, or given a reminder until you review it and press Approve. That is the rule the whole design is built around."
+          }
+        },
+        "whyNoTimesTitle": "Why the model is not allowed to set times.",
+        "whyNoTimesBody": "When we measured it, the local model's commonest mistake was not reading the label — it was doing arithmetic with it: on 7 of 24 labels it turned “twice a day” into 8:00 a.m. and 1:00 p.m. instead of morning and evening. So we took that job away from it. Reminder times now come from a fixed table the app owns, and that whole class of mistake became impossible rather than unlikely.",
+        "limitationsTitle": "Prescription Scanning: Measured Limitations",
+        "limitationsIntro": "Reading a pharmacy label is genuinely hard, and this section says how well ours does it and where it fails. All of it is measured, and all of it can be re-run.",
+        "readingTitle": "Reading the photo",
+        "readingBody": "Text recognition on a real pharmacy label is noisier than on a clean document. In our own testing it has read <em>0</em> as <em>O</em> and <em>1</em> as <em>l</em>, split Canadian generic names at the hyphen (turning <em>APO-METFORMIN</em> into <em>APO</em>), mistaken a pharmacy letterhead for the medication name, and once dropped a line containing an evening dose time entirely. Each of those was found by testing and fixed, and each is the reason the review screen exists. Recognition also takes real time: on a machine without a graphics card we measured about two and a half minutes for a single label.",
+        "turningTitle": "Turning that text into medications",
+        "turningBody": "We compared three ways of doing this on 24 labels: 12 that the original rule-based parser had been built and tuned against, and 12 written fresh for the test and never used to tune anything. “Safety events” counts the outcomes that could actually hurt someone — inventing a medication, missing one, putting a daily reminder on a once-weekly medication, or setting reminder times on a medication meant to be taken only as needed.",
+        "table": {
+          "approach": "Approach",
+          "own12": "Its own 12",
+          "unseen12": "Unseen 12",
+          "fields": "Fields",
+          "events": "Safety events"
+        },
+        "rows": {
+          "regex": {
+            "system": "Rule-based parser (the previous approach)",
+            "note": "shipped before this evaluation"
+          },
+          "qwen": {
+            "system": "Local qwen2.5:7b — what MyPillSafe uses",
+            "note": "runs on our own hardware, no cloud"
+          },
+          "haiku": {
+            "system": "Claude Haiku 4.5 (measured — not used for prescription reading)",
+            "note": "cloud model, recorded as a finding"
+          },
+          "shipped": {
+            "system": "Shipped pipeline — proposer + six deterministic guardrails",
+            "note": "what actually runs in MyPillSafe"
+          }
+        },
+        "tableNote": "These are counts, not percentages, because 24 labels is a small sample and a percentage would imply a precision we do not have. The evaluation set was written in-house by this project, not drawn from real patients' prescriptions. Each system was run three times with randomness switched off, and the table shows each system's worst run — and we have since measured that even a “deterministic” local model can answer differently after a model reload, one more reason nothing is committed without your review.",
+        "notChosenTitle": "The model we did not choose",
+        "notChosenBody": "Claude Haiku 4.5 measured all 24 labels fully correct (130/130 fields, 0 safety events) on this evaluation; a more powerful cloud LLM is expected to perform at least as well. The capstone deliberately selects the local qwen2.5:7b for self-containment and zero cloud cost; the proposer is swappable by config.",
+        "stillWrongTitle": "What still goes wrong",
+        "stillWrong1": "On a label giving two different doses at two different times of day — “one tablet in the morning and two at bedtime” — the fixed timing table sets the times for a standard twice-a-day schedule rather than the two the label names. The review screen is where you correct it, and it is the reason the review screen is not optional.",
+        "stillWrong2": "Re-running the same evaluation on a different day, the local model classified one label differently than it had the first time. A small model's output is not perfectly stable across runs and machines — one more reason nothing it produces is committed without your confirmation.",
+        "stillWrong3": "The medication reference behind the DIN suggestions covers 11,609 medications currently marketed for people in Canada. Of those, 7,055 are the tablets and capsules whose printed appearance we hold — so 4,554 real medications, including insulin pens, inhalers, creams, eye drops and patches, can be added to your list and looked up but cannot be checked from a photo. Those are labelled as such in the app rather than quietly left out.",
+        "stillWrong4": "Everything here was measured on labels we wrote. We have not yet evaluated against a collection of real pharmacy labels from multiple Canadian chains, and that is the honest limit of what these numbers can tell you.",
+        "repoNoteBefore": "The full experiment — all 24 labels, the expected answers, every system's raw output, and the script that reproduces the run — ships inside the project repository at",
+        "repoNoteAfter": ".",
+        "tableFootnote": "† The shipped path's one recorded event — a fixed evening reminder on an as-needed medication — was closed after this run by a new guard that reads the label itself rather than the model's proposal; the post-fix run records zero events, and the guard is proven by unit tests that inject the failing classification."
+      },
+      "vision": {
+        "breadcrumb": "Pill Vision",
+        "heroLead": "The second of MyPillSafe's five brains. It {{desc}}",
+        "whatTitle": "What it does",
+        "whatBody1": "You place a loose pill on the printed MyPillSafe capture card and photograph it. Pill Vision finds the pill in the photo, measures its colour against the card's calibration patches, classifies its shape, and reads the text pressed into its surface — twice, with two complementary methods. What comes out is not a drug name: it is an honest description — colour, shape, type, and two imprint readings, each with its own confidence.",
+        "whatBody2": "That description goes to the <strong>Deterministic Matcher</strong>, which compares it against the medications on your confirmed list — never against the whole Canadian formulary. Pill Vision describes; it does not decide.",
+        "howTitle": "How it works",
+        "how": {
+          "find": {
+            "title": "1. Find the pill",
+            "body": "A zero-shot segmentation model isolates the pill on the capture card. We also fine-tuned a dedicated detector on the training split of an 8,560-image studio set — and on real phone photos it missed 28% of pills, so the zero-shot model that finds them all is what shipped."
+          },
+          "colour": {
+            "title": "2. Measure the colour",
+            "body": "Colour is calculated, not learned: the card's printed patches let the app correct for your room's lighting, and the pill's corrected colour is looked up in a 13-colour palette. No training dataset gets a vote on what colour your pill is."
+          },
+          "shape": {
+            "title": "3. Classify the shape",
+            "body": "A small neural network classifies the pill's outline into 11 shapes, with a geometry rule as fallback for the rare outlines it was not trained to see."
+          },
+          "imprint": {
+            "title": "4. Read the imprint — twice",
+            "body": "The characters pressed into a pill are its strongest identifier and the hardest thing to read. Two complementary readers look at every face — one better at partial reads, and one, using contrast enhancement, about 3.5× better at exact reads. Both readings are passed on unmerged, so the matcher can weigh them honestly."
+          }
+        },
+        "measuredTitle": "Measured performance — and what it honestly means",
+        "measuredIntro": "On 180 real phone photos of 15 over-the-counter products — our development set, reported honestly as such, not a benchmark:",
+        "stats": {
+          "detect": {
+            "value": "180/180",
+            "label": "pills found in the photo"
+          },
+          "verify": {
+            "value": "31.1%",
+            "label": "of photos verified on the first try"
+          },
+          "fa": {
+            "value": "1.25%",
+            "label": "false-accept rate — the number everything is tuned to keep lowest (9 of 720 wrong-profile trials)"
+          }
+        },
+        "measuredNote": "The low verification rate is deliberate. When lighting or focus makes the imprint unreadable, MyPillSafe abstains and asks you to flip the pill or retake the photo rather than gamble. Unreadable imprints cause 83.9% of the photos that do not verify — which is exactly what the capture protocol below is designed to attack.",
+        "negativeTitle": "The finding we didn't expect",
+        "negativeBody": "We fine-tuned models for detection and for shape on thousands of studio pill photos, and both beat their zero-shot baselines in the studio — then lost to them on real phone photos. Studio benchmarks overstated real-world transfer on two of our three vision heads, and fine-tuning the imprint reader on its own teacher's output lost both times we tried it. That negative result now shapes the whole pipeline, and is a core finding of the paper in preparation: zero-shot detection shipped, colour was never trained at all, and even the surviving trained shape model costs 4.5 points on real photos — it earns its place only because the dual-read imprint more than pays for it.",
+        "trayTitle": "The PillSafeTray — a portable studio",
+        "trayBadge": "Research prototype — in development",
+        "trayBody1": "The next step in controlled capture is a wallet-size pill tray with exactly the footprint of a bank card (85.6 × 54 mm). Six shallow wells hold up to six pills, imprint up, for a single photo — a dose of seven or eight pills uses two loads. Its printed sheet carries the same calibrated colour patches as the capture card, four corner markers that tell the app exactly where the tray and every well sit in the photo, and one printed instruction: imprint UP.",
+        "trayBody2": "Photographed up close with the flash forced on, the tray turns an uncontrolled phone photo into a small, repeatable studio shot. We measured why that matters: lighting is the dominant capture lever we found — 12 of 29 first shots verified under a proxy of this protocol, with hard-to-read debossed imprints failing most — and forced flash brings a dim evening room back to roughly daylight verification rates.",
+        "trayImageAlt": "Design render of the PillSafeTray v2: a bank-card-size dark grey tray with six numbered pill wells, a calibration patch strip, corner markers and an 'imprint UP' instruction, shown next to a bank card for scale.",
+        "trayImageCaption": "Design render, not a photograph. The tray body is print-ready; the confirmatory capture study is pre-registered and still ahead.",
+        "pendingTitle": "What's still ahead — stated openly",
+        "pendingIntro": "All modelling and development-set evaluation are complete and frozen. The confirmatory work is pre-registered and pending:",
+        "pending": {
+          "p1": "3D-print the tray body (the print-ready model exists) and produce its calibrated insert sheet.",
+          "p2": "An 88-photo pilot to fix the capture parameters, then the pre-registered 600-photo confirmatory study with the same 15 products.",
+          "p3": "Two pre-registered outcomes: usability — a correct, imprint-up pill verifies on the first photo — and safety — zero false accepts across roughly 630 stray-pill presentations, which by the rule of three would bound the true rate below 0.48%.",
+          "p4": "The imprint decision: whether controlled tray capture recovers enough unreadable imprints to stay zero-shot, or whether a properly trained imprint reader — on independent, hand-keyed labels this time — is warranted.",
+          "p5": "A colour-boundary refinement, starting with the white/grey split."
+        }
+      },
+      "matcher": {
+        "breadcrumb": "Deterministic Matcher",
+        "heroLead": "The third of MyPillSafe's five brains. It is {{desc}}",
+        "whatTitle": "What it does",
+        "whatBody1": "The matcher receives Pill Vision's description — colour, shape, type, and two imprint readings — and compares it against each medication on your confirmed list. It returns exactly one of three outcomes: <strong>verified</strong> (this is one of your medications, and here is which attributes matched), <strong>doesn't match</strong> (this matches nothing you take — stop and check with a pharmacist), or <strong>abstain</strong> (not sure — flip the pill, retake the photo, or confirm from a short list).",
+        "whatBody2": "It is deliberately not machine learning. Safety tuning needs an explicit formula that can be audited: every score can be recomputed by hand, every threshold has a written reason, and the project's own rules forbid changing any of them without re-running the full evaluation that set them.",
+        "formulaTitle": "The formula, in the open",
+        "formulaBody": "Each attribute contributes a weighted share of the match score: the imprint carries 55%, colour 25%, shape 15%, and type — tablet or capsule — 5%. A pill is verified only above a score of 0.70, rejected below 0.25, and everything in between — or any near-tie between two of your own medications — becomes an abstention. The imprint dominates on purpose: it is the one attribute that genuinely separates look-alike pills.",
+        "abstainTitle": "Abstaining is the design, not a failure",
+        "abstainBody": "On our development photos the matcher verifies roughly 17–29% of single shots and abstains on most of the rest. That trade is deliberate: the thresholds were tuned so that wrongly verifying a pill — the one outcome that could put the wrong medication in someone's mouth — is the rarest event we can measure: a 1.15% false-accept rate in held-out cross-validation, 1.25% on real photos. (The shipped pipeline mix measures 31.1% verified on those same photos; the 17–29% band spans the pipeline variants we evaluated.) And when it abstains, it says what to do next: flip the pill so the other face's imprint can be read, or choose from the short list it could not separate.",
+        "collisionTitle": "Why not identify against everything?",
+        "collisionBody": "Because Canadian pills genuinely collide. In our reference data, 13 different products are all the same 'blue diamond tablet, imprint SIL 25' — cross-licensed generics no camera could ever tell apart. Across the 7,055 marketed Canadian tablets and capsules, even a perfect attribute description narrows to the right product only 38.4% of the time; within a five-medication personal profile, the chance of two colliding is about 0.3%. Verification against your own list is not a compromise — it is the version of the problem that can actually be done safely.",
+        "frozenNote": "The exact matcher that was evaluated is the matcher that ships: its weights and thresholds are frozen, and every number above can be re-derived from the evaluation that set it."
+      },
+      "retrieval": {
+        "breadcrumb": "Monograph Retrieval",
+        "heroLead": "The fourth of MyPillSafe's five brains. It {{desc}}",
+        "whatTitle": "What it does",
+        "whatBody1": "When you ask a question, Monograph Retrieval finds the passages that answer it — from the official Health Canada product monograph of your medication, never from the open internet. Behind it sits a corpus of 6,803 product monographs, plus 27 ingredient documents covering common shelf products that have no monograph of their own, split into 3.9 million searchable passages.",
+        "whatBody2": "Its defining rule is that retrieval is <strong>scoped to one product</strong>. The system first resolves which product you are asking about, and then searches only that product's monograph. If it cannot resolve the product, it asks you — it never guesses.",
+        "howTitle": "How it works",
+        "how": {
+          "resolve": {
+            "title": "1. Resolve the medication",
+            "body": "Your question can name a brand, an ingredient, or a DIN. The resolver maps it to exactly one product — and when two medication names look alike, a real cause of medication errors, it never auto-picks: it shows the candidates and you choose."
+          },
+          "scope": {
+            "title": "2. Search only that monograph",
+            "body": "We measured why this rule exists: for one common blood thinner, its name appears 33 times more often inside other drugs' monographs than inside its own. Searched corpus-wide, 8 of 40 test questions pulled passages from the wrong drug's documents; scoped to the resolved product, zero of 55 did. The corpus-wide path was deleted outright."
+          },
+          "route": {
+            "title": "3. Route by intent",
+            "body": "The question's intent — side effects, interactions, storage, and so on — steers the search toward the monograph sections where that kind of answer lives. Adding this routing raised the share of questions whose answer surfaces in the top five passages from 70% to 81% on our development set."
+          },
+          "guard": {
+            "title": "4. Guard the result",
+            "body": "Deterministic guards run before anything is phrased. Dosing questions are refused outright — a hard rule, not a preference. A brand that is not in the Canadian formulary gets a stated refusal, not a lookalike substitute. And an answer that would ship without sources becomes an honest 'I don't know' instead."
+          }
+        },
+        "refusesTitle": "What it refuses to do",
+        "refusesBody": "It will not answer dosing questions ('how much should I take' belongs to your pharmacist and your label). It will not recommend a therapy for a condition — product monographs describe products; they cannot rank treatments. And it will not silently substitute a similar-looking name for one it cannot find. Each refusal is worded as what it is, so you know why you did not get an answer.",
+        "localNote": "This entire layer — resolver, search, and guards — runs deterministically on project hardware. No cloud service sees your question at this stage; the only cloud step is the Answer Voice that phrases the final answer from these retrieved, cited passages."
+      },
+      "voice": {
+        "breadcrumb": "Answer Voice",
+        "heroLead": "The fifth of MyPillSafe's five brains. It is {{desc}}",
+        "whatTitle": "What it does",
+        "whatBody1": "The Answer Voice is the only part of MyPillSafe that runs in the cloud, and the only part allowed to write sentences for you. It receives the retrieved, cited monograph passages — already scoped and guarded by Monograph Retrieval — and phrases the answer in the language you chose. It is never asked to remember medicine on its own, and it decides nothing: what it says must come from the passages in front of it, and the citations are shown with the answer.",
+        "whatBody2": "One sentence explains this whole design: <strong>the AI that talks is never the AI that decides.</strong>",
+        "storyTitle": "The failure that shaped it",
+        "storyBody": "During evaluation, a smaller language model was asked whether someone with a sulfa-drug allergy could take celecoxib. The passage it had itself retrieved and cited said allergic-type reactions had been demonstrated — and it still answered 'Yes, you can.' Every safety guard passed, because they checked which drug was cited, never whether the claim matched the source. That one answer settled the architecture: generation moved to a stronger cloud model, and a new deterministic check now compares each generated answer's safety-critical claims against the polarity of its own sources — on the cloud voice and the fallback alike.",
+        "howTitle": "How it works",
+        "how": {
+          "receive": {
+            "title": "1. Receive guarded context",
+            "body": "The voice never searches. It receives the passages Monograph Retrieval already resolved, scoped, and guarded — with their citations — and the question. If the passages are missing, there is nothing to phrase, and it says so."
+          },
+          "phrase": {
+            "title": "2. Phrase in your language",
+            "body": "It writes the answer in the language you chose, in plain words, strictly from the supplied passages. Translation here is grounded in the official monograph text — never free-styled medical advice."
+          },
+          "recheck": {
+            "title": "3. Get re-checked",
+            "body": "The phrased answer passes back through deterministic guards, including the claim-source check born from the celecoxib failure. An answer that contradicts its own sources, or arrives without them, is replaced by an honest abstention with the same disclaimer every screen carries."
+          }
+        },
+        "measuredTitle": "Measured, honestly",
+        "measuredBody": "Answering our 120-question evaluation set through the production voice cost $0.49 in metered cloud charges — about half a cent per generated answer. If the cloud model is unreachable, a local model answers instead and the app labels it as the offline fallback; the same guards run either way.",
+        "measuredNote": "The full per-question trace — every question, what was retrieved, every guard verdict, and the metered cost — ships in the project repository as a reviewable workbook (documentation/BB3_120Q_Pipeline_Journey_R1.xlsx).",
+        "privacyTitle": "What leaves your device — and what never does",
+        "privacyBody": "Two things are sent to the cloud model: the passages already retrieved from your medication's official monograph, and the words of your question. Your name, your date of birth, and your medication list never leave MyPillSafe — the cloud model is not told who you are or what else you take. One honest caveat: if you type health details into a question, those words do go to the cloud — unlinked to your identity, but not stripped."
+      }
+    }
+  },
+  "errorState": {
+    "title": "Something went wrong",
+    "retry": "Try again"
+  },
+  "records": {
+    "emptyTitle": "No scans yet",
+    "emptyBody": "Use Scan Pill to check your first pill.",
+    "emptyCta": "Go to Scan Pill",
+    "colDate": "Date",
+    "colDrug": "Drug Detected",
+    "colStatus": "Match Status",
+    "colAction": "Action Taken",
+    "unknown": "Unknown",
+    "status": {
+      "matched": "Matched",
+      "warning": "Warning",
+      "unmatched": "Unmatched"
+    }
+  },
+  "help": {
+    "howToUseTitle": "How to use MyPillSafe",
+    "steps": {
+      "s1": {
+        "title": "Scan your prescription",
+        "desc": "Use Scan Prescription to photograph your prescription label. MyPillSafe reads it and proposes the medications it found."
+      },
+      "s2": {
+        "title": "Confirm your medications",
+        "desc": "The \"Is this your medication?\" panel suggests matching Canadian products for each one — you confirm the match with a tap. Nothing is added to your profile automatically."
+      },
+      "s3": {
+        "title": "Check a pill before taking it",
+        "desc": "Use Scan Pill to photograph a loose pill on the capture card. MyPillSafe checks it against your confirmed medications."
+      },
+      "s4": {
+        "title": "Read the result",
+        "desc": "Green means verified, red means it doesn't match anything you take, and amber means MyPillSafe isn't sure and wants you to double-check. The first pill scan can take up to a minute."
+      },
+      "s5": {
+        "title": "Ask questions",
+        "desc": "Use \"Ask about my medication\" for cited answers from Health Canada product monographs, in your language."
+      }
+    },
+    "trayNote": "In development: a wallet-size pill tray that holds up to six pills, imprint up, for a single photo. Until it ships, place one pill at a time on the capture card.",
+    "labelTitle": "How to read your prescription label",
+    "labelParts": {
+      "name": "Drug name — the medication's name, usually printed largest on the label.",
+      "dosage": "Dosage — how much of the medication is in each pill (e.g. 500 mg).",
+      "frequency": "Frequency — how often to take it (e.g. twice daily, with meals).",
+      "doctor": "Prescribing doctor — who prescribed the medication.",
+      "refills": "Refills remaining — how many more times the pharmacy can refill it.",
+      "expiry": "Expiry date — do not take the medication after this date."
+    },
+    "canCannotTitle": "What MyPillSafe can and cannot do",
+    "canTitle": "MyPillSafe can",
+    "cannotTitle": "MyPillSafe cannot",
+    "can": {
+      "c1": "Read prescription labels and suggest medication matches for you to confirm.",
+      "c2": "Check a photographed pill against YOUR confirmed medication list — colour, shape, and imprint.",
+      "c3": "Answer medication questions with citations from Health Canada product monographs, in English or French."
+    },
+    "cannot": {
+      "c1": "Identify an unknown pill from the entire drug catalogue — it verifies against your own list only.",
+      "c2": "Tell you it's certain when it isn't — amber means it could not confirm, not a softer warning.",
+      "c3": "Give dosing advice, or diagnose or replace your pharmacist or physician."
+    },
+    "disclaimer": "Decision support only. Always confirm medication information with a licensed pharmacist or physician.",
+    "tipsTitle": "Medication safety tips",
+    "tips": {
+      "t1": "Take medications at the same time each day to build a routine.",
+      "t2": "Never crush or split pills without asking your pharmacist first.",
+      "t3": "Keep an updated medication list with you at all times.",
+      "t4": "Store medications away from heat, light, and humidity.",
+      "t5": "Never share prescription medication with another person.",
+      "t6": "Check expiry dates regularly and dispose of expired medication safely.",
+      "t7": "Tell every doctor and pharmacist about all medications you currently take."
+    }
   }
 }

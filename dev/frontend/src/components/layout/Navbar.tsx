@@ -107,8 +107,8 @@ export default function Navbar() {
     <button
       type="button"
       onClick={() => voice.toggle()}
-      aria-label={voiceEnabled ? 'Voice Assistant On' : 'Voice Assistant Off'}
-      title="Voice Assistant On/Off"
+      aria-label={voiceEnabled ? t('nav.voiceOn') : t('nav.voiceOff')}
+      title={t('nav.voiceToggle')}
       className={`rounded-xl border flex items-center justify-center transition-colors shrink-0 ${
         mobile ? 'h-11 w-11' : 'h-10 w-10'
       } ${
@@ -143,7 +143,7 @@ export default function Navbar() {
                 isAboutActive ? 'text-white' : 'text-white/75 hover:text-white'
               }`}
             >
-              About <ChevronDown className={`h-3.5 w-3.5 transition-transform ${aboutOpen ? 'rotate-180' : ''}`} />
+              {t('nav.about')} <ChevronDown className={`h-3.5 w-3.5 transition-transform ${aboutOpen ? 'rotate-180' : ''}`} />
             </button>
             {aboutOpen && (
               <div className="absolute left-0 top-full mt-1 w-64 bg-white rounded-xl shadow-lg border border-slate-100 py-2 animate-fade-in z-50">
@@ -153,7 +153,7 @@ export default function Navbar() {
                     to={p.href}
                     className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-navy transition-colors"
                   >
-                    {p.label}
+                    {t(p.labelKey)}
                   </Link>
                 ))}
               </div>
@@ -194,7 +194,7 @@ export default function Navbar() {
                     ))}
                     {isAdmin && (
                       <div className="border-t border-slate-100 mt-2 pt-2">
-                        <p className="px-4 pb-1.5 text-xs font-semibold text-amber-600 uppercase tracking-wider">Admin</p>
+                        <p className="px-4 pb-1.5 text-xs font-semibold text-amber-600 uppercase tracking-wider">{t('nav.admin')}</p>
                         {ADMIN_MENU_ITEMS.map(({ to, labelKey, icon: Icon }) => (
                           <NavLink
                             key={to}
@@ -238,13 +238,13 @@ export default function Navbar() {
           ) : (
             <>
               <Link to="/login" className="text-sm font-medium text-white/75 hover:text-white min-h-[44px] flex items-center">
-                Sign In
+                {t('nav.signIn')}
               </Link>
               <Link
                 to="/register"
                 className="inline-flex items-center gap-2 bg-coral hover:bg-coral/90 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors min-h-[44px]"
               >
-                Get Started
+                {t('nav.getStarted')}
               </Link>
             </>
           )}
@@ -265,10 +265,10 @@ export default function Navbar() {
       {/* Mobile panel */}
       {mobileOpen && (
         <nav className="sm:hidden border-t border-white/10 px-6 py-4 flex flex-col gap-1 bg-navy max-h-[calc(100vh-4rem)] overflow-y-auto">
-          <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider pt-1 pb-1.5">About</p>
+          <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider pt-1 pb-1.5">{t('nav.about')}</p>
           {ABOUT_PAGES.map((p) => (
             <Link key={p.id} to={p.href} className="text-sm font-medium text-white/80 hover:text-white py-2.5 min-h-[44px] flex items-center">
-              {p.label}
+              {t(p.labelKey)}
             </Link>
           ))}
 
@@ -292,7 +292,7 @@ export default function Navbar() {
               ))}
               {isAdmin && (
                 <>
-                  <p className="text-[11px] font-semibold text-amber-400/80 uppercase tracking-wider pb-1.5 pt-2">Admin</p>
+                  <p className="text-[11px] font-semibold text-amber-400/80 uppercase tracking-wider pb-1.5 pt-2">{t('nav.admin')}</p>
                   {ADMIN_MENU_ITEMS.map(({ to, labelKey, icon: Icon }) => (
                     <NavLink
                       key={to}
@@ -337,13 +337,13 @@ export default function Navbar() {
                   to="/login"
                   className="border border-white/30 text-white text-center py-3 rounded-xl font-semibold min-h-[44px] flex items-center justify-center"
                 >
-                  Sign In
+                  {t('nav.signIn')}
                 </Link>
                 <Link
                   to="/register"
                   className="bg-coral text-white text-center py-3 rounded-xl font-semibold min-h-[44px] flex items-center justify-center"
                 >
-                  Get Started
+                  {t('nav.getStarted')}
                 </Link>
               </>
             )}

@@ -1,0 +1,593 @@
+{
+  "note": "PillSafe Rx-extraction evaluation set. ORIGINAL 12 are the regex parser's own development fixtures (its home turf); HELD-OUT 12 were authored fresh by the SA and never used to tune any parser. `times` is the reminder-time list the app should STORE (derived), and null means times are not scored for that medication. Both sets now carry per-field truths and are scored by the same function; `per_field_meds` on the original 12 was added 2026-07-29 (20 medications x 4 fields = 80 newly scored fields, 50 -> 130 overall), authored from each label's own text and reviewed with zero corrections. Before that date the original 12 were scored on medication count + name fragments only, so frequency/dosage/time errors on those labels -- including a PRN medication given a fixed daily reminder -- were invisible.",
+  "original_12": [
+    {
+      "id": "A-numbered-sig-5med (the real synthetic doc's shape)",
+      "expected_medication_count": 5,
+      "name_fragments": [
+        "tylenol",
+        "advil",
+        "benadryl",
+        "pepcid",
+        "allergy"
+      ],
+      "per_field_meds": [
+        {
+          "name": "tylenol",
+          "dosage": "500mg",
+          "freq_ok": [
+            "PRN",
+            "EVERY_N_HOURS"
+          ],
+          "times": [],
+          "prn": true
+        },
+        {
+          "name": "advil",
+          "dosage": "200mg",
+          "freq_ok": [
+            "EVERY_N_HOURS"
+          ],
+          "times": [],
+          "prn": false
+        },
+        {
+          "name": "benadryl",
+          "dosage": "25mg",
+          "freq_ok": [
+            "BEDTIME"
+          ],
+          "times": [
+            "21:00"
+          ],
+          "prn": false
+        },
+        {
+          "name": "pepcid",
+          "dosage": "20mg",
+          "freq_ok": [
+            "ONCE_DAILY"
+          ],
+          "times": [
+            "08:00"
+          ],
+          "prn": false
+        },
+        {
+          "name": "allergy",
+          "dosage": "10mg",
+          "freq_ok": [
+            "ONCE_DAILY"
+          ],
+          "times": [
+            "08:00"
+          ],
+          "prn": false
+        }
+      ],
+      "text": "Conestoga Family Health Clinic\n123 Health Street, Kitchener, ON  N2G 1A1\nTel: (519) 555-0134    Fax: (519) 555-0135\nPatient: Muthuraj Jayakumar\nPrescriber: Dr. A. Reyes, MD\nRx\n1. Tylenol Extra Strength (Acetaminophen 500 mg)\nSig: Take 1-2 tablets by mouth every 6 hours as needed for pain. Qty: 30  Refills: 1\n2. Advil (Ibuprofen 200 mg)\nSig: Take 1 tablet by mouth every 4-6 hours with food. Qty: 24  Refills: 0\n3. Benadryl Allergy (Diphenhydramine HCl 25 mg)\nSig: Take 1 tablet by mouth at bedtime for allergy symptoms. Qty: 20  Refills: 0\n4. Pepcid Maximum Strength (Famotidine 20 mg)\nSig: Take 1 tablet by mouth once daily before breakfast. Qty: 30  Refills: 2\n5. Allergy Remedy (Loratadine 10 mg)\nSig: Take 1 tablet by mouth once daily. Qty: 30  Refills: 2\nNotes: Patient counselled on OTC interactions.\nDr. A. Reyes\n"
+    },
+    {
+      "id": "B-numbered-no-sig-3med",
+      "expected_medication_count": 3,
+      "name_fragments": [
+        "metformin",
+        "ramipril",
+        "atorvastatin"
+      ],
+      "per_field_meds": [
+        {
+          "name": "metformin",
+          "dosage": "500mg",
+          "freq_ok": [
+            "BID",
+            "WITH_MEALS"
+          ],
+          "times": [
+            "08:00",
+            "18:00"
+          ],
+          "prn": false
+        },
+        {
+          "name": "ramipril",
+          "dosage": "5mg",
+          "freq_ok": [
+            "ONCE_DAILY"
+          ],
+          "times": [
+            "08:00"
+          ],
+          "prn": false
+        },
+        {
+          "name": "atorvastatin",
+          "dosage": "20mg",
+          "freq_ok": [
+            "BEDTIME"
+          ],
+          "times": [
+            "21:00"
+          ],
+          "prn": false
+        }
+      ],
+      "text": "WATERLOO FAMILY PHARMACY\n88 Erb Street, Waterloo ON\n1) APO-METFORMIN 500 MG\nTake 1 tablet twice daily with meals\n2) RAMIPRIL 5 MG\nTake 1 capsule once daily in the morning\n3) ATORVASTATIN 20 MG\nTake 1 tablet at bedtime\nPharmacist: J. Smith\n"
+    },
+    {
+      "id": "C-unenumerated-stacked-2med (dosage fallback must catch)",
+      "expected_medication_count": 2,
+      "name_fragments": [
+        "metformin",
+        "naproxen"
+      ],
+      "per_field_meds": [
+        {
+          "name": "metformin",
+          "dosage": "500mg",
+          "freq_ok": [
+            "BID",
+            "WITH_MEALS"
+          ],
+          "times": [
+            "08:00",
+            "18:00"
+          ],
+          "prn": false
+        },
+        {
+          "name": "naproxen",
+          "dosage": "500mg",
+          "freq_ok": [
+            "PRN"
+          ],
+          "times": [],
+          "prn": true
+        }
+      ],
+      "text": "Shoppers Drug Mart\n123 King St W, Kitchener ON\nAPO-METFORMIN 500 MG\nTake 1 tablet twice daily with food\nTEVA-NAPROXEN 500 MG\nTake 1 tablet at bedtime as needed for pain\nDIN: 02353377\n"
+    },
+    {
+      "id": "D-PHANTOM-TRAP single med + mg max-dose line",
+      "expected_medication_count": 1,
+      "name_fragments": [
+        "metformin"
+      ],
+      "per_field_meds": [
+        {
+          "name": "metformin",
+          "dosage": "500mg",
+          "freq_ok": [
+            "BID",
+            "WITH_MEALS"
+          ],
+          "times": [
+            "08:00",
+            "18:00"
+          ],
+          "prn": false
+        }
+      ],
+      "text": "Shoppers Drug Mart\n123 King St W\nAPO-METFORMIN 500 MG\nTake 1 tablet twice daily with food\nDo not exceed 4000 mg daily\nQty: 60  Refills: 3\n"
+    },
+    {
+      "id": "E-PHANTOM-TRAP single med + generic-name restatement",
+      "expected_medication_count": 1,
+      "name_fragments": [
+        "metformin"
+      ],
+      "per_field_meds": [
+        {
+          "name": "metformin",
+          "dosage": "500mg",
+          "freq_ok": [
+            "BID",
+            "WITH_MEALS"
+          ],
+          "times": [
+            "08:00",
+            "18:00"
+          ],
+          "prn": false
+        }
+      ],
+      "text": "Rexall Pharmacy\nAPO-METFORMIN 500 MG (metformin hydrochloride 500 mg)\nTake 1 tablet twice daily with food\n"
+    },
+    {
+      "id": "F-PHANTOM-TRAP single med + total-daily note",
+      "expected_medication_count": 1,
+      "name_fragments": [
+        "ramipril"
+      ],
+      "per_field_meds": [
+        {
+          "name": "ramipril",
+          "dosage": "5mg",
+          "freq_ok": [
+            "ONCE_DAILY"
+          ],
+          "times": [
+            "08:00"
+          ],
+          "prn": false
+        }
+      ],
+      "text": "London Drugs\nRAMIPRIL 5 MG\nTake 1 capsule once daily in the morning\nTotal 5 mg per day\n"
+    },
+    {
+      "id": "G-PHANTOM-TRAP numbered counselling notes, single med",
+      "expected_medication_count": 1,
+      "name_fragments": [
+        "amoxicillin"
+      ],
+      "per_field_meds": [
+        {
+          "name": "amoxicillin",
+          "dosage": "500mg",
+          "freq_ok": [
+            "TID",
+            "WITH_MEALS"
+          ],
+          "times": [
+            "08:00",
+            "13:00",
+            "18:00"
+          ],
+          "prn": false
+        }
+      ],
+      "text": "Jean Coutu Pharmacie\nAMOXICILLIN 500 MG Capsules\nTake 1 capsule three times daily with food\nPatient counselling:\n1. Avoid alcohol\n2. Complete the full course\n"
+    },
+    {
+      "id": "H-PHANTOM-TRAP garbled 1000+ char dump, single med",
+      "expected_medication_count": 1,
+      "name_fragments": [
+        "amoxicillin"
+      ],
+      "per_field_meds": [
+        {
+          "name": "amoxicillin",
+          "dosage": "500mg",
+          "freq_ok": [
+            "TID",
+            "WITH_MEALS"
+          ],
+          "times": [
+            "08:00",
+            "13:00",
+            "18:00"
+          ],
+          "prn": false
+        }
+      ],
+      "text": "SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 \nSPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 \nSPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 \nAmoxicillin 500mg Capsules\nTake 1 capsule three times daily with food for infection\nSPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 \nSPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 \nSPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 \nSPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 \nSPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 \nSPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 \nSPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 \nSPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 \nSPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 \nSPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 \n"
+    },
+    {
+      "id": "I-single-numbered-item (1 anchor only, must not split)",
+      "expected_medication_count": 1,
+      "name_fragments": [
+        "telmisartan"
+      ],
+      "per_field_meds": [
+        {
+          "name": "telmisartan",
+          "dosage": "40mg",
+          "freq_ok": [
+            "ONCE_DAILY"
+          ],
+          "times": [
+            "08:00"
+          ],
+          "prn": false
+        }
+      ],
+      "text": "Pharmaprix\nRx\n1. TELMISARTAN 40 MG\nSig: Take 1 tablet once daily in the morning\n"
+    },
+    {
+      "id": "J-clock-times-2med",
+      "expected_medication_count": 2,
+      "name_fragments": [
+        "atorvastatin",
+        "metformin"
+      ],
+      "per_field_meds": [
+        {
+          "name": "atorvastatin",
+          "dosage": "20mg",
+          "freq_ok": [
+            "BID"
+          ],
+          "times": [
+            "08:00",
+            "20:00"
+          ],
+          "prn": false
+        },
+        {
+          "name": "metformin",
+          "dosage": "500mg",
+          "freq_ok": [
+            "BID"
+          ],
+          "times": [
+            "08:00",
+            "18:00"
+          ],
+          "prn": false
+        }
+      ],
+      "text": "Costco Pharmacy\nATORVASTATIN 20 MG\nTake 1 tablet at 8:00 AM and 8:00 PM\nAPO-METFORMIN 500 MG\nTake 1 tablet 2 times a day\n"
+    },
+    {
+      "id": "K-single-med-classic (must stay 1, unchanged)",
+      "expected_medication_count": 1,
+      "name_fragments": [
+        "acetaminophen"
+      ],
+      "per_field_meds": [
+        {
+          "name": "acetaminophen",
+          "dosage": "500mg",
+          "freq_ok": [
+            "PRN",
+            "EVERY_N_HOURS"
+          ],
+          "times": [],
+          "prn": true
+        }
+      ],
+      "text": "CONESTOGA PHARMACY\n123 University Avenue West, Waterloo, ON N2L 3G1\nTel: (519) 888-4567 | Fax: (519) 888-4568\nwww.conestogapharmacy.ca\nAcetaminophen 500mg Tablets\nTake 2 tablets every 6 hours as needed for pain or fever.\nDo not exceed 8 tablets in 24 hours.\nQty: 100  Refills: 2\nDIN: 00559407\n"
+    },
+    {
+      "id": "L-demo-text (OCR_PIPELINE_ENABLED=false path, must stay 1)",
+      "expected_medication_count": 1,
+      "name_fragments": [
+        "metformin"
+      ],
+      "per_field_meds": [
+        {
+          "name": "metformin",
+          "dosage": "500mg",
+          "freq_ok": [
+            "BID",
+            "WITH_MEALS"
+          ],
+          "times": [
+            "08:00",
+            "18:00"
+          ],
+          "prn": false
+        }
+      ],
+      "text": "Metformin HCl 500mg \u2014 twice daily with meals. Dr. A. Chen. Refills: 2."
+    }
+  ],
+  "heldout_12": [
+    {
+      "id": "H1-vial-classic-once-daily",
+      "text": "Shoppers Drug Mart #1123\n555 King St W, Kitchener ON N2G 1B5  (519) 555-8100\nRx: 1234567  Dr. G. Singh\nMUTHURAJ JAYAKUMAR\nAPO-AMLODIPINE 5 MG TABLET\nTAKE 1 TABLET BY MOUTH ONCE DAILY\nQty: 90  Refills: 3  DIN: 02273373\n",
+      "meds": [
+        {
+          "name": "amlodipine",
+          "dosage": "5mg",
+          "freq_ok": [
+            "ONCE_DAILY"
+          ],
+          "times": [
+            "08:00"
+          ],
+          "prn": false
+        }
+      ]
+    },
+    {
+      "id": "H2-DANGER-weekly-alendronate",
+      "text": "Rexall Pharmacy\nAPO-ALENDRONATE 70 MG TABLET\nTAKE 1 TABLET ONCE WEEKLY ON AN EMPTY STOMACH WITH A FULL GLASS OF WATER\nREMAIN UPRIGHT FOR 30 MINUTES AFTER TAKING\nQty: 4  Refills: 2\n",
+      "meds": [
+        {
+          "name": "alendronate",
+          "dosage": "70mg",
+          "freq_ok": [
+            "WEEKLY"
+          ],
+          "times": [],
+          "prn": false
+        }
+      ],
+      "danger": "weekly"
+    },
+    {
+      "id": "H3-every-8-hours",
+      "text": "WATERLOO FAMILY PHARMACY\nAMOXICILLIN 500 MG CAPSULES\nTake 1 capsule every 8 hours until all finished\nQty: 21  Refills: 0\n",
+      "meds": [
+        {
+          "name": "amoxicillin",
+          "dosage": "500mg",
+          "freq_ok": [
+            "EVERY_N_HOURS",
+            "TID"
+          ],
+          "times": null,
+          "prn": false
+        }
+      ]
+    },
+    {
+      "id": "H4-bare-daily",
+      "text": "Costco Pharmacy\nRAMIPRIL 10 MG CAPSULE\nTake 1 capsule daily\nQty: 30  Refills: 5\n",
+      "meds": [
+        {
+          "name": "ramipril",
+          "dosage": "10mg",
+          "freq_ok": [
+            "ONCE_DAILY"
+          ],
+          "times": [
+            "08:00"
+          ],
+          "prn": false
+        }
+      ]
+    },
+    {
+      "id": "H5-prednisone-taper",
+      "text": "Guardian Drugs\nPREDNISONE 5 MG TABLET\nTake 4 tablets daily for 3 days, then 3 tablets daily for 3 days,\nthen 2 tablets daily for 3 days, then 1 tablet daily for 3 days, then stop\nQty: 30  Refills: 0\n",
+      "meds": [
+        {
+          "name": "prednisone",
+          "dosage": "5mg",
+          "freq_ok": [
+            "TAPER",
+            "ONCE_DAILY",
+            "UNKNOWN"
+          ],
+          "times": null,
+          "prn": false
+        }
+      ]
+    },
+    {
+      "id": "H6-split-dose-morning-bedtime",
+      "text": "Pharmasave\nAPO-METFORMIN 500 MG TABLET\nTake 1 tablet in the morning and 2 tablets at bedtime with food\nQty: 90  Refills: 2\n",
+      "meds": [
+        {
+          "name": "metformin",
+          "dosage": "500mg",
+          "freq_ok": [
+            "BID",
+            "BEDTIME",
+            "UNKNOWN"
+          ],
+          "times": [
+            "08:00",
+            "21:00"
+          ],
+          "prn": false
+        }
+      ]
+    },
+    {
+      "id": "H7-french-quebec-bid",
+      "text": "Jean Coutu Pharmacie\n1200 rue Sainte-Catherine, Montreal QC\nLOSARTAN 50 MG COMPRIME\nPRENDRE 1 COMPRIME 2 FOIS PAR JOUR AVEC DE LA NOURRITURE\nQte: 60  Renouvellements: 3\n",
+      "meds": [
+        {
+          "name": "losartan",
+          "dosage": "50mg",
+          "freq_ok": [
+            "BID",
+            "WITH_MEALS"
+          ],
+          "times": [
+            "08:00",
+            "18:00"
+          ],
+          "prn": false
+        }
+      ]
+    },
+    {
+      "id": "H8-sig-codes-synthroid",
+      "text": "Medicine Shoppe Pharmacy\nSYNTHROID 88 MCG TABLET\n1 TAB PO QD AM 30 MIN BEFORE BREAKFAST\nQty: 90  Refills: 11  DIN: 02172078\n",
+      "meds": [
+        {
+          "name": "synthroid",
+          "dosage": "88mcg",
+          "freq_ok": [
+            "ONCE_DAILY"
+          ],
+          "times": [
+            "08:00"
+          ],
+          "prn": false
+        }
+      ]
+    },
+    {
+      "id": "H9-unenumerated-no-strength-2med",
+      "text": "London Drugs\nRosuvastatin - take one tablet at bedtime\nVitamin D - take one tablet daily\nPharmacist: T. Nguyen\n",
+      "meds": [
+        {
+          "name": "rosuvastatin",
+          "dosage": null,
+          "freq_ok": [
+            "BEDTIME"
+          ],
+          "times": [
+            "21:00"
+          ],
+          "prn": false
+        },
+        {
+          "name": "vitamin d",
+          "dosage": null,
+          "freq_ok": [
+            "ONCE_DAILY"
+          ],
+          "times": [
+            "08:00"
+          ],
+          "prn": false
+        }
+      ]
+    },
+    {
+      "id": "H10-ocr-noise-atorvastatin",
+      "text": "C0STCO PHARMACY\nAT0RVASTATIN 2O MG TABLET\nTAKE 1 TABLET AT BEDTlME\n0ty: 9O Refi11s: 2\n",
+      "meds": [
+        {
+          "name": "atorvastatin",
+          "dosage": "20mg",
+          "freq_ok": [
+            "BEDTIME"
+          ],
+          "times": [
+            "21:00"
+          ],
+          "prn": false
+        }
+      ],
+      "ocr_noise": true
+    },
+    {
+      "id": "H11-half-tablet-digoxin",
+      "text": "Pharmaprix\nTEVA-DIGOXIN 0.125 MG TABLET\nTAKE ONE HALF TABLET ONCE DAILY\nMAY CAUSE DIZZINESS - AVOID SUDDEN STANDING\nQty: 45  Refills: 2\n",
+      "meds": [
+        {
+          "name": "digoxin",
+          "dosage": "0.125mg",
+          "freq_ok": [
+            "ONCE_DAILY"
+          ],
+          "times": [
+            "08:00"
+          ],
+          "prn": false
+        }
+      ]
+    },
+    {
+      "id": "H12-insulin-units-non-oral-solid",
+      "text": "Shoppers Drug Mart\nLANTUS SOLOSTAR 100 UNITS/ML PEN\nINJECT 20 UNITS SUBCUTANEOUSLY AT BEDTIME\nQty: 5 pens  Refills: 2\n",
+      "meds": [
+        {
+          "name": "lantus",
+          "dosage": null,
+          "freq_ok": [
+            "BEDTIME",
+            "ONCE_DAILY"
+          ],
+          "times": [
+            "21:00"
+          ],
+          "prn": false
+        }
+      ],
+      "units_ok": [
+        "20units",
+        "100units/ml",
+        "20 units",
+        "100 units/ml"
+      ]
+    }
+  ]
+}

@@ -47,6 +47,13 @@ class _FakeAsyncClientWithResults:
     async def get(self, url, **kwargs):
         return _FakeGetResponse(200, _CANNED_REFERENCE_RESULTS)
 
+    async def post(self, url, **kwargs):
+        # FixbyOPUS3: prescription create now also POSTs the OCR text to the
+        # sidecar's /rx/extract. These tests are about DIN suggestions, not
+        # about the LLM proposer, so the LLM leg is simulated as unreachable
+        # -- which exercises the regex fallback the assertions below expect.
+        raise httpx.ConnectError("connection refused", request=httpx.Request("POST", url))
+
 
 class _UnreachableAsyncClient:
     """Stands in for httpx.AsyncClient -- every call raises, simulating the
@@ -63,6 +70,9 @@ class _UnreachableAsyncClient:
 
     async def get(self, url, **kwargs):
         raise httpx.ConnectError("connection refused", request=httpx.Request("GET", url))
+
+    async def post(self, url, **kwargs):
+        raise httpx.ConnectError("connection refused", request=httpx.Request("POST", url))
 
 
 # --- (a) suggestion attach on prescription create (sidecar mocked) ---------

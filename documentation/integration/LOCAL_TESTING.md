@@ -32,8 +32,8 @@ npm run dev
 **Open the app: <http://localhost:5173>**
 
 Notes:
-- `dev/backend/.env` must contain `LLM_API_KEY` (it does) — needed for CB4 answers
-  (Q&A page and the assistant widget's generated answers).
+- `dev/backend/.env` must contain `LLM_API_KEY` (it does) — needed for CB4-generated
+  Q&A answers.
 - The **first pill analysis is slow** (model load + a fresh OCR subprocess per call —
   the frozen two-process constraint). Later calls are faster but still tens of seconds.
 - Do **not** run Ollama while testing pill analysis (GPU contention). Ollama is only
@@ -68,12 +68,9 @@ list feeds the pill-verify path immediately.
 2. **Q&A + CB4:** Dashboard → Ask about my medication. Try "Can I take aspirin with food?" (confirm flow →
    cited CB4 answer), a dosing question (expect the hard refusal), and switch language
    to French. As `henri@test.com`, ask about warfarine to see the French path.
-3. **Assistant widget (public pages):** ask "What is MyPillSafe?" (high-confidence CB4
-   answer), then "can I take ibuprofen with warfarin?" (expect the redirect button to the
-   guarded Q&A — the widget itself must refuse). Try FR, and hold-to-record voice.
-4. **Register a fresh account** and scan a real Rx label (CPU OCR, ~2 min) → confirm the
+3. **Register a fresh account** and scan a real Rx label (CPU OCR, ~2 min) → confirm the
    suggested DINs on the "Is this your medication?" panel — never auto-committed.
-5. **Mobile/PWA:** resize to phone width (or Chrome device toolbar 360px) — bottom tab
+4. **Mobile/PWA:** resize to phone width (or Chrome device toolbar 360px) — bottom tab
    bar, no horizontal scroll. Chrome on desktop: the install icon in the address bar
    installs the PWA (localhost counts as a secure origin; a phone would need HTTPS).
 

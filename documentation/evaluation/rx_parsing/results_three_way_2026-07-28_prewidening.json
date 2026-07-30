@@ -1,0 +1,1406 @@
+{
+  "original": {
+    "regex": [
+      {
+        "case": "A-numbered-sig-5med (the real synthetic doc's shape)",
+        "expected": 5,
+        "got": 5,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "B-numbered-no-sig-3med",
+        "expected": 3,
+        "got": 3,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "C-unenumerated-stacked-2med (dosage fallback must catch)",
+        "expected": 2,
+        "got": 2,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "D-PHANTOM-TRAP single med + mg max-dose line",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "E-PHANTOM-TRAP single med + generic-name restatement",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "F-PHANTOM-TRAP single med + total-daily note",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "G-PHANTOM-TRAP numbered counselling notes, single med",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "H-PHANTOM-TRAP garbled 1000+ char dump, single med",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "I-single-numbered-item (1 anchor only, must not split)",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "J-clock-times-2med",
+        "expected": 2,
+        "got": 2,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "K-single-med-classic (must stay 1, unchanged)",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "L-demo-text (OCR_PIPELINE_ENABLED=false path, must stay 1)",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      }
+    ],
+    "qwen2.5:7b": [
+      {
+        "case": "A-numbered-sig-5med (the real synthetic doc's shape)",
+        "expected": 5,
+        "got": 5,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "B-numbered-no-sig-3med",
+        "expected": 3,
+        "got": 3,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "C-unenumerated-stacked-2med (dosage fallback must catch)",
+        "expected": 2,
+        "got": 2,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "D-PHANTOM-TRAP single med + mg max-dose line",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "E-PHANTOM-TRAP single med + generic-name restatement",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "F-PHANTOM-TRAP single med + total-daily note",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "G-PHANTOM-TRAP numbered counselling notes, single med",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "H-PHANTOM-TRAP garbled 1000+ char dump, single med",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "I-single-numbered-item (1 anchor only, must not split)",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "J-clock-times-2med",
+        "expected": 2,
+        "got": 2,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "K-single-med-classic (must stay 1, unchanged)",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "L-demo-text (OCR_PIPELINE_ENABLED=false path, must stay 1)",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      }
+    ],
+    "haiku-4.5": [
+      {
+        "case": "A-numbered-sig-5med (the real synthetic doc's shape)",
+        "expected": 5,
+        "got": 5,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "B-numbered-no-sig-3med",
+        "expected": 3,
+        "got": 3,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "C-unenumerated-stacked-2med (dosage fallback must catch)",
+        "expected": 2,
+        "got": 2,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "D-PHANTOM-TRAP single med + mg max-dose line",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "E-PHANTOM-TRAP single med + generic-name restatement",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "F-PHANTOM-TRAP single med + total-daily note",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "G-PHANTOM-TRAP numbered counselling notes, single med",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "H-PHANTOM-TRAP garbled 1000+ char dump, single med",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "I-single-numbered-item (1 anchor only, must not split)",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "J-clock-times-2med",
+        "expected": 2,
+        "got": 2,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "K-single-med-classic (must stay 1, unchanged)",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      },
+      {
+        "case": "L-demo-text (OCR_PIPELINE_ENABLED=false path, must stay 1)",
+        "expected": 1,
+        "got": 1,
+        "missed": false,
+        "phantom": false,
+        "names_missing": [],
+        "ok": true
+      }
+    ]
+  },
+  "heldout": {
+    "regex": [
+      {
+        "case": "H1-vial-classic-once-daily",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "amlodipine",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": false,
+            "freq": "ONCE_DAILY",
+            "freq_ok": true,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "APO-AMLODIPINE 5 MG TABLET",
+            "emitted_dose": null
+          }
+        ],
+        "fields_ok": 3,
+        "fields_scored": 4,
+        "fully_ok": false
+      },
+      {
+        "case": "H2-DANGER-weekly-alendronate",
+        "expected": 1,
+        "got": 1,
+        "events": [
+          "DAILY_TIMES_FOR_WEEKLY"
+        ],
+        "per_med": [
+          {
+            "truth": "alendronate",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": false,
+            "freq": "UNKNOWN",
+            "freq_ok": false,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": false,
+            "emitted_name": "APO-ALENDRONATE 70 MG TABLET",
+            "emitted_dose": null
+          }
+        ],
+        "fields_ok": 1,
+        "fields_scored": 4,
+        "fully_ok": false
+      },
+      {
+        "case": "H3-every-8-hours",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "amoxicillin",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": false,
+            "freq": "UNKNOWN",
+            "freq_ok": false,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": null,
+            "emitted_name": "AMOXICILLIN 500 MG CAPSULES",
+            "emitted_dose": null
+          }
+        ],
+        "fields_ok": 1,
+        "fields_scored": 3,
+        "fully_ok": false
+      },
+      {
+        "case": "H4-bare-daily",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "ramipril",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": false,
+            "freq": "UNKNOWN",
+            "freq_ok": false,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "RAMIPRIL 10 MG CAPSULE",
+            "emitted_dose": null
+          }
+        ],
+        "fields_ok": 2,
+        "fields_scored": 4,
+        "fully_ok": false
+      },
+      {
+        "case": "H5-prednisone-taper",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "prednisone",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": false,
+            "freq": "UNKNOWN",
+            "freq_ok": true,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": null,
+            "emitted_name": "PREDNISONE 5 MG TABLET",
+            "emitted_dose": null
+          }
+        ],
+        "fields_ok": 2,
+        "fields_scored": 3,
+        "fully_ok": false
+      },
+      {
+        "case": "H6-split-dose-morning-bedtime",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "metformin",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": false,
+            "freq": "BEDTIME",
+            "freq_ok": true,
+            "times": [
+              "21:00"
+            ],
+            "times_ok": false,
+            "emitted_name": "APO-METFORMIN 500 MG TABLET",
+            "emitted_dose": null
+          }
+        ],
+        "fields_ok": 2,
+        "fields_scored": 4,
+        "fully_ok": false
+      },
+      {
+        "case": "H7-french-quebec-bid",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "losartan",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": false,
+            "freq": "UNKNOWN",
+            "freq_ok": false,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": false,
+            "emitted_name": "LOSARTAN 50 MG COMPRIME",
+            "emitted_dose": null
+          }
+        ],
+        "fields_ok": 1,
+        "fields_scored": 4,
+        "fully_ok": false
+      },
+      {
+        "case": "H8-sig-codes-synthroid",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "synthroid",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": false,
+            "freq": "UNKNOWN",
+            "freq_ok": false,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "SYNTHROID 88 MCG TABLET",
+            "emitted_dose": null
+          }
+        ],
+        "fields_ok": 2,
+        "fields_scored": 4,
+        "fully_ok": false
+      },
+      {
+        "case": "H9-unenumerated-no-strength-2med",
+        "expected": 2,
+        "got": 1,
+        "events": [
+          "MISSED_MED"
+        ],
+        "per_med": [
+          {
+            "truth": "rosuvastatin",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "BEDTIME",
+            "freq_ok": true,
+            "times": [
+              "21:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "Rosuvastatin",
+            "emitted_dose": null
+          },
+          {
+            "truth": "vitamin d",
+            "found": false
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 8,
+        "fully_ok": false
+      },
+      {
+        "case": "H10-ocr-noise-atorvastatin",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "atorvastatin",
+            "found": true,
+            "name_ok": false,
+            "dose_ok": false,
+            "freq": "UNKNOWN",
+            "freq_ok": false,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": false,
+            "emitted_name": "AT0RVASTATIN 2O MG TABLET",
+            "emitted_dose": null
+          }
+        ],
+        "fields_ok": 0,
+        "fields_scored": 4,
+        "fully_ok": false
+      },
+      {
+        "case": "H11-half-tablet-digoxin",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "digoxin",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": false,
+            "freq": "ONCE_DAILY",
+            "freq_ok": true,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "TEVA-DIGOXIN 0.125 MG TABLET",
+            "emitted_dose": null
+          }
+        ],
+        "fields_ok": 3,
+        "fields_scored": 4,
+        "fully_ok": false
+      },
+      {
+        "case": "H12-insulin-units-non-oral-solid",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "lantus",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "BEDTIME",
+            "freq_ok": true,
+            "times": [
+              "21:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "LANTUS SOLOSTAR 100 UNITS/ML PEN",
+            "emitted_dose": null
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 4,
+        "fully_ok": true
+      }
+    ],
+    "qwen2.5:7b": [
+      {
+        "case": "H1-vial-classic-once-daily",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "amlodipine",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "ONCE_DAILY",
+            "freq_ok": true,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "APO-AMLODIPINE 5 MG TABLET",
+            "emitted_dose": "5 mg"
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 4,
+        "fully_ok": true
+      },
+      {
+        "case": "H2-DANGER-weekly-alendronate",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "alendronate",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "WEEKLY",
+            "freq_ok": true,
+            "times": [],
+            "times_ok": true,
+            "emitted_name": "APO-ALENDRONATE 70 MG TABLET",
+            "emitted_dose": "70 mg"
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 4,
+        "fully_ok": true
+      },
+      {
+        "case": "H3-every-8-hours",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "amoxicillin",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "EVERY_N_HOURS",
+            "freq_ok": true,
+            "times": [],
+            "times_ok": null,
+            "emitted_name": "AMOXICILLIN 500 MG CAPSULES",
+            "emitted_dose": "500 mg"
+          }
+        ],
+        "fields_ok": 3,
+        "fields_scored": 3,
+        "fully_ok": true
+      },
+      {
+        "case": "H4-bare-daily",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "ramipril",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "ONCE_DAILY",
+            "freq_ok": true,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "RAMIPRIL 10 MG CAPSULE",
+            "emitted_dose": "10 mg"
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 4,
+        "fully_ok": true
+      },
+      {
+        "case": "H5-prednisone-taper",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "prednisone",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "TAPER",
+            "freq_ok": true,
+            "times": [],
+            "times_ok": null,
+            "emitted_name": "PREDNISONE 5 MG TABLET",
+            "emitted_dose": "5 mg"
+          }
+        ],
+        "fields_ok": 3,
+        "fields_scored": 3,
+        "fully_ok": true
+      },
+      {
+        "case": "H6-split-dose-morning-bedtime",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "metformin",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "BID",
+            "freq_ok": true,
+            "times": [
+              "08:00",
+              "21:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "APO-METFORMIN 500 MG",
+            "emitted_dose": "500 mg"
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 4,
+        "fully_ok": true
+      },
+      {
+        "case": "H7-french-quebec-bid",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "losartan",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "BID",
+            "freq_ok": true,
+            "times": [
+              "08:00",
+              "13:00"
+            ],
+            "times_ok": false,
+            "emitted_name": "LOSARTAN 50 MG COMPRIME",
+            "emitted_dose": "50 mg"
+          }
+        ],
+        "fields_ok": 3,
+        "fields_scored": 4,
+        "fully_ok": false
+      },
+      {
+        "case": "H8-sig-codes-synthroid",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "synthroid",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "ONCE_DAILY",
+            "freq_ok": true,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "SYNTHROID 88 MCG TABLET",
+            "emitted_dose": "88 mcg"
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 4,
+        "fully_ok": true
+      },
+      {
+        "case": "H9-unenumerated-no-strength-2med",
+        "expected": 2,
+        "got": 2,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "rosuvastatin",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "BEDTIME",
+            "freq_ok": true,
+            "times": [
+              "21:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "ROSUVASTATIN",
+            "emitted_dose": null
+          },
+          {
+            "truth": "vitamin d",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "ONCE_DAILY",
+            "freq_ok": true,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "VITAMIN D",
+            "emitted_dose": null
+          }
+        ],
+        "fields_ok": 8,
+        "fields_scored": 8,
+        "fully_ok": true
+      },
+      {
+        "case": "H10-ocr-noise-atorvastatin",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "atorvastatin",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "BEDTIME",
+            "freq_ok": true,
+            "times": [
+              "21:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "ATORVASTATIN 20 MG",
+            "emitted_dose": "20 mg"
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 4,
+        "fully_ok": true
+      },
+      {
+        "case": "H11-half-tablet-digoxin",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "digoxin",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "ONCE_DAILY",
+            "freq_ok": true,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "TEVA-DIGOXIN 0.125 MG TABLET",
+            "emitted_dose": "0.125 mg"
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 4,
+        "fully_ok": true
+      },
+      {
+        "case": "H12-insulin-units-non-oral-solid",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "lantus",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "BEDTIME",
+            "freq_ok": true,
+            "times": [
+              "21:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "LANTUS SOLOSTAR 100 UNITS/ML PEN",
+            "emitted_dose": null
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 4,
+        "fully_ok": true
+      }
+    ],
+    "haiku-4.5": [
+      {
+        "case": "H1-vial-classic-once-daily",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "amlodipine",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "ONCE_DAILY",
+            "freq_ok": true,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "APO-AMLODIPINE 5 MG TABLET",
+            "emitted_dose": "5 mg"
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 4,
+        "fully_ok": true
+      },
+      {
+        "case": "H2-DANGER-weekly-alendronate",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "alendronate",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "WEEKLY",
+            "freq_ok": true,
+            "times": [],
+            "times_ok": true,
+            "emitted_name": "APO-ALENDRONATE 70 MG TABLET",
+            "emitted_dose": "70 mg"
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 4,
+        "fully_ok": true
+      },
+      {
+        "case": "H3-every-8-hours",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "amoxicillin",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "EVERY_N_HOURS",
+            "freq_ok": true,
+            "times": [],
+            "times_ok": null,
+            "emitted_name": "AMOXICILLIN 500 MG CAPSULES",
+            "emitted_dose": "500 mg"
+          }
+        ],
+        "fields_ok": 3,
+        "fields_scored": 3,
+        "fully_ok": true
+      },
+      {
+        "case": "H4-bare-daily",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "ramipril",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "ONCE_DAILY",
+            "freq_ok": true,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "RAMIPRIL 10 MG CAPSULE",
+            "emitted_dose": "10 mg"
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 4,
+        "fully_ok": true
+      },
+      {
+        "case": "H5-prednisone-taper",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "prednisone",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "TAPER",
+            "freq_ok": true,
+            "times": [],
+            "times_ok": null,
+            "emitted_name": "PREDNISONE 5 MG TABLET",
+            "emitted_dose": "5 mg"
+          }
+        ],
+        "fields_ok": 3,
+        "fields_scored": 3,
+        "fully_ok": true
+      },
+      {
+        "case": "H6-split-dose-morning-bedtime",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "metformin",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "BID",
+            "freq_ok": true,
+            "times": [
+              "08:00",
+              "21:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "APO-METFORMIN 500 MG",
+            "emitted_dose": "500 mg"
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 4,
+        "fully_ok": true
+      },
+      {
+        "case": "H7-french-quebec-bid",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "losartan",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "BID",
+            "freq_ok": true,
+            "times": [
+              "08:00",
+              "18:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "LOSARTAN 50 MG COMPRIME",
+            "emitted_dose": "50 mg"
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 4,
+        "fully_ok": true
+      },
+      {
+        "case": "H8-sig-codes-synthroid",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "synthroid",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "ONCE_DAILY",
+            "freq_ok": true,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "SYNTHROID 88 MCG TABLET",
+            "emitted_dose": "88 mcg"
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 4,
+        "fully_ok": true
+      },
+      {
+        "case": "H9-unenumerated-no-strength-2med",
+        "expected": 2,
+        "got": 2,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "rosuvastatin",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "BEDTIME",
+            "freq_ok": true,
+            "times": [
+              "21:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "Rosuvastatin",
+            "emitted_dose": null
+          },
+          {
+            "truth": "vitamin d",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "ONCE_DAILY",
+            "freq_ok": true,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "Vitamin D",
+            "emitted_dose": null
+          }
+        ],
+        "fields_ok": 8,
+        "fields_scored": 8,
+        "fully_ok": true
+      },
+      {
+        "case": "H10-ocr-noise-atorvastatin",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "atorvastatin",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "BEDTIME",
+            "freq_ok": true,
+            "times": [
+              "21:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "ATORVASTATIN 20 MG TABLET",
+            "emitted_dose": "20 mg"
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 4,
+        "fully_ok": true
+      },
+      {
+        "case": "H11-half-tablet-digoxin",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "digoxin",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "ONCE_DAILY",
+            "freq_ok": true,
+            "times": [
+              "08:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "TEVA-DIGOXIN 0.125 MG TABLET",
+            "emitted_dose": "0.125 mg"
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 4,
+        "fully_ok": true
+      },
+      {
+        "case": "H12-insulin-units-non-oral-solid",
+        "expected": 1,
+        "got": 1,
+        "events": [],
+        "per_med": [
+          {
+            "truth": "lantus",
+            "found": true,
+            "name_ok": true,
+            "dose_ok": true,
+            "freq": "BEDTIME",
+            "freq_ok": true,
+            "times": [
+              "21:00"
+            ],
+            "times_ok": true,
+            "emitted_name": "LANTUS SOLOSTAR 100 UNITS/ML PEN",
+            "emitted_dose": "100 UNITS/ML"
+          }
+        ],
+        "fields_ok": 4,
+        "fields_scored": 4,
+        "fully_ok": true
+      }
+    ]
+  },
+  "latency": {
+    "regex": {
+      "mean_s": 0.0,
+      "max_s": 0.0
+    },
+    "qwen2.5:7b": {
+      "mean_s": 7.08,
+      "max_s": 30.15
+    },
+    "haiku-4.5": {
+      "mean_s": 1.45,
+      "max_s": 3.69
+    }
+  },
+  "haiku_usage": [
+    {
+      "in": 843,
+      "out": 411
+    },
+    {
+      "in": 584,
+      "out": 232
+    },
+    {
+      "in": 563,
+      "out": 161
+    },
+    {
+      "in": 544,
+      "out": 94
+    },
+    {
+      "in": 528,
+      "out": 94
+    },
+    {
+      "in": 519,
+      "out": 89
+    },
+    {
+      "in": 538,
+      "out": 98
+    },
+    {
+      "in": 4425,
+      "out": 98
+    },
+    {
+      "in": 521,
+      "out": 91
+    },
+    {
+      "in": 548,
+      "out": 167
+    },
+    {
+      "in": 611,
+      "out": 83
+    },
+    {
+      "in": 515,
+      "out": 91
+    },
+    {
+      "in": 600,
+      "out": 96
+    },
+    {
+      "in": 564,
+      "out": 88
+    },
+    {
+      "in": 536,
+      "out": 92
+    },
+    {
+      "in": 525,
+      "out": 92
+    },
+    {
+      "in": 567,
+      "out": 86
+    },
+    {
+      "in": 537,
+      "out": 94
+    },
+    {
+      "in": 564,
+      "out": 94
+    },
+    {
+      "in": 542,
+      "out": 91
+    },
+    {
+      "in": 521,
+      "out": 140
+    },
+    {
+      "in": 539,
+      "out": 91
+    },
+    {
+      "in": 549,
+      "out": 99
+    },
+    {
+      "in": 542,
+      "out": 97
+    }
+  ],
+  "summary": {
+    "regex": {
+      "orig_ok": 12,
+      "orig_phantom": 0,
+      "held_fully_ok": 1,
+      "held_fields": "25/50",
+      "safety_events": 2
+    },
+    "qwen2.5:7b": {
+      "orig_ok": 12,
+      "orig_phantom": 0,
+      "held_fully_ok": 11,
+      "held_fields": "49/50",
+      "safety_events": 0
+    },
+    "haiku-4.5": {
+      "orig_ok": 12,
+      "orig_phantom": 0,
+      "held_fully_ok": 12,
+      "held_fields": "50/50",
+      "safety_events": 0
+    }
+  },
+  "haiku_cost_usd": 0.0317
+}

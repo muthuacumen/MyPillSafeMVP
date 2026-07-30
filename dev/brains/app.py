@@ -36,6 +36,7 @@ from typing import Any
 
 import config  # noqa: F401  -- side effect: inserts IMB1_ROOT/SB2_ROOT/BB3_ROOT onto sys.path
 import qa  # noqa: E402  -- BB3 Q&A context-mode + guard support (Phase 4)
+import rx_extract  # noqa: E402  -- FixbyOPUS3 Task A1: POST /rx/extract (local qwen proposer)
 
 import numpy as np
 import pandas as pd
@@ -79,6 +80,10 @@ except Exception:  # pragma: no cover - rapidfuzz is a hard sidecar dependency
 
 app = FastAPI(title="PillSafe Brains Sidecar", version="0.1.0")
 
+# FixbyOPUS3 Task A1 -- `POST /rx/extract`. Lives in its own module so the
+# endpoint is importable from the backend's venv (no torch/paddle) for tests.
+app.include_router(rx_extract.router)
+
 
 # --- Reference table: loaded ONCE at process startup, not per request ------
 
@@ -103,6 +108,51 @@ def _load_reference_once() -> None:
 
 
 _load_reference_once()
+
+
+# --- PROFILE reference tier (FixbyOPUS3 Task B2) ---------------------------
+#
+# Two tiers, two questions, deliberately not the same table:
+#
+#   APPEARANCE tier (_REFERENCE_DF, 7,055 DINs, SB2's harmonized workbook)
+#     answers "can a photo of this pill be verified?" -- it is the only tier
+#     `/pill/analyze` and `/reference/candidates` ever touch, and NOTHING
+#     about it changes here.
+#
+#   PROFILE tier (_PROFILE_DF, 11,609 DINs, profile_reference_v1.csv)
+#     answers "is this a real Canadian medication, and what is its DIN?" --
+#     the question prescription linking actually asks. Measured: 4,554
+#     marketed human medicines (39%) are not pill-shaped -- insulin pens,
+#     inhalers, creams, drops, patches -- and were previously un-linkable.
+#
+# `/reference/search` moves to the profile tier and returns `pill_verifiable`
+# so the app can say which linked medications a photo can and cannot check,
+# instead of quietly omitting the ones it cannot.
+
+_PROFILE_CSV = Path(__file__).resolve().parent / "data" / "profile_reference_v1.csv"
+_PROFILE_DF: pd.DataFrame | None = None
+_PROFILE_LOAD_ERROR: str | None = None
+_STRENGTH_BY_DIN: dict[str, Any] = {}
+
+
+def _load_profile_reference_once() -> None:
+    global _PROFILE_DF, _PROFILE_LOAD_ERROR, _STRENGTH_BY_DIN
+    # Strengths live only in the appearance tier (the DPD snapshot the
+    # profile tier is generated from carries no strength column), so a
+    # profile-tier hit that IS pill-verifiable can still show one.
+    if _REFERENCE_DF is not None and "strength" in _REFERENCE_DF.columns:
+        _STRENGTH_BY_DIN = _REFERENCE_DF["strength"].to_dict()
+    if not _PROFILE_CSV.exists():
+        _PROFILE_LOAD_ERROR = f"profile reference CSV not found at {_PROFILE_CSV}"
+        return
+    try:
+        frame = pd.read_csv(_PROFILE_CSV, dtype={"din": str})
+        _PROFILE_DF = frame.set_index("din", drop=False)
+    except Exception as exc:
+        _PROFILE_LOAD_ERROR = repr(exc)
+
+
+_load_profile_reference_once()
 
 
 # --- JSON-safety helper -----------------------------------------------------
@@ -148,13 +198,24 @@ def health() -> dict:
         "sb2_ok": True if _sb2_import_error is None else _sb2_import_error,
         "bb3_ok": qa.bb3_ok(),
         "ollama_up": qa.ollama_up(),
+        # Appearance tier (SB2's harmonized workbook) -- what /pill/analyze
+        # and /reference/candidates use. Unchanged by Task B.
         "reference_rows": reference_rows,
+        # Profile tier (FixbyOPUS3 Task B2) -- what /reference/search uses.
+        "profile_reference_rows": (
+            int(len(_PROFILE_DF)) if _PROFILE_DF is not None
+            else (_PROFILE_LOAD_ERROR or "unavailable")
+        ),
         "torch_cuda_available": torch_cuda_available,
         # File-exists check ONLY -- deliberately never imports paddle or spawns
         # a probe subprocess here. /health is polled by the pool checker every
         # 30s (see backend/app/services/brains_registry.py); a slow/heavy
         # check on that path would make health-checking itself a liability.
         "ocr_worker": "present" if RX_OCR_SUB.exists() else "missing",
+        # FixbyOPUS3 Task A1: NON-FATAL. A down Ollama means Rx parsing
+        # degrades to the backend's regex proposer; pill analysis and Q&A
+        # context mode are unaffected, so this never flips `status`.
+        "rx_extract": rx_extract.ollama_status(),
         "roots": {
             "IMB1_ROOT": config.IMB1_ROOT,
             "SB2_ROOT": config.SB2_ROOT,
@@ -321,39 +382,140 @@ async def pill_analyze(
 
 # --- /reference/search ---------------------------------------------------
 
+def _clean_strength(value: Any) -> Any:
+    if value is None or (isinstance(value, float) and math.isnan(value)):
+        return None
+    return value
+
+
+#: Minimum `token_set_ratio` a product name must reach to be offered at all.
+#: Below this the search returns NOTHING, which is what makes the app's
+#: `not_in_reference` guardrail flag fire and warn the user -- that flag only
+#: triggers on an EMPTY list, so before this cutoff existed it effectively
+#: never fired.
+#:
+#: Chosen 2026-07-29 by sweeping 4 scorers x 9 cutoffs over 62 positives
+#: (17 real label names + 45 sampled brands) and 21 negatives. Measured at
+#: token_set_ratio/75: positives hit@5 60/62 -- IDENTICAL to the shipping
+#: WRatio/no-cutoff baseline -- while negatives correctly returning empty go
+#: from **0/21 to 19/21**. The previous scorer+no-cutoff combination returned
+#: its top-N however bad they were: the nonsense query "ZZZQQQ 25 MG TAB"
+#: came back with the same confident 85.5-scoring candidates as a real
+#: digoxin query.
+#:
+#: The 2 negatives that still survive are genuine LASA pairs that no
+#: threshold separates (ZOLTIRAX~ZOVIRAX 80.0, TYLENOL PM EXTRA~TYLENOL
+#: EXTRA STRENGTH 89.7); raising the cutoff to catch them costs real
+#: medications, so they stay a matter for the never-auto-pick rule rather
+#: than for this number.
+#:
+#: The one real-label positive this loses is the OCR-noise string
+#: "AT0RVASTATIN" (73.3). That is an acceptable, deliberate trade: a lost
+#: positive returns EMPTY, which fires `not_in_reference` and tells the user
+#: honestly that we could not find it (they can still search by hand), while
+#: a surviving false suggestion is silent and can be linked -- poisoning SB2
+#: with a wrong appearance row and BB3 with a wrong monograph. Honest and
+#: recoverable beats silent and harmful. In the normal path the qwen proposer
+#: repairs that OCR noise before the search ever sees it (measured); it only
+#: reaches here on the regex fallback, i.e. already-degraded mode, where an
+#: honest "not found" is the right answer anyway.
+SEARCH_SCORE_CUTOFF = 75.0
+
+
 @app.get("/reference/search")
 def reference_search(q: str, limit: int = 10) -> list[dict]:
-    if _REFERENCE_DF is None:
-        raise HTTPException(
-            status_code=503,
-            detail={"error": {"code": "REFERENCE_UNAVAILABLE", "message": _REFERENCE_LOAD_ERROR or "reference table not loaded"}},
-        )
+    """Fuzzy medication-name search over the PROFILE tier (11,609 marketed
+    human DINs). `pill_verifiable` says whether that DIN is also in the
+    appearance tier, i.e. whether a photo of it can be checked at all.
+
+    Scored with `token_set_ratio` against `SEARCH_SCORE_CUTOFF`, so a
+    medication that is genuinely absent comes back as an EMPTY list rather
+    than as confident nonsense -- see that constant's comment.
+
+    Falls back to the appearance tier if the profile CSV is missing, so a
+    deployment that has not shipped `data/profile_reference_v1.csv` degrades
+    to the pre-Task-B behaviour instead of 503ing prescription linking.
+    """
     if process is None or fuzz is None:
         raise HTTPException(
             status_code=503,
             detail={"error": {"code": "RAPIDFUZZ_UNAVAILABLE", "message": "rapidfuzz not importable"}},
         )
 
+    using_profile_tier = _PROFILE_DF is not None
+    frame = _PROFILE_DF if using_profile_tier else _REFERENCE_DF
+    if frame is None:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "error": {
+                    "code": "REFERENCE_UNAVAILABLE",
+                    "message": _PROFILE_LOAD_ERROR or _REFERENCE_LOAD_ERROR or "reference table not loaded",
+                }
+            },
+        )
+
     q_norm = (q or "").strip().upper()
     if not q_norm:
         return []
 
+    name_column = "brand" if using_profile_tier else "product"
     # din -> uppercase product name, for fuzzy matching against bare user text.
-    choices = _REFERENCE_DF["product"].fillna("").astype(str).str.upper().to_dict()
-    matches = process.extract(q_norm, choices, scorer=fuzz.WRatio, limit=limit)
+    choices = frame[name_column].fillna("").astype(str).str.upper().to_dict()
+    matches = process.extract(
+        q_norm, choices,
+        scorer=fuzz.token_set_ratio, limit=limit, score_cutoff=SEARCH_SCORE_CUTOFF,
+    )
 
     results = []
     for _matched_string, score, din in matches:
-        row = _REFERENCE_DF.loc[din]
-        strength = row.get("strength")
+        row = frame.loc[din]
+        if using_profile_tier:
+            pill_verifiable = bool(row["pill_verifiable"])
+            strength = _STRENGTH_BY_DIN.get(din) if pill_verifiable else None
+        else:
+            pill_verifiable = True  # appearance tier == verifiable by definition
+            strength = row.get("strength")
         results.append({
             "din": row["din"],
-            "product": row["product"],
-            "strength": None if strength is None or (isinstance(strength, float) and math.isnan(strength)) else strength,
+            "product": row[name_column],
+            "strength": _clean_strength(strength),
             "score": round(float(score), 2),
+            "pill_verifiable": pill_verifiable,
         })
     results.sort(key=lambda r: r["score"], reverse=True)
     return _json_safe(results)
+
+
+# --- /reference/profile ----------------------------------------------------
+
+@app.get("/reference/profile")
+def reference_profile(dins: str = "") -> list[dict]:
+    """PROFILE-tier lookup by DIN (FixbyOPUS3 Task B2/B3).
+
+    Deliberately a SEPARATE endpoint from `/reference/candidates`, which
+    serves the appearance tier and whose response shape SB2 + the pill-scan
+    path depend on. This one answers a different question -- "is this DIN a
+    marketed human medicine, and can a photo of it be checked?" -- and a
+    DIN that is absent here is absent from the answer, so the caller can
+    tell "not in the tier" apart from "the service is down" (an empty list
+    vs. no response at all).
+    """
+    if _PROFILE_DF is None:
+        raise HTTPException(
+            status_code=503,
+            detail={"error": {"code": "PROFILE_REFERENCE_UNAVAILABLE",
+                              "message": _PROFILE_LOAD_ERROR or "profile reference not loaded"}},
+        )
+    wanted = [d.strip() for d in dins.split(",") if d.strip()]
+    if not wanted:
+        return []
+    found = _PROFILE_DF.reindex(wanted).dropna(subset=["din"])
+    rows = found[["din", "brand", "company", "ingredients", "forms", "routes",
+                  "schedules", "pill_verifiable"]].to_dict("records")
+    for row in rows:
+        row["pill_verifiable"] = bool(row["pill_verifiable"])
+    return _json_safe(rows)
 
 
 # --- /reference/candidates -------------------------------------------------

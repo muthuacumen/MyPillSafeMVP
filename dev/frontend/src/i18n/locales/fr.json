@@ -13,7 +13,12 @@
     "inactive": "Inactif",
     "joinDate": "Date d'inscription",
     "actions": "Actions",
-    "noData": "Aucune donnée trouvée."
+    "noData": "Aucune donnée trouvée.",
+    "home": "Accueil",
+    "about": "À propos",
+    "close": "Fermer",
+    "on": "Activé",
+    "off": "Désactivé"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -35,7 +40,15 @@
       "scanPill": "Comprimé",
       "medications": "Médicaments",
       "qa": "Demander"
-    }
+    },
+    "about": "À propos",
+    "admin": "Admin",
+    "signIn": "Se connecter",
+    "getStarted": "Commencer",
+    "primary": "Navigation principale",
+    "voiceToggle": "Assistant vocal activé/désactivé",
+    "voiceOn": "Assistant vocal activé",
+    "voiceOff": "Assistant vocal désactivé"
   },
   "auth": {
     "backHome": "Retour à l'accueil",
@@ -70,12 +83,73 @@
       "description": "MyPillSafe est un assistant de sécurité médicamenteuse pour les aînés et les Canadiens confrontés à une barrière linguistique. Il lit votre ordonnance, vérifie vos comprimés à partir d'une photo et répond à vos questions dans votre langue — et lorsqu'il n'est pas certain, il le dit.",
       "principle": "Conçu pour avertir, conçu pour s'abstenir, jamais pour deviner.",
       "principleNote": "— le principe de conception MyPillSafe"
+    },
+    "badge": "MVP de projet de fin d’études",
+    "decisionSupportOnly": "Aide à la décision seulement",
+    "alwaysConfirm": "Confirmez toujours avec votre pharmacien",
+    "registerHeroTitle": "Le mauvais comprimé ne devrait jamais passer inaperçu",
+    "abstainTitle": "Lorsqu’il n’est pas certain, il le dit",
+    "abstainBody": "MyPillSafe est réglé pour qu’un mauvais comprimé déclaré « vérifié » soit l’événement le plus rare possible — même au prix de vous demander de recommencer plus souvent.",
+    "features": {
+      "feature1": {
+        "title": "Lecture d’ordonnance",
+        "desc": "Lit votre ordonnance et construit votre profil médicamenteux personnel"
+      },
+      "feature2": {
+        "title": "Vérification de comprimés",
+        "desc": "Compare la couleur, la forme et l’inscription d’une photo de comprimé à votre profil — et non à tout le répertoire"
+      },
+      "feature3": {
+        "title": "Réponses citées",
+        "desc": "Questions sur les médicaments répondues à partir des monographies de Santé Canada, avec citations, dans votre langue"
+      }
+    },
+    "stats": {
+      "stat1": {
+        "value": "1 sur 4",
+        "label": "aînés canadiens se voient prescrire 10 classes de médicaments ou plus (CIHI)"
+      },
+      "stat2": {
+        "value": "~5×",
+        "label": "risque plus élevé d’hospitalisation liée aux médicaments à partir de 10 médicaments (CIHI)"
+      },
+      "stat3": {
+        "value": "3",
+        "label": "résultats honnêtes pour chaque vérification — vérifié, à examiner de plus près, ne correspond pas"
+      },
+      "stat4": {
+        "value": "EN · FR",
+        "label": "langues d’interface — réponses sur les médicaments dans la langue de votre choix"
+      }
+    },
+    "placeholders": {
+      "email": "vous@exemple.com",
+      "firstName": "Marie",
+      "lastName": "Tremblay",
+      "newPassword": "Créez un mot de passe robuste"
+    }
+  },
+  "about": {
+    "nav": {
+      "about": "À propos de MyPillSafe",
+      "vision": "Vision et mission",
+      "problem": "Énoncé du problème",
+      "science": "Fondement scientifique",
+      "team": "Équipe",
+      "backToHome": "Retour à l'accueil",
+      "getStarted": "Commencer"
     }
   },
   "dashboard": {
     "greeting": "Heureux de vous revoir,",
     "tagline": "Votre tableau de bord est prêt. Téléchargez une photo d'ordonnance pour une vérification instantanée.",
     "analyzeNow": "Analyser maintenant",
+    "greetings": {
+      "morning": "Bonjour",
+      "afternoon": "Bon après-midi",
+      "evening": "Bonsoir",
+      "night": "Bonne nuit"
+    },
     "stats": {
       "safetyScore": "Score de sécurité",
       "safetyScoreSub": "Analysez pour générer un score",
@@ -109,7 +183,100 @@
       "routine": "Prenez vos médicaments à la même heure chaque jour pour créer une routine.",
       "crush": "Ne jamais écraser ou diviser les pilules sans demander d'abord à votre pharmacien.",
       "list": "Gardez une liste de médicaments à jour avec vous en tout temps."
+    },
+    "scanAPrescription": "Scanner une ordonnance",
+    "nextDose": "Prochaine dose",
+    "upcoming": "À venir",
+    "dueNow": "À prendre maintenant",
+    "past": "Passé",
+    "safetyAlerts": "Alertes de sécurité",
+    "noSafetyAlerts": "Aucune alerte de sécurité — vos scans récents correspondaient à vos ordonnances.",
+    "reminders": "Rappels",
+    "remindersOn": "Les rappels sont activés",
+    "remindersOff": "Les rappels sont désactivés",
+    "manageInSettings": "Gérer dans les paramètres",
+    "noSchedTitle": "Aucun médicament planifié",
+    "noSchedDesc": "Scannez une étiquette d’ordonnance pour commencer à suivre votre horaire quotidien et vos rappels.",
+    "inMinutes": "dans {{n}} min",
+    "inHoursMinutes": "dans {{h}} h {{m}} min"
+  },
+  "analyze": {
+    "captureRxLabel": "Capturer l'étiquette d'ordonnance",
+    "capturePillLabel": "Capturer une photo du comprimé",
+    "crossLinkToPill": "Vérifier un comprimé à la place ?",
+    "crossLinkToRx": "Scanner une ordonnance à la place ?",
+    "uploadingRx": "Lecture de votre étiquette d'ordonnance…",
+    "uploadingRxSub": "Cela prend généralement quelques secondes.",
+    "pillProgress": [
+      "Analyse de la photo… cela peut prendre jusqu'à une minute.",
+      "Lecture de la couleur, de la forme et de l'inscription…",
+      "Comparaison avec vos médicaments…",
+      "Toujours en cours — presque terminé…"
+    ],
+    "pillProgressSub": "La première analyse peut prendre jusqu'à une minute.",
+    "tryAgain": "Réessayer",
+    "errorOcrUnavailable": "La numérisation est temporairement indisponible — le service d'analyse est injoignable. Votre photo était correcte ; veuillez réessayer dans quelques minutes.",
+    "errorServerGeneric": "Une erreur s'est produite de notre côté. Veuillez réessayer.",
+    "errorPrescriptionDefault": "Impossible de lire cette étiquette d'ordonnance. Veuillez reprendre la photo dans un bon éclairage.",
+    "errorPillDefault": "Impossible d'analyser ce comprimé. Essayez un arrière-plan uni et bien éclairé.",
+    "viewMyMedications": "Voir mes médicaments"
+  },
+  "pillResult": {
+    "disclaimerDefault": "Aide à la décision seulement — confirmez toujours avec votre pharmacien ou votre médecin.",
+    "unknownProduct": "Produit inconnu",
+    "noProfile": {
+      "title": "Aucun médicament confirmé pour le moment",
+      "defaultMessage": "La vérification des comprimés se fait par rapport à vos médicaments confirmés. Scannez une ordonnance et confirmez son DIN, puis revenez ici.",
+      "cta": "Scanner une ordonnance"
+    },
+    "notDetected": {
+      "alert": "Impossible de trouver un comprimé sur cette photo.",
+      "tipsTitle": "Conseils pour une photo plus claire",
+      "tip1": "Assurez-vous que la carte de capture est entièrement dans le cadre",
+      "tip2": "Activez le flash de votre appareil photo ou utilisez un éclairage vif et uniforme",
+      "tip3": "Placez le comprimé sur une surface plane, à l'abri des ombres",
+      "tip4": "Photographiez un seul comprimé à la fois",
+      "tryAgain": "Réessayer"
+    },
+    "breakdown": {
+      "imprintExact": "l'inscription correspond exactement",
+      "imprintAskToFlip": "l'inscription n'a pas pu être lue de ce côté",
+      "imprintFuzzy": "l'inscription correspond de près",
+      "imprintUnconfirmed": "l'inscription n'a pas pu être confirmée",
+      "colourAndShapeMatched": "la couleur et la forme correspondent",
+      "colourMatchedShapeUncertain": "la couleur correspond, la forme était incertaine",
+      "shapeMatchedColourUncertain": "la forme correspond, la couleur était incertaine",
+      "colourAndShapeUncertain": "la couleur et la forme étaient incertaines"
+    },
+    "shadowFusionHint": "Remarque sur la qualité de l'image : interférence d'ombre possible — envisagez de reprendre la photo sur une surface plane et bien éclairée.",
+    "verify": {
+      "askAboutMedication": "Poser une question sur ce médicament"
+    },
+    "scanAnother": "Scanner un autre",
+    "reject": {
+      "alert": "Ceci ne correspond à aucun médicament de votre profil.",
+      "warning": "Si vous étiez sur le point de prendre ce comprimé, arrêtez-vous et vérifiez auprès d'un pharmacien avant de le prendre."
+    },
+    "askToFlip": {
+      "alert": "Nous n'avons pas pu lire clairement l'inscription de ce côté.",
+      "instructions": "Retournez le comprimé et photographiez l'autre côté pour que nous puissions vérifier son inscription.",
+      "cta": "Photographier l'autre côté"
+    },
+    "shortlist": {
+      "alert": "Nous ne sommes pas entièrement certains — est-ce l'un de ceux-ci ?",
+      "notConfirmed": "Ceci n'est pas une correspondance confirmée — vérifiez auprès d'un pharmacien avant de prendre ce comprimé."
     }
+  },
+  "camera": {
+    "captureDefault": "Capturer",
+    "or": "ou",
+    "retake": "Reprendre",
+    "confirm": "Confirmer",
+    "startingCamera": "Démarrage de la caméra…",
+    "uploadInstead": "téléverser une photo à la place",
+    "uploadAPhoto": "Téléverser une photo",
+    "deniedMessage": "L'accès à la caméra a été refusé ou n'est pas disponible. Vous pouvez téléverser une photo à la place.",
+    "capturedPreviewAlt": "Aperçu de la photo capturée"
   },
   "admin": {
     "dashboard": "Tableau de bord admin",
@@ -125,6 +292,805 @@
     "changeRole": "Changer le rôle",
     "confirmDeactivate": "Désactiver cet utilisateur ? Il ne pourra plus se connecter.",
     "confirmDelete": "Supprimer définitivement cet utilisateur et toutes ses données ?",
-    "noPatient": "Pas de profil"
+    "noPatient": "Pas de profil",
+    "recentAnalyses": "Analyses récentes"
+  },
+  "din": {
+    "title": "Est-ce bien votre médicament?",
+    "why": "Associer le bon produit vous permettra de vérifier ce comprimé avec votre caméra plus tard. Vous pouvez passer cette étape — le médicament est enregistré dans les deux cas.",
+    "loading": "Recherche de produits correspondants…",
+    "confirm": "Confirmer",
+    "pickDifferent": "En choisir un autre",
+    "backToSuggestions": "Retour aux suggestions",
+    "skip": "Passer pour l'instant",
+    "cancel": "Annuler",
+    "search": "Rechercher",
+    "searchPlaceholder": "Rechercher par nom de médicament",
+    "noMatches": "Aucun résultat. Essayez une autre orthographe.",
+    "notInList": "Nous n'avons pas trouvé ce médicament dans la liste canadienne. Recherchez-le par son nom ci-dessus, ou passez cette étape — le médicament reste enregistré, mais vous ne pourrez pas le vérifier par photo.",
+    "saveError": "Impossible d'enregistrer cette sélection. Veuillez réessayer.",
+    "disclaimer": "Aide à la décision seulement — pas un avis médical. Vérifiez auprès d'un pharmacien.",
+    "differentMaker": "Fabriqué par une autre compagnie — votre comprimé peut avoir une apparence différente.",
+    "lookAlike": {
+      "title": "Ces noms se ressemblent",
+      "body": "Votre étiquette indique « {{label}} », mais aucun des produits ci-dessous ne correspond exactement — il manque : {{tokens}}. Des médicaments aux noms semblables peuvent contenir des substances différentes. Veuillez lire votre étiquette lettre par lettre avant de choisir.",
+      "rowBadge": "Votre étiquette indique « {{tokens}} » — ce produit, non.",
+      "acknowledge": "J'ai lu mon étiquette et c'est le bon médicament"
+    }
+  },
+  "review": {
+    "title": "Vérifiez vos médicaments",
+    "subtitle": "Nous avons lu ces renseignements sur votre étiquette. Rien n'est ajouté à votre horaire et aucun rappel n'est activé tant que vous n'avez pas approuvé chaque médicament.",
+    "pendingBadge": "À vérifier",
+    "drugName": "Nom du médicament",
+    "dosage": "Teneur",
+    "dosagePlaceholder": "p. ex. 500 mg",
+    "frequency": "Fréquence",
+    "times": "Heures de rappel",
+    "noTimes": "Aucune heure de rappel définie.",
+    "addTime": "Ajouter une heure",
+    "removeTime": "Retirer cette heure",
+    "timeAt": "Heure de rappel {{n}}",
+    "useSuggested": "Utiliser les heures habituelles ({{times}})",
+    "withFood": "À prendre avec de la nourriture",
+    "approve": "Approuver",
+    "approveBlocked": "Veuillez d'abord vérifier les éléments signalés ci-dessus.",
+    "saveError": "Enregistrement impossible. Veuillez réessayer.",
+    "linkDin": "Associer ce médicament à un DIN",
+    "dinLinked": "Associé au DIN {{din}}",
+    "notPillVerifiable": "Vérification par photo impossible — ce type de médicament ne peut pas être vérifié par photo",
+    "disclaimer": "Aide à la décision seulement — pas un avis médical. Vérifiez avec votre étiquette et votre pharmacien.",
+    "freq": {
+      "ONCE_DAILY": "Une fois par jour",
+      "BID": "Deux fois par jour",
+      "TID": "Trois fois par jour",
+      "QID": "Quatre fois par jour",
+      "BEDTIME": "Au coucher",
+      "WITH_MEALS": "Avec les repas",
+      "PRN": "Au besoin seulement",
+      "WEEKLY": "Une fois par semaine",
+      "EVERY_N_HOURS": "Toutes les quelques heures",
+      "TAPER": "Dose décroissante (sevrage)",
+      "UNKNOWN": "À préciser"
+    },
+    "flags": {
+      "not_in_reference": {
+        "title": "Introuvable dans notre liste de médicaments",
+        "detail": "Notre référence canadienne ne contient pas ce nom. Il peut tout de même être exact — la référence n'est pas complète.",
+        "confirm": ""
+      },
+      "not_on_label": {
+        "title": "Impossible de confirmer avec le texte de l'étiquette",
+        "detail": "Une partie de ce que nous avons lu — le nom, la teneur ou une heure de rappel — n'apparaît pas clairement sur votre étiquette. Nous avons conservé le nom et la teneur pour que vous puissiez les corriger, et retiré toute heure introuvable. Veuillez comparer avec votre étiquette.",
+        "confirm": "J'ai vérifié avec mon étiquette"
+      },
+      "needs_schedule": {
+        "title": "Aucune heure de rappel",
+        "detail": "Les directives de ce médicament ne correspondent à aucune heure fixe, alors nous n'en avons pas inventé. Choisissez votre heure ou confirmez qu'il n'y a pas d'heure fixe.",
+        "confirm": "Au besoin — aucune heure de rappel fixe"
+      },
+      "conflict": {
+        "title": "Renseignements contradictoires",
+        "detail": "Nous avons lu plus d'une version de ce médicament. Conservez la bonne et retirez l'autre.",
+        "confirm": ""
+      },
+      "as_needed": {
+        "title": "À prendre au besoin seulement",
+        "detail": "Votre étiquette indique de prendre ce médicament au besoin seulement, alors nous n'avons pas fixé d'heure de rappel — même si l'étiquette nomme aussi un moment de la journée. Ajoutez une heure seulement si vous le prenez réellement selon un horaire.",
+        "confirm": ""
+      }
+    }
+  },
+  "footer": {
+    "tagline": "Un assistant de sécurité médicamenteuse pour les aînés et les Canadiens confrontés à une barrière linguistique — aide à la décision seulement.",
+    "explore": "Explorer",
+    "aboutHeading": "À propos",
+    "account": "Compte",
+    "home": "Accueil",
+    "contact": "Nous joindre",
+    "dashboard": "Tableau de bord",
+    "signIn": "Se connecter",
+    "getStarted": "Commencer",
+    "disclaimer": "Aide à la décision seulement — pas un avis médical. Vérifiez toujours auprès d'un pharmacien ou d'un médecin.",
+    "credits": "MyPillSafe · 2026 · Muthuraj Jayakumar, Sumanth Reddy, Lohith Reddy, Ali Ozdemir, Abdullah Mohammed"
+  },
+  "disclaimerModal": {
+    "title": "Avis important",
+    "body": "MyPillSafe est un outil d'aide à la décision seulement. Il ne remplace pas un avis médical professionnel. Confirmez toujours les renseignements sur vos médicaments auprès d'un pharmacien ou d'un médecin autorisé avant de prendre tout médicament.",
+    "accept": "J'ai compris"
+  },
+  "instructions": {
+    "readMine": "Lire mes directives",
+    "error": "Impossible de charger les directives. Veuillez réessayer."
+  },
+  "rxImage": {
+    "title": "Ordonnance originale",
+    "alt": "Étiquette d'ordonnance",
+    "error": "Impossible de charger l'image de l'ordonnance."
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "body": "La page que vous cherchez n'existe pas ou a été déplacée.",
+    "back": "Retour au tableau de bord"
+  },
+  "meds": {
+    "title": "Mes médicaments",
+    "add": "Ajouter une ordonnance",
+    "loadError": "Impossible de charger vos médicaments. Veuillez réessayer.",
+    "removeConfirm": "Retirer ce médicament de votre liste active ?",
+    "announceOne": "Vous avez 1 ordonnance active.",
+    "announceMany": "Vous avez {{count}} ordonnances actives.",
+    "emptyTitle": "Aucun médicament pour le moment",
+    "emptyBody": "Scannez votre première étiquette d'ordonnance et nous suivrons votre posologie et votre horaire.",
+    "emptyCta": "Scanner ma première ordonnance",
+    "viewOriginal": "Voir l'ordonnance originale de {{name}}",
+    "remove": "Retirer {{name}}",
+    "asNeeded": "Au besoin",
+    "maxPerDay": "max. {{dose}}/24 h",
+    "slots": {
+      "morning": "Matin",
+      "afternoon": "Après-midi",
+      "evening": "Soir",
+      "night": "Nuit"
+    },
+    "askAbout": "Poser une question sur ce médicament",
+    "linkedToDin": "Associé au DIN {{din}}",
+    "change": "Modifier",
+    "linkToDin": "Associer ce médicament à un DIN"
+  },
+  "profile": {
+    "title": "Mon profil",
+    "loadError": "Impossible de charger votre profil. Veuillez actualiser et réessayer.",
+    "uploadPhoto": "Téléverser une photo",
+    "uploadUnavailable": "Le téléversement de photos de profil n'est pas encore disponible.",
+    "edit": "Modifier le profil",
+    "saved": "Profil mis à jour.",
+    "saveError": "Impossible d'enregistrer votre profil. Veuillez réessayer.",
+    "summaryTitle": "Sommaire des médicaments",
+    "activePrescriptions": "Ordonnances actives",
+    "lastScan": "Dernier scan",
+    "viewMedications": "Voir mes médicaments →",
+    "detailsTitle": "Renseignements personnels",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "phoneNumber": "Numéro de téléphone",
+    "preferredLanguage": "Langue préférée",
+    "dob": "Date de naissance",
+    "phone": "Téléphone",
+    "language": "Langue",
+    "caregiverTitle": "Proche aidant / contact d'urgence",
+    "caregiverEmptyTitle": "Aucun proche aidant ni contact d'urgence au dossier",
+    "caregiverEmptyBody": "Ces renseignements ne sont pas encore recueillis. Communiquez avec le support si vous souhaitez ajouter un proche aidant à votre compte.",
+    "preferencesTitle": "Préférences et accessibilité",
+    "editInSettings": "Modifier dans les paramètres",
+    "reminders": "Rappels de médicaments",
+    "voiceAssistant": "Assistant vocal",
+    "securityTitle": "Sécurité",
+    "changePassword": "Changer le mot de passe",
+    "currentPassword": "Mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer le nouveau mot de passe",
+    "updatePassword": "Mettre à jour le mot de passe",
+    "pwMismatch": "Les nouveaux mots de passe ne correspondent pas.",
+    "pwChanged": "Mot de passe modifié avec succès.",
+    "pwError": "Impossible de changer votre mot de passe."
+  },
+  "settings": {
+    "title": "Paramètres",
+    "loadError": "Impossible de charger vos paramètres. Veuillez actualiser et réessayer.",
+    "saveError": "Impossible d'enregistrer cette préférence.",
+    "notificationsTitle": "Préférences de notification",
+    "reminders": "Rappels de médicaments",
+    "remindersDesc": "Recevez un rappel pour vos médicaments planifiés.",
+    "voiceTitle": "Assistant vocal",
+    "voiceLabel": "Lire les pages et les résultats à voix haute",
+    "voiceDesc": "Enregistré sur cet appareil seulement.",
+    "languageTitle": "Langue",
+    "dangerTitle": "Zone sensible",
+    "deleteAccount": "Supprimer le compte",
+    "deleteDesc": "Supprime définitivement votre compte et toutes vos données de médicaments.",
+    "deleteConfirmTitle": "Supprimer votre compte ?",
+    "deleteConfirmBody": "Cette action supprime définitivement votre compte, vos ordonnances et votre historique de scans. Elle est irréversible."
+  },
+  "qa": {
+    "title": "Question sur mon médicament",
+    "askingAbout": "Question au sujet de",
+    "answerLanguage": "Langue de la réponse",
+    "emptyTitle": "Posez une question sur un médicament",
+    "emptyBody": "Par exemple : « quels aliments dois-je éviter avec la warfarine » ou « puis-je le prendre avec de la nourriture ». Nommez le médicament, ou choisissez-en un dans votre profil.",
+    "thinking": "Analyse en cours — cela peut prendre quelques secondes…",
+    "placeholder": "Posez une question sur un médicament…",
+    "ask": "Demander",
+    "yesIMeant": "Oui, je voulais dire {{name}}",
+    "no": "Non",
+    "declined": "(refusé)",
+    "notFound": "Je n'ai pas trouvé ce médicament dans le répertoire canadien — veuillez vérifier l'orthographe, donner le nom de l'ingrédient, ou le DIN inscrit sur l'emballage.",
+    "genericError": "Une erreur s'est produite lors de cette question. Veuillez réessayer.",
+    "formularyList": "Liste du répertoire",
+    "offlineFallback": "Solution de repli hors ligne (modèle local)",
+    "disclaimer": "Aide à la décision seulement — pas un avis médical. Vérifiez auprès d'un pharmacien."
+  },
+  "public": {
+    "fiveBrains": {
+      "ocr": {
+        "title": "Lecteur d'ordonnance (OCR)",
+        "desc": "lit l'image de l'ordonnance, en extrait les médicaments et l'horaire, et propose des correspondances de DIN de Santé Canada que l'utilisateur confirme — jamais enregistrées automatiquement."
+      },
+      "vision": {
+        "title": "Vision des comprimés",
+        "desc": "isole le comprimé sur la carte de capture et lit sa couleur (calibrée à partir des pastilles imprimées sur la carte), sa forme et son inscription. L'inscription est lue deux fois par des méthodes complémentaires."
+      },
+      "matcher": {
+        "title": "Comparateur déterministe",
+        "desc": "un calcul transparent, fondé sur une formule (délibérément pas de l'apprentissage automatique), qui compare les attributs du comprimé aux médicaments confirmés de l'utilisateur et renvoie exactement l'un de ces résultats : vérifier, s'abstenir ou rejeter. Ses seuils sont réglés pour que les fausses acceptations soient l'événement le plus rare."
+      },
+      "retrieval": {
+        "title": "Recherche dans les monographies",
+        "desc": "trouve les passages pertinents des monographies de produit de Santé Canada, limités au DIN, avec des garde-fous déterministes — y compris un refus catégorique de répondre aux questions de posologie."
+      },
+      "voice": {
+        "title": "Voix des réponses (IA infonuagique)",
+        "desc": "le seul composant infonuagique. Il formule la réponse finale dans la langue de l'utilisateur, strictement à partir des passages cités récupérés, et ses réponses sont revérifiées par les mêmes garde-fous déterministes."
+      }
+    },
+    "landing": {
+      "badge": "MVP de projet de fin d'études · Aide à la décision seulement",
+      "heroTitle": "Le mauvais comprimé ne devrait jamais passer inaperçu.",
+      "heroBody": "MyPillSafe est un assistant de sécurité médicamenteuse pour les aînés et les Canadiens confrontés à une barrière linguistique. Il lit votre ordonnance, vérifie vos comprimés à partir d'une photo et répond à vos questions sur les médicaments dans votre langue — et lorsqu'il n'est pas certain, il le dit.",
+      "getStarted": "Commencer",
+      "learnMore": "En savoir plus",
+      "howTitle": "Comment fonctionne MyPillSafe",
+      "steps": {
+        "scan": {
+          "title": "Scannez votre ordonnance",
+          "desc": "Photographiez votre ordonnance. MyPillSafe en lit les médicaments et l'horaire, puis construit votre profil médicamenteux personnel."
+        },
+        "confirm": {
+          "title": "Confirmez vos médicaments",
+          "desc": "Chaque médicament est comparé aux numéros d'identification de drogue (DIN) de Santé Canada. Vous confirmez d'une seule touche — MyPillSafe ne devine jamais à votre place."
+        },
+        "verify": {
+          "title": "Vérifiez un comprimé",
+          "desc": "Photographiez un comprimé isolé sur la carte de capture MyPillSafe. Sa couleur, sa forme et son inscription sont comparées à votre profil — pas à tout le répertoire."
+        },
+        "ask": {
+          "title": "Posez vos questions dans votre langue",
+          "desc": "Posez des questions sur vos médicaments. Les réponses proviennent uniquement des monographies de produit de Santé Canada, avec citations, dans la langue de votre choix."
+        }
+      },
+      "outcomesTitle": "La conception de sécurité à trois résultats",
+      "outcomesIntro": "Chaque vérification de comprimé se termine par l'un de trois verdicts honnêtes — et quand la photo ne contient aucun comprimé lisible, MyPillSafe le dit aussi, avec des conseils pour reprendre la photo, plutôt que de deviner. Quand MyPillSafe n'est pas certain, s'abstenir est un choix de conception — pas un échec.",
+      "outcomes": {
+        "verified": {
+          "label": "Vérifié",
+          "desc": "Ce comprimé correspond à un médicament de votre profil. Vous verrez exactement quels attributs concordent."
+        },
+        "closer": {
+          "label": "À examiner de plus près",
+          "desc": "MyPillSafe n'est pas encore certain. Il peut vous demander de retourner le comprimé et de photographier l'autre côté, ou vous présenter une courte liste à confirmer."
+        },
+        "noMatch": {
+          "label": "Ne correspond pas",
+          "desc": "Ce comprimé ne correspond à rien dans votre profil. Un avertissement clair, car un comprimé égaré est exactement ce que MyPillSafe existe pour détecter."
+        },
+        "nothing": {
+          "label": "Rien détecté",
+          "desc": "Aucun comprimé trouvé sur la photo, avec des conseils de prise de vue pour réessayer."
+        }
+      },
+      "outcomesNote": "MyPillSafe est réglé pour qu'un mauvais comprimé déclaré « vérifié » soit l'événement le plus rare possible — même au prix de vous demander de recommencer plus souvent.",
+      "whyVerifyTitle": "Pourquoi vérifier plutôt qu'identifier ?",
+      "whyVerifyBody": "Parce que les comprimés canadiens se ressemblent réellement. En construisant nos données de référence, nous avons trouvé plus d'une douzaine de produits différents qui sont tous le même « comprimé bleu en losange, SIL 25 » — des génériques sous licence croisée qu'aucune caméra ne pourrait distinguer. Face à tout le répertoire, ce problème est insoluble ; face à la poignée de médicaments que <em>vous</em> prenez réellement, il devient traitable. Ce recadrage — vérifier, ne pas identifier — est l'idée centrale du projet.",
+      "scienceTitle": "Fondement scientifique",
+      "scienceIntro": "Les décisions de conception de MyPillSafe reposent sur des données probantes évaluées par les pairs — y compris celles qui nous ont dit ce qu'il ne fallait PAS construire.",
+      "science": {
+        "nlm": {
+          "journal": "IEEE AIPR",
+          "point": "Même le système gagnant n'a trouvé le bon comprimé parmi ses cinq meilleures propositions que 43 % du temps. L'identification de comprimés en ensemble ouvert est la mauvaise tâche pour une application de sécurité — MyPillSafe vérifie donc plutôt par rapport à votre profil."
+        },
+        "epillid": {
+          "journal": "CVPR Workshops",
+          "point": "La référence pour la reconnaissance fine de comprimés avec peu d'exemples par comprimé : la plupart des médicaments n'ont presque aucune photo pour l'apprentissage. La conception par attributs de MyPillSafe évite de dépendre de galeries d'images par comprimé."
+        },
+        "gopill": {
+          "journal": "MDPI Mathematics",
+          "point": "Lire la minuscule inscription gravée dans un comprimé est l'étape la plus difficile et la plus décisive. MyPillSafe lit chaque inscription deux fois, avec deux méthodes complémentaires, avant de s'y fier."
+        },
+        "cihi": {
+          "journal": "Données de population",
+          "point": "1 aîné canadien sur 4 se voit prescrire 10 classes de médicaments ou plus, et les aînés prenant 10 médicaments ou plus sont environ cinq fois plus susceptibles d'être hospitalisés pour une réaction indésirable à un médicament."
+        }
+      },
+      "scienceCta": "Lire tout le fondement scientifique",
+      "closingTitle": "Conçu pour avertir, conçu pour s'abstenir, jamais pour deviner.",
+      "closingBody": "MyPillSafe est un projet de recherche de fin d'études. Il appuie vos décisions — il ne les prend pas. Chaque écran porte la même règle : vérifiez auprès de votre pharmacien.",
+      "readVision": "Lire la vision"
+    },
+    "about": {
+      "breadcrumb": "À propos",
+      "title": "À propos de MyPillSafe",
+      "subtitle": "Un assistant de sécurité médicamenteuse conçu comme cinq cerveaux coopérants — chacun faisant le travail que les données probantes disent qu'il peut réellement faire.",
+      "whatTitle": "Ce qu'est MyPillSafe",
+      "whatBody": "MyPillSafe aide deux groupes mal servis par le système de médication : les aînés qui gèrent de nombreux médicaments, et les Canadiens qui lisent l'information médicale plus aisément dans une langue autre que l'anglais ou le français. Il transforme une ordonnance en profil médicamenteux personnel, vérifie par photo les comprimés isolés par rapport à ce profil, et répond aux questions sur les médicaments à partir des monographies de produit de Santé Canada — avec citations, dans la langue de l'utilisateur.",
+      "brainsTitle": "Les cinq cerveaux",
+      "learnMore": "En savoir plus",
+      "whyTitle": "Pourquoi cette architecture",
+      "whyBody": "La séparation est délibérée : tout ce qui décide est déterministe et vérifiable ; l'IA qui parle n'est jamais l'IA qui décide. Cette séparation vient de la mesure, non du goût — lors de l'évaluation, un modèle de langue plus petit a répondu incorrectement à une question d'allergie critique pour la sécurité, <em>à l'encontre de sa propre source citée</em>. L'architecture rend cette catégorie de défaillance détectable et contenable.",
+      "howTitle": "Notre façon de travailler",
+      "how": {
+        "measure": {
+          "title": "Mesurer l'hypothèse avant de bâtir dessus.",
+          "desc": "Le premier jeu de données de référence du projet a été reconstruit à zéro après qu'une vérification a révélé qu'il décrivait des produits approuvés au Canada mais jamais réellement vendus — des comprimés qu'aucun patient ne pouvait posséder."
+        },
+        "prereg": {
+          "title": "Préenregistrer le seuil, puis rapporter honnêtement.",
+          "desc": "Chaque évaluation avait ses critères de réussite ou d'échec écrits avant l'exécution. Certaines exécutions ont échoué à leurs seuils ; les échecs sont documentés, non reformulés."
+        },
+        "data": {
+          "title": "Laisser les données décider.",
+          "desc": "Les modèles candidats ont affronté de simples références sans apprentissage préalable — et sur de vraies photos de téléphone, ces références l'ont emporté sur deux des trois composants de vision. Les modèles entraînés qui paraissaient meilleurs sur des bancs d'essai en studio n'ont été retenus que là où ils l'avaient mérité."
+        },
+        "test": {
+          "title": "Tout tester.",
+          "desc": "Un test de fumée ou une vérification ponctuelle obligatoire a été exécuté à chaque version du projet — et chacun d'eux a détecté au moins un vrai bogue. Les garde-fous de sécurité déterministes affichent zéro défaillance au total sur toutes les rondes d'évaluation ; chaque incident provenait de la couche de jugement du modèle, ce qui est précisément la raison pour laquelle les modèles ne prennent pas les décisions."
+        }
+      },
+      "scopeNote": "MyPillSafe est un projet de fin d'études du Conestoga College, conçu pour le Canada (fondé sur les DIN et les monographies de Santé Canada). Il s'agit d'une aide à la décision seulement."
+    },
+    "vision": {
+      "breadcrumb": "Vision et mission",
+      "eyebrow": "À propos de MyPillSafe",
+      "title": "Vision et mission",
+      "missionTitle": "Mission",
+      "mission": "Aider les aînés et les Canadiens confrontés à une barrière linguistique à prendre le bon médicament au bon moment — en vérifiant ce qu'ils ont dans la main, en avertissant lorsque quelque chose ne va pas, et en expliquant dans la langue dans laquelle ils pensent.",
+      "visionTitle": "Vision",
+      "vision": "Un Canada où une barrière linguistique ou un pilulier bien rempli ne se transforme jamais en erreur de médication — où chaque foyer dispose d'une couche de sécurité honnête sur ce qu'elle sait et sur ce qu'elle ignore.",
+      "valuesTitle": "Valeurs",
+      "values": {
+        "safety": {
+          "title": "La sécurité avant la commodité",
+          "desc": "Lorsque les données probantes sont minces, MyPillSafe s'abstient. Un honnête « je ne suis pas certain — vérifiez auprès de votre pharmacien » vaut mieux qu'une supposition assurée, chaque fois."
+        },
+        "evidence": {
+          "title": "Les données probantes avant les fonctionnalités",
+          "desc": "Chaque composant a gagné sa place par la mesure. Les fonctionnalités qui ont échoué à l'évaluation ont été retirées, pas livrées."
+        },
+        "language": {
+          "title": "La langue est une fonction de sécurité",
+          "desc": "De l'information sur les médicaments que vous ne pouvez pas pleinement comprendre est un facteur de risque. Répondre dans la langue de l'utilisateur est au cœur de la mission, pas un simple bonus."
+        },
+        "honesty": {
+          "title": "L'honnêteté sur les limites",
+          "desc": "MyPillSafe est une aide à la décision de calibre recherche, assortie d'avertissements obligatoires ; ce n'est pas un instrument médical. Il le dit sur chaque écran."
+        }
+      }
+    },
+    "problem": {
+      "breadcrumb": "Énoncé du problème",
+      "eyebrow": "À propos de MyPillSafe",
+      "title": "Le problème",
+      "subtitle": "La polypharmacie est la norme, les comprimés se ressemblent, et l'information sur les médicaments présume que vous lisez couramment l'anglais.",
+      "stat1Value": "1 sur 4",
+      "stat1Body": "des aînés canadiens se voient prescrire 10 classes de médicaments ou plus.",
+      "stat1Source": "(ICIS — Institut canadien d'information sur la santé, données de 2021)",
+      "stat2Value": "~5×",
+      "stat2Body": "Les aînés à qui l'on prescrit 10 médicaments ou plus sont environ cinq fois plus susceptibles d'être hospitalisés pour une réaction indésirable à un médicament que ceux à qui l'on en prescrit moins.",
+      "stat2Source": "(ICIS, données de 2016)",
+      "loosePillTitle": "Le moment du comprimé isolé",
+      "loosePillBody": "Le moment le plus risqué de l'usage des médicaments à la maison est banal : un comprimé hors de son flacon. Dans un pilulier hebdomadaire, sur un comptoir, dans un foyer partagé — beaucoup de comprimés sont petits, blancs et ronds, et les paires qui se ressemblent sont fréquentes. Pour un aîné qui gère dix médicaments, « quel comprimé est-ce ? » est une question quotidienne dont l'erreur a un coût non négligeable.",
+      "identifyTitle": "Pourquoi « il suffit d'identifier le comprimé » échoue",
+      "identifyBody": "La réponse évidente — une application qui identifie n'importe quel comprimé à partir d'une photo — a été essayée à l'échelle de la recherche, et les résultats plaident contre elle. Lors du Pill Image Recognition Challenge de la National Library of Medicine des États-Unis, le système gagnant a placé le bon comprimé parmi ses cinq meilleurs candidats seulement 43 % du temps sur des photos grand public. Face à des milliers de produits candidats, ce n'est pas un outil de sécurité. Le recadrage de MyPillSafe : ne pas identifier parmi tout — vérifier par rapport à la poignée de médicaments que <em>vous prenez réellement</em>, et refuser de deviner au-delà.",
+      "languageTitle": "La barrière linguistique",
+      "languageBody": "De nombreux Canadiens gèrent leurs médicaments dans une langue qui n'est pas celle dans laquelle ils ont grandi. Les monographies, les étiquettes et le counseling en pharmacie présument largement une maîtrise de l'anglais ou du français. Quand la compréhension baisse, l'observance et la sécurité baissent avec elle. MyPillSafe traite la traduction dans la langue de l'utilisateur — ancrée dans la monographie officielle, jamais improvisée — comme une fonction de sécurité de premier plan.",
+      "closing": "MyPillSafe existe pour le moment où une main hésite au-dessus d'un pilulier ouvert. Son rôle est de dire « oui, c'est le vôtre », « non — arrêtez », ou « je ne suis pas certain — vérifiez », et d'être digne de confiance dans les trois cas."
+    },
+    "science": {
+      "breadcrumb": "Fondement scientifique",
+      "eyebrow": "À propos de MyPillSafe",
+      "title": "Fondement scientifique",
+      "subtitle": "Chaque décision de conception de MyPillSafe remonte à des travaux publiés ou à nos propres expériences mesurées — y compris les résultats négatifs.",
+      "publishedTitle": "Les travaux publiés sur lesquels MyPillSafe s'appuie",
+      "citations": {
+        "nlm": {
+          "journal": "IEEE AIPR 2016",
+          "point": "La preuve fondatrice que l'identification de comprimés en ensemble ouvert à partir de photos grand public n'est pas fiable : le gagnant du défi n'a atteint que 43 % d'exactitude dans son top 5. C'est pourquoi MyPillSafe vérifie par rapport à un profil personnel au lieu d'identifier dans tout le répertoire."
+        },
+        "mobiledeeppill": {
+          "journal": "ACM MobiSys 2017",
+          "point": "Le gagnant du défi de la NLM, qui montre que la reconnaissance de comprimés peut fonctionner sur un téléphone — et que la couleur, la forme et l'inscription portent chacune un signal complémentaire, la même décomposition par attributs qu'utilise MyPillSafe."
+        },
+        "epillid": {
+          "journal": "CVPR Workshops 2020",
+          "point": "A établi la réalité du faible nombre d'exemples en reconnaissance de comprimés : la plupart des produits n'ont presque aucune photo d'entraînement. La correspondance par attributs textuels de MyPillSafe avec le registre de Santé Canada évite de dépendre de galeries d'images par comprimé."
+        },
+        "fewshot": {
+          "journal": "CVPR 2020",
+          "point": "Renforce le cadrage à faible nombre d'exemples avec le jeu de données CURE et montre que les conditions réelles de prise de vue dominent la difficulté — d'où la carte de capture contrôlée de MyPillSafe."
+        },
+        "gopill": {
+          "journal": "MDPI Mathematics 2026",
+          "point": "Documente que les inscriptions gravées à faible contraste sont le cas de reconnaissance de texte le plus difficile en imagerie de comprimés. Notre propre évaluation a confirmé de façon indépendante que l'inscription est l'attribut décisif et le plus difficile — MyPillSafe la lit deux fois avec des méthodes complémentaires et ne se fie jamais à une seule lecture."
+        },
+        "medic": {
+          "journal": "Nature Medicine 2024",
+          "point": "Preuve en production, issue d'une pharmacie en ligne, qu'un modèle de langage brut — aussi performant soit-il — invente ou omet des détails de médication, et qu'un système encadré, qui confronte chaque extraction à un catalogue de médicaments et s'arrête plutôt que de deviner, prévient davantage d'erreurs. Les cinq garde-fous de sécurité du Lecteur d'ordonnances sont directement transposés de la conception décrite dans cet article."
+        },
+        "medsnap": {
+          "journal": "Art antérieur commercial (MedSnap ID, vers 2013 ; brevets américains connexes)",
+          "point": "Art antérieur commercial associant un plateau de capture à une application de comprimés sur téléphone — pour l'authentification des médicaments (détection de contrefaçons), et non pour la vérification par rapport au profil du patient. MyPillSafe le cite comme art antérieur ; notre conception ouverte et ablatée de carte de capture, ainsi que la tâche de vérification avec rejet, en sont les différences."
+        },
+        "hanley": {
+          "journal": "JAMA 1983",
+          "point": "« Si rien ne va mal, est-ce que tout va bien ? » La règle de trois : comment nous dimensionnons nos évaluations de sécurité, afin que « aucune fausse acceptation observée » s'accompagne d'une borne supérieure statistique honnête plutôt que d'une affirmation publicitaire."
+        },
+        "cihi": {
+          "journal": "Données de population",
+          "point": "Les données populationnelles derrière l'énoncé du problème : 1 aîné canadien sur 4 sous 10 classes de médicaments ou plus (données de 2021) ; un risque d'hospitalisation pour réaction indésirable environ cinq fois plus élevé à partir de 10 médicaments (données de 2016)."
+        }
+      },
+      "ourResearchTitle": "Notre propre recherche",
+      "inPreparation": "En préparation",
+      "workingTitleLabel": "Titre de travail",
+      "workingTitle": "« Verify, Don't Identify: Profile-Constrained Pill Verification from Consumer Photos with a Printed Capture Card. »",
+      "researchBody": "Le pipeline de vision des comprimés de MyPillSafe constitue lui-même une contribution de recherche en préparation. L'article formalise la vérification avec rejet par rapport au profil médicamenteux du patient comme étant la bonne tâche pour la sécurité des comprimés grand public ; introduit une carte de capture imprimée qui transforme une photo de téléphone non contrôlée en photo calibrée (pastilles de balance des blancs, géométrie connue, flash forcé) ; contribue une référence d'apparence harmonisée et adjugée par des humains pour plus de 7 000 DIN canadiens commercialisés ; et rapporte les résultats négatifs qui ont façonné le système — surtout que, sur de vraies photos de téléphone, les modèles sans apprentissage préalable ont battu nos modèles affinés sur deux des trois têtes de vision, une mise en garde pour quiconque se fie aux bancs d'essai en studio.",
+      "statusLabel": "État :",
+      "statusBody": "en préparation. Les expériences de la phase de conception sont terminées ; une étude de capture confirmatoire préenregistrée (la campagne « plateau v2 » — une séance pilote suivie d'un protocole de 600 photos avec des critères d'utilisabilité et de sécurité définis) reste à venir, et l'article sera rédigé à partir de ces résultats. D'ici là, les chiffres de performance mesurés de MyPillSafe demeurent des diagnostics sur jeu de développement, et nous évitons délibérément de les présenter comme des affirmations sur le produit.",
+      "principlesTitle": "Les principes de conception imposés par les données probantes",
+      "principles": {
+        "verify": {
+          "title": "Vérifier, ne pas identifier",
+          "desc": "le 43 % du défi de la NLM résume l'argument en un seul chiffre."
+        },
+        "separation": {
+          "title": "L'IA qui parle n'est jamais l'IA qui décide",
+          "desc": "la correspondance déterministe et les garde-fous décident ; le modèle de langue ne fait que formuler, strictement à partir des sources citées, et il est revérifié. La mesure l'a imposé : le nom d'un médicament apparaît bien plus souvent dans les documents d'autres médicaments que dans le sien, de sorte que seule une délimitation déterministe — et non un classement astucieux — empêche de façon fiable les réponses portant sur le mauvais médicament."
+        },
+        "abstention": {
+          "title": "L'abstention est une fonctionnalité",
+          "desc": "le système est réglé pour qu'un faux « vérifié » soit l'événement le plus rare, au prix accepté d'un plus grand nombre de résultats « je ne suis pas certain »."
+        }
+      }
+    },
+    "team": {
+      "breadcrumb": "Équipe",
+      "eyebrow": "À propos de MyPillSafe",
+      "title": "L'équipe",
+      "subtitle": "Une équipe de fin d'études de cinq personnes au Conestoga College.",
+      "responsibilities": "Responsabilités",
+      "members": {
+        "mj": {
+          "role": "Chef de projet · Architecture d'apprentissage automatique",
+          "focus1": "A conçu l'architecture à cinq cerveaux — lecture d'ordonnance, vision des comprimés, correspondance déterministe, recherche dans les monographies et voix des réponses citées.",
+          "focus2": "A défini le modèle de sécurité vérifier / s'abstenir / rejeter, y compris la raison pour laquelle l'abstention est traitée comme un résultat correct et non comme un échec.",
+          "focus3": "A dirigé l'ancrage scientifique du pipeline de vision des comprimés et sa filière de citations sur la page Fondement scientifique.",
+          "focus4": "A rédigé la politique d'avertissement appliquée à chaque écran porteur de décision : résultats de vérification de comprimés, réponses aux questions et confirmations de DIN."
+        },
+        "sr": {
+          "role": "Infrastructure et intégration des systèmes",
+          "focus1": "A construit la couche de services du serveur FastAPI — authentification, ordonnances, vérifications de comprimés et routes de questions-réponses.",
+          "focus2": "A raccordé le service auxiliaire des cerveaux pour que l'application puisse appeler la vision des comprimés et la correspondance par HTTP.",
+          "focus3": "A mis en œuvre l'association du DIN à l'enregistrement de l'ordonnance : correspondance approximative du nom de médicament scanné, puis confirmation obligatoire par le patient avant tout enregistrement.",
+          "focus4": "A maintenu la suite de tests automatisés du serveur à chaque version."
+        },
+        "lr": {
+          "role": "Interface et expérience utilisateur",
+          "focus1": "A construit le tableau de bord, le flux de capture des comprimés et les vues de l'historique des scans en React et Tailwind.",
+          "focus2": "A conçu le panneau de résultats vérifié / à examiner de plus près / ne correspond pas afin que chacun des trois résultats se distingue au premier coup d'œil.",
+          "focus3": "A mis en œuvre la mise en page adaptative axée sur le mobile, la barre d'onglets inférieure et l'installabilité PWA.",
+          "focus4": "A construit les pages publiques À propos / Vision / Problème / Fondement scientifique / Équipe."
+        },
+        "ao": {
+          "role": "Ingénierie des données · Chaîne de référence",
+          "focus1": "A construit et harmonisé le tableau de référence d'apparence des DIN canadiens auquel le comparateur confronte les scans.",
+          "focus2": "A rassemblé le corpus de monographies de produit de Santé Canada derrière les réponses citées.",
+          "focus3": "A maintenu le point d'accès de recherche de référence des DIN utilisé pour les suggestions en une touche à l'enregistrement de l'ordonnance.",
+          "focus4": "A constitué les jeux de photos d'évaluation servant à tester le comparateur de bout en bout avant chaque version."
+        },
+        "am": {
+          "role": "Assurance qualité et évaluation",
+          "focus1": "A exécuté les tests de fumée obligatoires et la passe de vérification de bout en bout à chaque version.",
+          "focus2": "A rédigé et maintenu les suites de tests automatisés couvrant les ordonnances, les vérifications de comprimés et les questions-réponses.",
+          "focus3": "A vérifié la parité des textes anglais et français dans toute l'application.",
+          "focus4": "A documenté les écarts et les bogues relevés lors des passes de vérification, plutôt que de les laisser passer sous silence."
+        }
+      },
+      "footerNote": "MyPillSafe est un projet de fin d'études du programme d'études supérieures en intelligence artificielle et apprentissage automatique du Conestoga College."
+    },
+    "contact": {
+      "title": "Nous joindre",
+      "subtitle": "Questions, commentaires ou préoccupations d'accessibilité — nous aimerions vous lire.",
+      "fullName": "Nom complet",
+      "email": "Adresse courriel",
+      "message": "Message",
+      "send": "Envoyer le message",
+      "success": "Merci — nous avons reçu votre message et vous répondrons sous peu.",
+      "error": "Impossible d'envoyer votre message. Veuillez réessayer plus tard.",
+      "nameRequired": "Le nom complet est obligatoire",
+      "emailInvalid": "Entrez une adresse courriel valide",
+      "messageRequired": "Le message est obligatoire"
+    },
+    "brains": {
+      "backToAbout": "Retour à À propos",
+      "rxReader": {
+        "breadcrumb": "Lecteur d'ordonnance",
+        "heroLead": "Le premier des cinq cerveaux de MyPillSafe. Il {{desc}}",
+        "whatTitle": "Ce qu'il fait",
+        "whatBody1": "Vous photographiez l'étiquette de votre ordonnance. Le Lecteur d'ordonnance transforme cette photo en liste de médicaments proposée — quel est le médicament, quelle est sa teneur et à quelle fréquence vous le prenez — et suggère le numéro d'identification de drogue (DIN) de Santé Canada correspondant, afin que le reste de l'application sache exactement quel produit vous avez.",
+        "whatBody2": "C'est une <strong>proposition</strong>, pas une décision. Tout ce qu'il produit vous est d'abord présenté pour révision, dans vos propres mots, avec une marque sur tout ce dont il n'était pas certain. Un médicament ne rejoint votre liste — et ne commence à vous rappeler quoi que ce soit — qu'après votre approbation.",
+        "howTitle": "Comment il fonctionne",
+        "how": {
+          "read": {
+            "title": "1. Lire l'étiquette",
+            "body": "La reconnaissance optique de caractères transforme la photo de votre étiquette de pharmacie en texte brut. Elle s'exécute sur notre propre machine, pas dans le nuage, et votre photo n'est envoyée à aucun service externe."
+          },
+          "propose": {
+            "title": "2. Proposer les médicaments",
+            "body": "Un petit modèle de langue exécuté localement lit ce texte et propose une liste : nom du médicament, teneur, fréquence, et s'il faut le prendre avec de la nourriture. On lui demande ce que dit l'étiquette — jamais une heure de rappel."
+          },
+          "check": {
+            "title": "3. Vérifier la proposition",
+            "body": "Des règles fixes, sans IA, vérifient ensuite chaque proposition par rapport au texte de l'étiquette : un nom ou une teneur introuvable sur l'étiquette est conservé mais signalé à votre attention, et une heure qui n'est pas imprimée sur l'étiquette est retirée. Les heures de rappel sont calculées par un tableau fixe, non par le modèle. Si les directives ne correspondent à aucune heure quotidienne — une fois par semaine, au besoin, une dose décroissante — aucune heure n'est fixée du tout, et on vous demande de choisir."
+          },
+          "confirm": {
+            "title": "4. Vous confirmez",
+            "body": "Rien n'est ajouté à votre liste de médicaments, associé à un DIN de Santé Canada ou assorti d'un rappel tant que vous ne l'avez pas révisé et n'avez pas appuyé sur Approuver. C'est la règle autour de laquelle toute la conception est bâtie."
+          }
+        },
+        "whyNoTimesTitle": "Pourquoi le modèle n'a pas le droit de fixer les heures.",
+        "whyNoTimesBody": "Quand nous l'avons mesuré, l'erreur la plus fréquente du modèle local n'était pas de lire l'étiquette — c'était de faire de l'arithmétique avec : sur 7 étiquettes sur 24, il a transformé « deux fois par jour » en 8 h et 13 h au lieu de matin et soir. Nous lui avons donc retiré cette tâche. Les heures de rappel proviennent désormais d'une table fixe qui appartient à l'application, et toute cette classe d'erreurs est devenue impossible plutôt qu'improbable.",
+        "limitationsTitle": "Numérisation des ordonnances : limites mesurées",
+        "limitationsIntro": "Lire une étiquette de pharmacie est réellement difficile, et cette section dit à quel point la nôtre y arrive et où elle échoue. Tout cela est mesuré, et tout cela peut être réexécuté.",
+        "readingTitle": "Lire la photo",
+        "readingBody": "La reconnaissance de texte sur une vraie étiquette de pharmacie est plus bruitée que sur un document propre. Lors de nos propres essais, elle a lu <em>0</em> comme <em>O</em> et <em>1</em> comme <em>l</em>, coupé des noms génériques canadiens au trait d'union (transformant <em>APO-METFORMIN</em> en <em>APO</em>), pris un en-tête de pharmacie pour le nom du médicament, et une fois supprimé entièrement une ligne contenant une heure de dose du soir. Chacun de ces cas a été trouvé par les tests puis corrigé, et chacun est la raison d'être de l'écran de révision. La reconnaissance prend aussi un temps réel : sur une machine sans carte graphique, nous avons mesuré environ deux minutes et demie pour une seule étiquette.",
+        "turningTitle": "Transformer ce texte en médicaments",
+        "turningBody": "Nous avons comparé trois façons de faire sur 24 étiquettes : 12 sur lesquelles l'analyseur à règles d'origine avait été construit et ajusté, et 12 rédigées à neuf pour le test et jamais utilisées pour ajuster quoi que ce soit. « Événements de sécurité » compte les issues qui pourraient réellement blesser quelqu'un — inventer un médicament, en manquer un, mettre un rappel quotidien sur un médicament hebdomadaire, ou fixer des heures de rappel sur un médicament à prendre seulement au besoin.",
+        "table": {
+          "approach": "Approche",
+          "own12": "Ses 12 propres",
+          "unseen12": "12 inédites",
+          "fields": "Champs",
+          "events": "Incidents de sécurité"
+        },
+        "rows": {
+          "regex": {
+            "system": "Analyseur à règles (l'approche précédente)",
+            "note": "livré avant cette évaluation"
+          },
+          "qwen": {
+            "system": "qwen2.5:7b local — ce qu'utilise MyPillSafe",
+            "note": "s'exécute sur notre propre matériel, sans nuage"
+          },
+          "haiku": {
+            "system": "Claude Haiku 4.5 (mesuré — non utilisé pour la lecture d'ordonnances)",
+            "note": "modèle infonuagique, consigné comme constat"
+          },
+          "shipped": {
+            "system": "Parcours livré — proposeur + six garde-fous déterministes",
+            "note": "ce qui s'exécute réellement dans MyPillSafe"
+          }
+        },
+        "tableNote": "Ce sont des décomptes, pas des pourcentages, parce que 24 étiquettes constituent un petit échantillon et qu'un pourcentage suggérerait une précision que nous n'avons pas. L'ensemble d'évaluation a été rédigé en interne par ce projet, et non tiré d'ordonnances de vrais patients. Chaque système a été exécuté trois fois avec l'aléatoire désactivé, et le tableau montre la pire exécution de chacun — et nous avons depuis mesuré qu'un modèle local même « déterministe » peut répondre différemment après un rechargement du modèle, une raison de plus pour laquelle rien n'est enregistré sans votre validation.",
+        "notChosenTitle": "Le modèle que nous n'avons pas choisi",
+        "notChosenBody": "Claude Haiku 4.5 a obtenu les 24 étiquettes entièrement correctes (130 champs sur 130, 0 événement de sécurité) sur cette évaluation ; un LLM infonuagique plus puissant devrait faire au moins aussi bien. Le projet de synthèse choisit délibérément le qwen2.5:7b local pour l'autonomie et un coût infonuagique nul ; le proposeur est interchangeable par configuration.",
+        "stillWrongTitle": "Ce qui cloche encore",
+        "stillWrong1": "Sur une étiquette indiquant deux doses différentes à deux moments différents de la journée — « un comprimé le matin et deux au coucher » — le tableau d'horaires fixe règle les heures d'un horaire standard deux fois par jour plutôt que les deux que l'étiquette nomme. L'écran de révision est l'endroit où vous corrigez cela, et c'est la raison pour laquelle l'écran de révision n'est pas facultatif.",
+        "stillWrong2": "En réexécutant la même évaluation un autre jour, le modèle local a classé une étiquette différemment de la première fois. La sortie d'un petit modèle n'est pas parfaitement stable d'une exécution et d'une machine à l'autre — une raison de plus pour que rien de ce qu'il produit ne soit enregistré sans votre confirmation.",
+        "stillWrong3": "La référence de médicaments derrière les suggestions de DIN couvre 11 609 médicaments actuellement commercialisés pour les personnes au Canada. De ceux-là, 7 055 sont les comprimés et capsules dont nous détenons l'apparence imprimée — de sorte que 4 554 médicaments réels, dont les stylos à insuline, les inhalateurs, les crèmes, les gouttes ophtalmiques et les timbres, peuvent être ajoutés à votre liste et consultés, mais ne peuvent pas être vérifiés à partir d'une photo. Ils sont désignés comme tels dans l'application plutôt que passés sous silence.",
+        "stillWrong4": "Tout ce qui précède a été mesuré sur des étiquettes que nous avons rédigées. Nous n'avons pas encore évalué le système sur un ensemble de vraies étiquettes de pharmacie provenant de plusieurs chaînes canadiennes, et c'est là la limite honnête de ce que ces chiffres peuvent vous dire.",
+        "repoNoteBefore": "L'expérience complète — les 24 étiquettes, les réponses attendues, la sortie brute de chaque système et le script qui reproduit l'exécution — est incluse dans le dépôt du projet à",
+        "repoNoteAfter": ".",
+        "tableFootnote": "† Le seul événement enregistré du parcours livré — un rappel fixe en soirée sur un médicament à prendre au besoin — a été corrigé après cette exécution par un nouveau garde-fou qui lit l'étiquette elle-même plutôt que la proposition du modèle ; l'exécution après correction n'enregistre aucun événement, et le garde-fou est prouvé par des tests unitaires qui injectent la classification fautive."
+      },
+      "vision": {
+        "breadcrumb": "Vision des comprimés",
+        "heroLead": "Le deuxième des cinq cerveaux de MyPillSafe. Il {{desc}}",
+        "whatTitle": "Ce qu'il fait",
+        "whatBody1": "Vous déposez un comprimé isolé sur la carte de capture imprimée MyPillSafe et vous le photographiez. La Vision des comprimés repère le comprimé sur la photo, mesure sa couleur par rapport aux pastilles d'étalonnage de la carte, classe sa forme et lit le texte gravé à sa surface — deux fois, par deux méthodes complémentaires. Ce qui en sort n'est pas un nom de médicament : c'est une description honnête — couleur, forme, type et deux lectures de l'inscription, chacune avec son propre niveau de confiance.",
+        "whatBody2": "Cette description est transmise au <strong>Comparateur déterministe</strong>, qui la confronte aux médicaments de votre liste confirmée — jamais à l'ensemble du répertoire canadien. La Vision des comprimés décrit ; elle ne décide pas.",
+        "howTitle": "Comment il fonctionne",
+        "how": {
+          "find": {
+            "title": "1. Repérer le comprimé",
+            "body": "Un modèle de segmentation générique (« zero-shot ») isole le comprimé sur la carte de capture. Nous avions aussi entraîné un détecteur spécialisé sur la partie d'entraînement d'un ensemble de studio de 8 560 images — sur de vraies photos de téléphone, il manquait 28 % des comprimés ; c'est donc le modèle générique, qui les trouve tous, qui a été retenu."
+          },
+          "colour": {
+            "title": "2. Mesurer la couleur",
+            "body": "La couleur est calculée, pas apprise : les pastilles imprimées de la carte permettent de corriger l'éclairage de la pièce, puis la couleur corrigée du comprimé est recherchée dans une palette de 13 couleurs. Aucun jeu de données d'entraînement n'a voix au chapitre sur la couleur de votre comprimé."
+          },
+          "shape": {
+            "title": "3. Classer la forme",
+            "body": "Un petit réseau de neurones classe le contour du comprimé parmi 11 formes, avec une règle géométrique en secours pour les contours rares qu'il n'a pas appris à reconnaître."
+          },
+          "imprint": {
+            "title": "4. Lire l'inscription — deux fois",
+            "body": "Les caractères gravés dans un comprimé sont son identifiant le plus fort et la chose la plus difficile à lire. Deux lecteurs complémentaires examinent chaque face — l'un meilleur pour les lectures partielles, l'autre, avec un rehaussement de contraste, environ 3,5× meilleur pour les lectures exactes. Les deux lectures sont transmises sans être fusionnées, pour que le comparateur puisse les peser honnêtement."
+          }
+        },
+        "measuredTitle": "Performance mesurée — et ce qu'elle veut dire honnêtement",
+        "measuredIntro": "Sur 180 vraies photos de téléphone de 15 produits en vente libre — notre ensemble de développement, présenté honnêtement comme tel, pas un banc d'essai :",
+        "stats": {
+          "detect": {
+            "value": "180/180",
+            "label": "comprimés repérés sur la photo"
+          },
+          "verify": {
+            "value": "31,1 %",
+            "label": "des photos vérifiées du premier coup"
+          },
+          "fa": {
+            "value": "1,25 %",
+            "label": "taux de fausses acceptations — le chiffre que tout est réglé pour garder au plus bas (9 essais sur 720 hors profil)"
+          }
+        },
+        "measuredNote": "Le faible taux de vérification est voulu. Quand l'éclairage ou la mise au point rend l'inscription illisible, MyPillSafe s'abstient et vous demande de retourner le comprimé ou de reprendre la photo, plutôt que de parier. Les inscriptions illisibles causent 83,9 % des photos qui ne se vérifient pas — c'est précisément ce que le protocole de capture ci-dessous vise à corriger.",
+        "negativeTitle": "Le résultat que nous n'attendions pas",
+        "negativeBody": "Nous avons entraîné des modèles pour la détection et pour la forme sur des milliers de photos de studio ; tous deux battaient leur référence générique en studio — puis ont perdu contre elle sur de vraies photos de téléphone. Les bancs d'essai en studio ont surestimé le transfert au réel sur deux de nos trois modules de vision, et l'entraînement du lecteur d'inscriptions sur les lectures de son propre « professeur » a perdu les deux fois où nous l'avons tenté. Ce résultat négatif façonne aujourd'hui tout le pipeline, et c'est une conclusion centrale de l'article en préparation : la détection générique a été retenue, la couleur n'a jamais été apprise, et même le modèle de forme entraîné qui survit coûte 4,5 points sur photos réelles — il ne garde sa place que parce que la double lecture de l'inscription fait plus que compenser.",
+        "trayTitle": "Le PillSafeTray — un studio de poche",
+        "trayBadge": "Prototype de recherche — en développement",
+        "trayBody1": "La prochaine étape de la capture contrôlée est un plateau à comprimés au format portefeuille, exactement l'empreinte d'une carte bancaire (85,6 × 54 mm). Six alvéoles peu profondes accueillent jusqu'à six comprimés, inscription vers le haut, pour une seule photo — une prise de sept ou huit comprimés se fait en deux chargements. Sa feuille imprimée porte les mêmes pastilles de couleur étalonnées que la carte de capture, quatre repères de coin qui indiquent à l'application où se trouvent exactement le plateau et chaque alvéole sur la photo, et une seule consigne imprimée : inscription vers le HAUT.",
+        "trayBody2": "Photographié de près avec le flash forcé, le plateau transforme une photo de téléphone non contrôlée en une petite prise de studio reproductible. Nous avons mesuré pourquoi cela compte : l'éclairage est le levier de capture dominant que nous ayons trouvé — 12 premières photos vérifiées sur 29 sous un substitut de ce protocole, les inscriptions gravées difficiles à lire échouant le plus — et le flash forcé ramène une pièce sombre en soirée à un taux de vérification proche de la lumière du jour.",
+        "trayImageAlt": "Rendu de conception du PillSafeTray v2 : un plateau gris foncé au format carte bancaire avec six alvéoles numérotées, une bande de pastilles d'étalonnage, des repères de coin et la consigne « inscription vers le haut », présenté à côté d'une carte bancaire pour l'échelle.",
+        "trayImageCaption": "Rendu de conception, pas une photographie. Le corps du plateau est prêt à imprimer ; l'étude de capture confirmatoire est préenregistrée et encore à venir.",
+        "pendingTitle": "Ce qui reste à faire — dit ouvertement",
+        "pendingIntro": "Toute la modélisation et l'évaluation sur l'ensemble de développement sont terminées et figées. Le travail confirmatoire est préenregistré et en attente :",
+        "pending": {
+          "p1": "Imprimer en 3D le corps du plateau (le modèle prêt à imprimer existe) et produire sa feuille d'insertion étalonnée.",
+          "p2": "Un pilote de 88 photos pour fixer les paramètres de capture, puis l'étude confirmatoire préenregistrée de 600 photos avec les mêmes 15 produits.",
+          "p3": "Deux résultats préenregistrés : l'utilisabilité — un comprimé correct, inscription vers le haut, se vérifie à la première photo — et la sécurité — zéro fausse acceptation sur environ 630 présentations de comprimés étrangers, ce qui, par la règle de trois, bornerait le taux réel sous 0,48 %.",
+          "p4": "La décision sur l'inscription : déterminer si la capture contrôlée sur plateau récupère assez d'inscriptions illisibles pour rester en modèle générique, ou si un lecteur d'inscriptions correctement entraîné — cette fois sur des étiquettes indépendantes saisies à la main — se justifie.",
+          "p5": "Un raffinement des frontières de couleur, en commençant par la séparation blanc/gris."
+        }
+      },
+      "matcher": {
+        "breadcrumb": "Comparateur déterministe",
+        "heroLead": "Le troisième des cinq cerveaux de MyPillSafe. C'est {{desc}}",
+        "whatTitle": "Ce qu'il fait",
+        "whatBody1": "Le comparateur reçoit la description produite par la Vision des comprimés — couleur, forme, type et deux lectures de l'inscription — et la confronte à chaque médicament de votre liste confirmée. Il rend exactement l'un de trois verdicts : <strong>vérifié</strong> (c'est l'un de vos médicaments, avec le détail des attributs concordants), <strong>ne correspond pas</strong> (cela ne correspond à rien de ce que vous prenez — arrêtez-vous et vérifiez auprès d'un pharmacien), ou <strong>abstention</strong> (incertain — retournez le comprimé, reprenez la photo ou confirmez à partir d'une courte liste).",
+        "whatBody2": "Ce n'est délibérément pas de l'apprentissage automatique. Le réglage de sécurité exige une formule explicite et vérifiable : chaque score peut être recalculé à la main, chaque seuil a une justification écrite, et les règles du projet interdisent d'en modifier un sans relancer l'évaluation complète qui l'a fixé.",
+        "formulaTitle": "La formule, au grand jour",
+        "formulaBody": "Chaque attribut apporte une part pondérée du score de correspondance : l'inscription compte pour 55 %, la couleur pour 25 %, la forme pour 15 % et le type — comprimé ou gélule — pour 5 %. Un comprimé n'est vérifié qu'au-dessus d'un score de 0,70, rejeté sous 0,25, et tout l'entre-deux — ou toute quasi-égalité entre deux de vos propres médicaments — devient une abstention. L'inscription domine à dessein : c'est le seul attribut qui distingue réellement les comprimés qui se ressemblent.",
+        "abstainTitle": "L'abstention est un choix de conception, pas un échec",
+        "abstainBody": "Sur nos photos de développement, le comparateur vérifie environ 17 à 29 % des prises uniques et s'abstient sur la plupart des autres. Ce compromis est voulu : les seuils ont été réglés pour que la vérification erronée d'un comprimé — le seul verdict qui pourrait mettre le mauvais médicament dans la bouche de quelqu'un — soit l'événement le plus rare que nous puissions mesurer : un taux de fausses acceptations de 1,15 % en validation croisée sur données retenues, de 1,25 % sur photos réelles. (Le pipeline livré mesure 31,1 % de vérifications sur ces mêmes photos ; la fourchette de 17 à 29 % couvre les variantes évaluées.) Et quand il s'abstient, il dit quoi faire ensuite : retourner le comprimé pour lire l'inscription de l'autre face, ou choisir dans la courte liste qu'il n'a pas pu départager.",
+        "collisionTitle": "Pourquoi ne pas identifier parmi tout le répertoire ?",
+        "collisionBody": "Parce que les comprimés canadiens se confondent réellement. Dans nos données de référence, 13 produits différents sont tous le même « comprimé bleu en losange, inscription SIL 25 » — des génériques sous licences croisées qu'aucune caméra ne pourrait distinguer. Sur les 7 055 comprimés et gélules commercialisés au Canada, même une description parfaite des attributs ne désigne le bon produit que 38,4 % du temps ; au sein d'un profil personnel de cinq médicaments, la probabilité d'une collision est d'environ 0,3 %. Vérifier par rapport à votre propre liste n'est pas un pis-aller — c'est la version du problème qui peut réellement être résolue en sécurité.",
+        "frozenNote": "Le comparateur évalué est exactement celui qui est livré : ses pondérations et ses seuils sont figés, et chaque chiffre ci-dessus peut être retracé jusqu'à l'évaluation qui l'a fixé."
+      },
+      "retrieval": {
+        "breadcrumb": "Recherche dans les monographies",
+        "heroLead": "Le quatrième des cinq cerveaux de MyPillSafe. Il {{desc}}",
+        "whatTitle": "Ce qu'il fait",
+        "whatBody1": "Quand vous posez une question, la Recherche dans les monographies trouve les passages qui y répondent — dans la monographie de produit officielle de Santé Canada de votre médicament, jamais sur l'internet ouvert. Derrière elle : un corpus de 6 803 monographies de produit, plus 27 documents d'ingrédients couvrant des produits courants en vente libre sans monographie propre, découpés en 3,9 millions de passages interrogeables.",
+        "whatBody2": "Sa règle fondatrice : la recherche est <strong>limitée à un seul produit</strong>. Le système résout d'abord de quel produit vous parlez, puis ne cherche que dans la monographie de ce produit. S'il ne peut pas résoudre le produit, il vous le demande — il ne devine jamais.",
+        "howTitle": "Comment il fonctionne",
+        "how": {
+          "resolve": {
+            "title": "1. Résoudre le médicament",
+            "body": "Votre question peut nommer une marque, un ingrédient ou un DIN. Le résolveur la rattache à exactement un produit — et quand deux noms de médicaments se ressemblent, une cause réelle d'erreurs de médication, il ne choisit jamais automatiquement : il affiche les candidats et c'est vous qui choisissez."
+          },
+          "scope": {
+            "title": "2. Ne chercher que dans cette monographie",
+            "body": "Nous avons mesuré pourquoi cette règle existe : pour un anticoagulant courant, son nom apparaît 33 fois plus souvent dans les monographies des autres médicaments que dans la sienne. En cherchant dans tout le corpus, 8 questions de test sur 40 ramenaient des passages des documents du mauvais médicament ; en limitant au produit résolu, zéro sur 55. Le chemin « tout le corpus » a été purement supprimé."
+          },
+          "route": {
+            "title": "3. Orienter selon l'intention",
+            "body": "L'intention de la question — effets secondaires, interactions, conservation, etc. — oriente la recherche vers les sections de la monographie où ce type de réponse se trouve. Cet aiguillage a fait passer la part des questions dont la réponse figure dans les cinq premiers passages de 70 % à 81 % sur notre ensemble de développement."
+          },
+          "guard": {
+            "title": "4. Encadrer le résultat",
+            "body": "Des garde-fous déterministes s'exécutent avant toute formulation. Les questions de posologie sont refusées d'emblée — une règle dure, pas une préférence. Une marque absente du répertoire canadien reçoit un refus explicite, pas un substitut au nom ressemblant. Et une réponse qui partirait sans sources devient un honnête « je ne sais pas »."
+          }
+        },
+        "refusesTitle": "Ce qu'il refuse de faire",
+        "refusesBody": "Il ne répond pas aux questions de posologie (« combien dois-je en prendre » relève de votre pharmacien et de votre étiquette). Il ne recommande pas de traitement pour une maladie — les monographies décrivent des produits ; elles ne peuvent pas classer des thérapies. Et il ne substitue jamais en silence un nom ressemblant à celui qu'il ne trouve pas. Chaque refus est formulé pour ce qu'il est, pour que vous sachiez pourquoi vous n'avez pas eu de réponse.",
+        "localNote": "Toute cette couche — résolveur, recherche et garde-fous — s'exécute de façon déterministe sur le matériel du projet. Aucun service infonuagique ne voit votre question à cette étape ; la seule étape infonuagique est la Voix des réponses, qui formule la réponse finale à partir de ces passages récupérés et cités."
+      },
+      "voice": {
+        "breadcrumb": "Voix des réponses",
+        "heroLead": "Le cinquième des cinq cerveaux de MyPillSafe. C'est {{desc}}",
+        "whatTitle": "Ce qu'elle fait",
+        "whatBody1": "La Voix des réponses est la seule partie de MyPillSafe qui s'exécute dans le nuage, et la seule autorisée à écrire des phrases pour vous. Elle reçoit les passages de monographie récupérés et cités — déjà ciblés et encadrés par la Recherche dans les monographies — et formule la réponse dans la langue que vous avez choisie. On ne lui demande jamais de connaître la médecine par elle-même, et elle ne décide rien : ce qu'elle dit doit provenir des passages qui lui sont fournis, et les citations sont affichées avec la réponse.",
+        "whatBody2": "Une phrase résume toute cette conception : <strong>l'IA qui parle n'est jamais l'IA qui décide.</strong>",
+        "storyTitle": "L'échec qui l'a façonnée",
+        "storyBody": "Pendant l'évaluation, on a demandé à un modèle de langage plus petit si une personne allergique aux sulfamides pouvait prendre du célécoxib. Le passage qu'il avait lui-même récupéré et cité indiquait que des réactions de type allergique avaient été démontrées — et il a quand même répondu « Oui, vous pouvez ». Tous les garde-fous étaient au vert, parce qu'ils vérifiaient quel médicament était cité, jamais si l'affirmation concordait avec la source. Cette seule réponse a tranché l'architecture : la génération est passée à un modèle infonuagique plus fort, et une nouvelle vérification déterministe compare désormais les affirmations critiques de chaque réponse générée à la polarité de ses propres sources — sur la voix infonuagique comme sur le mode de secours.",
+        "howTitle": "Comment elle fonctionne",
+        "how": {
+          "receive": {
+            "title": "1. Recevoir un contexte encadré",
+            "body": "La voix ne cherche jamais. Elle reçoit les passages que la Recherche dans les monographies a déjà résolus, ciblés et encadrés — avec leurs citations — ainsi que la question. Si les passages manquent, il n'y a rien à formuler, et elle le dit."
+          },
+          "phrase": {
+            "title": "2. Formuler dans votre langue",
+            "body": "Elle rédige la réponse dans la langue que vous avez choisie, en mots simples, strictement à partir des passages fournis. La traduction s'ancre ici dans le texte officiel de la monographie — jamais un conseil médical improvisé."
+          },
+          "recheck": {
+            "title": "3. Être revérifiée",
+            "body": "La réponse formulée repasse par les garde-fous déterministes, dont la vérification affirmation-source née de l'échec du célécoxib. Une réponse qui contredit ses propres sources, ou qui arrive sans elles, est remplacée par une abstention honnête, avec le même avertissement que porte chaque écran."
+          }
+        },
+        "measuredTitle": "Mesurée, honnêtement",
+        "measuredBody": "Répondre à notre ensemble d'évaluation de 120 questions par la voix de production a coûté 0,49 $ en frais infonuagiques mesurés — environ un demi-cent par réponse générée. Si le modèle infonuagique est injoignable, un modèle local répond à sa place et l'application l'étiquette comme mode de secours hors ligne ; les mêmes garde-fous s'exécutent dans les deux cas.",
+        "measuredNote": "La trace complète question par question — chaque question, ce qui a été récupéré, chaque verdict des garde-fous et le coût mesuré — est livrée dans le dépôt du projet sous forme de classeur consultable (documentation/BB3_120Q_Pipeline_Journey_R1.xlsx).",
+        "privacyTitle": "Ce qui quitte votre appareil — et ce qui ne le quitte jamais",
+        "privacyBody": "Deux choses sont envoyées au modèle infonuagique : les passages déjà récupérés de la monographie officielle de votre médicament, et les mots de votre question. Votre nom, votre date de naissance et votre liste de médicaments ne quittent jamais MyPillSafe — le modèle infonuagique ne sait ni qui vous êtes ni quels autres médicaments vous prenez. Une mise en garde honnête : si vous écrivez des détails de santé dans une question, ces mots partent bel et bien vers le nuage — sans lien avec votre identité, mais sans être retirés."
+      }
+    }
+  },
+  "errorState": {
+    "title": "Une erreur s’est produite",
+    "retry": "Réessayer"
+  },
+  "records": {
+    "emptyTitle": "Aucun scan pour le moment",
+    "emptyBody": "Utilisez « Vérifier un comprimé » pour vérifier votre premier comprimé.",
+    "emptyCta": "Aller à Vérifier un comprimé",
+    "colDate": "Date",
+    "colDrug": "Médicament détecté",
+    "colStatus": "Résultat",
+    "colAction": "Action prise",
+    "unknown": "Inconnu",
+    "status": {
+      "matched": "Correspond",
+      "warning": "Avertissement",
+      "unmatched": "Ne correspond pas"
+    }
+  },
+  "help": {
+    "howToUseTitle": "Comment utiliser MyPillSafe",
+    "steps": {
+      "s1": {
+        "title": "Scannez votre ordonnance",
+        "desc": "Utilisez « Scanner l’ordonnance » pour photographier l’étiquette de votre ordonnance. MyPillSafe la lit et propose les médicaments trouvés."
+      },
+      "s2": {
+        "title": "Confirmez vos médicaments",
+        "desc": "Le panneau « Est-ce bien votre médicament? » suggère les produits canadiens correspondants pour chacun — vous confirmez d’une touche. Rien n’est ajouté automatiquement à votre profil."
+      },
+      "s3": {
+        "title": "Vérifiez un comprimé avant de le prendre",
+        "desc": "Utilisez « Vérifier un comprimé » pour photographier un comprimé isolé sur la carte de capture. MyPillSafe le compare à vos médicaments confirmés."
+      },
+      "s4": {
+        "title": "Lisez le résultat",
+        "desc": "Vert signifie vérifié, rouge signifie que le comprimé ne correspond à rien de ce que vous prenez, et ambre signifie que MyPillSafe n’est pas certain et vous demande de revérifier. La première vérification peut prendre jusqu’à une minute."
+      },
+      "s5": {
+        "title": "Posez vos questions",
+        "desc": "Utilisez « Question sur mon médicament » pour des réponses citées tirées des monographies de produit de Santé Canada, dans votre langue."
+      }
+    },
+    "trayNote": "En développement : un plateau à comprimés au format portefeuille qui accueille jusqu'à six comprimés, inscription vers le haut, pour une seule photo. D'ici là, placez un comprimé à la fois sur la carte de capture.",
+    "labelTitle": "Comment lire votre étiquette d’ordonnance",
+    "labelParts": {
+      "name": "Nom du médicament — le nom du médicament, habituellement imprimé en plus gros sur l’étiquette.",
+      "dosage": "Teneur — la quantité de médicament dans chaque comprimé (p. ex. 500 mg).",
+      "frequency": "Fréquence — à quelle fréquence le prendre (p. ex. deux fois par jour, avec les repas).",
+      "doctor": "Médecin prescripteur — qui a prescrit le médicament.",
+      "refills": "Renouvellements restants — combien de fois encore la pharmacie peut le renouveler.",
+      "expiry": "Date de péremption — ne prenez pas le médicament après cette date."
+    },
+    "canCannotTitle": "Ce que MyPillSafe peut et ne peut pas faire",
+    "canTitle": "MyPillSafe peut",
+    "cannotTitle": "MyPillSafe ne peut pas",
+    "can": {
+      "c1": "Lire les étiquettes d’ordonnance et proposer des correspondances de médicaments que vous confirmez.",
+      "c2": "Comparer un comprimé photographié à VOTRE liste de médicaments confirmés — couleur, forme et inscription.",
+      "c3": "Répondre aux questions sur les médicaments avec des citations des monographies de produit de Santé Canada, en anglais ou en français."
+    },
+    "cannot": {
+      "c1": "Identifier un comprimé inconnu dans tout le catalogue des médicaments — il vérifie uniquement par rapport à votre propre liste.",
+      "c2": "Vous dire qu’il est certain quand il ne l’est pas — l’ambre signifie qu’il n’a pas pu confirmer, et non un avertissement atténué.",
+      "c3": "Donner des conseils de posologie, poser un diagnostic ou remplacer votre pharmacien ou votre médecin."
+    },
+    "disclaimer": "Aide à la décision seulement. Confirmez toujours les renseignements sur vos médicaments auprès d’un pharmacien ou d’un médecin autorisé.",
+    "tipsTitle": "Conseils de sécurité médicamenteuse",
+    "tips": {
+      "t1": "Prenez vos médicaments à la même heure chaque jour pour créer une routine.",
+      "t2": "Ne jamais écraser ou diviser les comprimés sans demander d’abord à votre pharmacien.",
+      "t3": "Gardez une liste de médicaments à jour avec vous en tout temps.",
+      "t4": "Conservez les médicaments à l’abri de la chaleur, de la lumière et de l’humidité.",
+      "t5": "Ne partagez jamais un médicament d’ordonnance avec une autre personne.",
+      "t6": "Vérifiez régulièrement les dates de péremption et éliminez les médicaments périmés de façon sécuritaire.",
+      "t7": "Informez chaque médecin et pharmacien de tous les médicaments que vous prenez actuellement."
+    }
   }
 }

@@ -53,12 +53,9 @@ export default function RegisterPage() {
     }
   };
 
-  const stats = [
-    { value: '1 in 4', label: 'Canadian seniors are prescribed 10+ drug classes (CIHI)' },
-    { value: '~5×', label: 'higher risk of medication-related hospitalization at 10+ medications (CIHI)' },
-    { value: '3', label: 'honest outcomes for every pill check — verified, needs a closer look, doesn’t match' },
-    { value: 'EN · FR', label: 'interface languages — medication answers in the language you choose' },
-  ];
+  // Copy (including the displayed value, which differs in French -- "1 in 4"
+  // vs "1 sur 4") lives in `auth.stats.*`.
+  const stats = ['stat1', 'stat2', 'stat3', 'stat4'];
 
   return (
     <div className="min-h-screen flex bg-slate-50">
@@ -68,28 +65,28 @@ export default function RegisterPage() {
         <div className="absolute bottom-0 left-0 h-96 w-96 rounded-full bg-white/8 blur-3xl" />
 
         <div className="relative z-10 flex flex-col justify-between p-10 w-full">
-          <Link to="/" className="inline-flex w-fit focus-visible:ring" aria-label="Back to home">
+          <Link to="/" className="inline-flex w-fit focus-visible:ring" aria-label={t('auth.backHome')}>
             <Logo onDark className="h-9" />
           </Link>
 
           <div className="space-y-5">
             <h1 className="text-3xl font-extrabold text-white leading-tight tracking-tight">
-              The wrong pill should never go unnoticed
+              {t('auth.registerHeroTitle')}
             </h1>
 
             <div className="grid grid-cols-2 gap-4">
-              {stats.map(({ value, label }) => (
-                <div key={label} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4">
-                  <p className="text-2xl font-extrabold text-white">{value}</p>
-                  <p className="text-xs text-teal-100/70 mt-1">{label}</p>
+              {stats.map((key) => (
+                <div key={key} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4">
+                  <p className="text-2xl font-extrabold text-white">{t(`auth.stats.${key}.value`)}</p>
+                  <p className="text-xs text-teal-100/70 mt-1">{t(`auth.stats.${key}.label`)}</p>
                 </div>
               ))}
             </div>
 
             <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-teal-100/60">
-              <span>Capstone MVP</span>
+              <span>{t('auth.badge')}</span>
               <span>·</span>
-              <span>Decision-support only</span>
+              <span>{t('auth.decisionSupportOnly')}</span>
             </div>
           </div>
 
@@ -98,12 +95,9 @@ export default function RegisterPage() {
               <div className="h-6 w-6 rounded-full bg-white/20 flex items-center justify-center">
                 <CheckCircle2 className="h-3.5 w-3.5 text-white" />
               </div>
-              <span className="text-sm font-medium text-white">When it isn&apos;t sure, it says so</span>
+              <span className="text-sm font-medium text-white">{t('auth.abstainTitle')}</span>
             </div>
-            <p className="text-xs text-teal-100/70">
-              MyPillSafe is tuned so that a wrong pill being called &quot;verified&quot; is the rarest
-              possible event — even at the cost of asking you to try again more often.
-            </p>
+            <p className="text-xs text-teal-100/70">{t('auth.abstainBody')}</p>
           </div>
         </div>
       </div>
@@ -116,7 +110,7 @@ export default function RegisterPage() {
         <div className="relative w-full max-w-lg animate-fade-in">
           {/* Mobile logo */}
           <div className="flex items-center mb-8 lg:hidden">
-            <Link to="/" aria-label="Back to home">
+            <Link to="/" aria-label={t('auth.backHome')}>
               <Logo className="h-9" />
             </Link>
           </div>
@@ -144,7 +138,7 @@ export default function RegisterPage() {
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   label={t('auth.register.firstName')}
-                  placeholder="Jane"
+                  placeholder={t('auth.placeholders.firstName')}
                   autoFocus
                   icon={<UserRound className="h-4 w-4" />}
                   disabled={isSubmitting}
@@ -153,7 +147,7 @@ export default function RegisterPage() {
                 />
                 <Input
                   label={t('auth.register.lastName')}
-                  placeholder="Smith"
+                  placeholder={t('auth.placeholders.lastName')}
                   disabled={isSubmitting}
                   error={errors.last_name?.message}
                   {...register('last_name')}
@@ -163,7 +157,7 @@ export default function RegisterPage() {
               <Input
                 label={t('auth.register.email')}
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t('auth.placeholders.email')}
                 autoComplete="email"
                 icon={<Mail className="h-4 w-4" />}
                 disabled={isSubmitting}
@@ -184,7 +178,7 @@ export default function RegisterPage() {
               <div>
                 <PasswordField
                   label={t('auth.register.password')}
-                  placeholder="Create a strong password"
+                  placeholder={t('auth.placeholders.newPassword')}
                   autoComplete="new-password"
                   disabled={isSubmitting}
                   error={errors.password?.message}

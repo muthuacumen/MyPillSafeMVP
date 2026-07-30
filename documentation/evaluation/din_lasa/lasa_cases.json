@@ -1,0 +1,153 @@
+{
+  "note": "Regression case set for the LASA look-alike gate (app/services/lasa.py), fixed 2026-07-30 BEFORE probe_lasa.py was run against it. Expectations are set from product reasoning, NOT from measurement: a real marketed Canadian product name should have at least one candidate that keeps every word the label printed ('not_gated'); a name that is absent or altered should have none ('gated'), or clear no candidate at all past the sidecar's 75.0 score cutoff ('empty'). Where 'gated' and 'empty' are both acceptable safe outcomes the case says so -- both mean the user cannot silently tap a wrong DIN, which is the property under test.",
+  "provenance_warning": "The two 'documented_survivor' cases are NOT held out. The token-coverage rule was designed by inspecting exactly these two pairs, so their pass is a construction check, not evidence of generalization. The false-fire measurement in probe_lasa.py (seed 42, drawn from the 11,609-DIN profile tier) is the fresh number.",
+  "cases": [
+    {
+      "id": "ZOLTIRAX-absent-drug",
+      "query": "ZOLTIRAX 200 MG",
+      "kind": "documented_survivor",
+      "expect": ["gated", "empty"],
+      "why": "Invented drug name. Survives the 75.0 cutoff at 80.0 against ZOVIRAX -- a real antiviral. Nothing may be one-tap linkable."
+    },
+    {
+      "id": "TYLENOL-PM-EXTRA-absent-product",
+      "query": "TYLENOL PM EXTRA",
+      "kind": "documented_survivor",
+      "expect": ["gated", "empty"],
+      "why": "TYLENOL PM contains diphenhydramine; TYLENOL EXTRA STRENGTH does not. token_set_ratio scores this pair 100.0 because the query is a strict superset of the product name, so no cutoff can reach it."
+    },
+    {
+      "id": "TYLENOL-PM-EXTRA-STRENGTH-absent-product",
+      "query": "TYLENOL PM EXTRA STRENGTH",
+      "kind": "documented_survivor",
+      "expect": ["gated", "empty"],
+      "why": "Second spelling of the same absent product -- guards against a fix that only handles one phrasing."
+    },
+    {
+      "id": "ZOVIRAX-real-brand",
+      "query": "ZOVIRAX 200 MG",
+      "kind": "real_product",
+      "expect": ["not_gated"],
+      "why": "The real product the ZOLTIRAX case is confused with. Must stay one-tap, or the gate has cost a legitimate link."
+    },
+    {
+      "id": "TYLENOL-EXTRA-STRENGTH-real-brand",
+      "query": "TYLENOL EXTRA STRENGTH",
+      "kind": "real_product",
+      "expect": ["not_gated"],
+      "why": "The real product the TYLENOL PM case is confused with. Same asymmetry test in the other direction."
+    },
+    {
+      "id": "METFORMIN-generic-name",
+      "query": "METFORMIN 500 MG",
+      "kind": "real_product",
+      "expect": ["not_gated"],
+      "why": "Bare generic name against branded generics (SANDOZ METFORMIN FC etc). The label lost no word, so this is the case that a naive similarity threshold destroys and the token rule must keep."
+    },
+    {
+      "id": "APO-METFORMIN-branded-generic",
+      "query": "APO-METFORMIN 500 MG",
+      "kind": "real_product",
+      "expect": ["not_gated"],
+      "why": "Dominant Canadian generic naming. A real marketed product, so a covering candidate should exist."
+    },
+    {
+      "id": "GRAVOL-form-differs",
+      "query": "GRAVOL TABLETS",
+      "kind": "real_product",
+      "expect": ["not_gated"],
+      "why": "Dosage form is stripped by clean_search_query, so a tablets-vs-suppositories difference must not read as a look-alike."
+    },
+    {
+      "id": "MOTRIN-strength-differs",
+      "query": "MOTRIN 400 MG",
+      "kind": "real_product",
+      "expect": ["not_gated"],
+      "why": "Strength differences are ranked on separately and shown beside every candidate -- visible to the user, so not the gate's job."
+    },
+    {
+      "id": "ASPIRIN-81",
+      "query": "ASPIRIN 81 MG",
+      "kind": "real_product",
+      "expect": ["not_gated"],
+      "why": "Low-dose ASA. Also exercises the digit/unit token exclusions."
+    },
+    {
+      "id": "DIGOXIN-narrow-therapeutic-index",
+      "query": "DIGOXIN 0.125 MG",
+      "kind": "real_product",
+      "expect": ["not_gated"],
+      "why": "The drug whose search was fixed on 2026-07-29 (it used to return an antacid). Decimal strength token."
+    },
+    {
+      "id": "LANTUS-non-oral",
+      "query": "LANTUS",
+      "kind": "real_product",
+      "expect": ["not_gated"],
+      "why": "Insulin -- in the profile tier but not photo-verifiable. The gate must not interfere with linking a medication that simply cannot be checked by camera."
+    },
+    {
+      "id": "ATORVASTATIN-common-generic",
+      "query": "ATORVASTATIN 20 MG",
+      "kind": "real_product",
+      "expect": ["not_gated"]
+    },
+    {
+      "id": "AMOXICILLIN-common-generic",
+      "query": "AMOXICILLIN 500 MG",
+      "kind": "real_product",
+      "expect": ["not_gated"]
+    },
+    {
+      "id": "ZZZQQQ-nonsense",
+      "query": "ZZZQQQ 25 MG TAB",
+      "kind": "absent",
+      "expect": ["empty", "gated"],
+      "why": "The original cutoff regression case: before the 75.0 cutoff this returned the same confident 85.5-scoring candidates as a real digoxin query."
+    },
+    {
+      "id": "XYZZY-nonsense",
+      "query": "XYZZY",
+      "kind": "absent",
+      "expect": ["empty", "gated"]
+    },
+    {
+      "id": "FLIMZAROL-invented",
+      "query": "FLIMZAROL",
+      "kind": "absent",
+      "expect": ["empty", "gated"]
+    },
+    {
+      "id": "VERAXOLIN-invented",
+      "query": "VERAXOLIN",
+      "kind": "absent",
+      "expect": ["empty", "gated"]
+    },
+    {
+      "id": "COUMADIN-not-marketed-in-canada",
+      "query": "COUMADIN",
+      "kind": "absent",
+      "expect": ["empty", "gated"],
+      "why": "A real brand elsewhere, not marketed in Canada. The honest answer is 'we do not have this', never a nearby warfarin product presented as a match."
+    },
+    {
+      "id": "PHARMACY-label-noise",
+      "query": "PHARMACY",
+      "kind": "absent",
+      "expect": ["empty", "gated"],
+      "why": "Letterhead text reaching the search when the drug-name selector picks a header line."
+    },
+    {
+      "id": "REFILLS-label-noise",
+      "query": "REFILLS",
+      "kind": "absent",
+      "expect": ["empty", "gated"]
+    },
+    {
+      "id": "QTY-30-label-noise",
+      "query": "QTY 30",
+      "kind": "absent",
+      "expect": ["empty", "gated"]
+    }
+  ]
+}

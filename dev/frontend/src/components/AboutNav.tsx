@@ -1,24 +1,27 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────
 // Single source of truth for the about-page chain order (content pack §7):
 // Home -> About -> Vision & Mission -> Problem Statement -> Scientific
 // Foundation -> Team -> Get Started (/register). Contact stays outside the
-// chain, linked from the footer only.
+// chain, linked from the footer only. `labelKey` resolves against
+// `about.nav.*` in both locales (i18n/locales/{en,fr}.json) -- consumers
+// (this file, Navbar, AppFooter) translate it at render time via `t()`.
 // ─────────────────────────────────────────────────────────────────────────
 export interface AboutPageMeta {
   id: string;
   href: string;
-  label: string;
+  labelKey: string;
 }
 
 export const ABOUT_PAGES: AboutPageMeta[] = [
-  { id: 'about', href: '/about', label: 'About MyPillSafe' },
-  { id: 'vision', href: '/about/vision', label: 'Vision & Mission' },
-  { id: 'problem', href: '/about/problem', label: 'Problem Statement' },
-  { id: 'science', href: '/about/science', label: 'Scientific Foundation' },
-  { id: 'team', href: '/about/team', label: 'Team' },
+  { id: 'about', href: '/about', labelKey: 'about.nav.about' },
+  { id: 'vision', href: '/about/vision', labelKey: 'about.nav.vision' },
+  { id: 'problem', href: '/about/problem', labelKey: 'about.nav.problem' },
+  { id: 'science', href: '/about/science', labelKey: 'about.nav.science' },
+  { id: 'team', href: '/about/team', labelKey: 'about.nav.team' },
 ];
 
 interface AboutNavProps {
@@ -27,15 +30,18 @@ interface AboutNavProps {
 }
 
 export default function AboutNav({ current }: AboutNavProps) {
+  const { t } = useTranslation();
   const idx = ABOUT_PAGES.findIndex((p) => p.id === current);
 
   const prev =
-    idx > 0 ? { href: ABOUT_PAGES[idx - 1].href, label: ABOUT_PAGES[idx - 1].label } : { href: '/', label: 'Back to Home' };
+    idx > 0
+      ? { href: ABOUT_PAGES[idx - 1].href, label: t(ABOUT_PAGES[idx - 1].labelKey) }
+      : { href: '/', label: t('about.nav.backToHome') };
 
   const isLast = idx === ABOUT_PAGES.length - 1;
   const next = isLast
-    ? { href: '/register', label: 'Get Started' }
-    : { href: ABOUT_PAGES[idx + 1].href, label: ABOUT_PAGES[idx + 1].label };
+    ? { href: '/register', label: t('about.nav.getStarted') }
+    : { href: ABOUT_PAGES[idx + 1].href, label: t(ABOUT_PAGES[idx + 1].labelKey) };
 
   return (
     <div className="flex flex-col sm:flex-row gap-3">

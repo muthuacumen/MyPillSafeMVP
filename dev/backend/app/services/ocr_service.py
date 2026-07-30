@@ -30,6 +30,12 @@ logger = logging.getLogger(__name__)
 # would manufacture failures for a pipeline that is actually still working.
 OCR_TIMEOUT_SECONDS = 300.0
 
+# FixbySonnet1 Task 4a: split connect from read. A down sidecar should fail
+# fast (~5s) instead of taking as long as a slow-but-working one (measured:
+# a 5-minute spinner with a flat timeout). The read side stays generous
+# (OCR_TIMEOUT_SECONDS) because genuine in-progress OCR is legitimately slow.
+_OCR_TIMEOUT = httpx.Timeout(OCR_TIMEOUT_SECONDS, connect=5.0)
+
 
 class OcrUnavailableError(Exception):
     pass
@@ -47,7 +53,7 @@ async def extract_text(image_bytes: bytes, filename: str, content_type: str) -> 
     brains_url = await resolve_brains_url()
 
     try:
-        async with httpx.AsyncClient(timeout=OCR_TIMEOUT_SECONDS) as http_client:
+        async with httpx.AsyncClient(timeout=_OCR_TIMEOUT) as http_client:
             response = await http_client.post(
                 f"{brains_url}/ocr/prescription",
                 files={"image": (filename or "prescription.jpg", image_bytes, content_type or "image/jpeg")},

@@ -33,6 +33,13 @@ const VisionPage = () => lazyPage(() => import('@/pages/public/VisionPage'));
 const ProblemPage = () => lazyPage(() => import('@/pages/public/ProblemPage'));
 const SciencePage = () => lazyPage(() => import('@/pages/public/SciencePage'));
 const TeamPage = () => lazyPage(() => import('@/pages/public/TeamPage'));
+// Per-brain detail pages -- OFF the About chain (see components/AboutNav.tsx
+// and content/fiveBrains.ts). Prescription Reader is the first of five.
+const PrescriptionReaderPage = () => lazyPage(() => import('@/pages/public/brains/PrescriptionReaderPage'));
+const PillVisionPage = () => lazyPage(() => import('@/pages/public/brains/PillVisionPage'));
+const DeterministicMatcherPage = () => lazyPage(() => import('@/pages/public/brains/DeterministicMatcherPage'));
+const MonographRetrievalPage = () => lazyPage(() => import('@/pages/public/brains/MonographRetrievalPage'));
+const AnswerVoicePage = () => lazyPage(() => import('@/pages/public/brains/AnswerVoicePage'));
 const ContactPage = () => lazyPage(() => import('@/pages/public/ContactPage'));
 const AdminDashboardPage = () => lazyPage(() => import('@/pages/admin/AdminDashboardPage'));
 const AdminUsersPage = () => lazyPage(() => import('@/pages/admin/AdminUsersPage'));
@@ -65,6 +72,11 @@ export const router = createBrowserRouter([
       { path: '/about/problem', element: <ProblemPage /> },
       { path: '/about/science', element: <SciencePage /> },
       { path: '/about/team', element: <TeamPage /> },
+      { path: '/about/brains/prescription-reader', element: <PrescriptionReaderPage /> },
+      { path: '/about/brains/pill-vision', element: <PillVisionPage /> },
+      { path: '/about/brains/deterministic-matcher', element: <DeterministicMatcherPage /> },
+      { path: '/about/brains/monograph-retrieval', element: <MonographRetrievalPage /> },
+      { path: '/about/brains/answer-voice', element: <AnswerVoicePage /> },
       { path: '/contact', element: <ContactPage /> },
     ],
   },

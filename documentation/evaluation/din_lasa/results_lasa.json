@@ -1,0 +1,850 @@
+{
+  "generated": "2026-07-30",
+  "sidecar_profile_rows": 11609,
+  "rule": "app/services/lasa.py (imported, not reimplemented)",
+  "search": "http://127.0.0.1:8100/reference/search, live, cutoff 75.0 token_set_ratio",
+  "provenance": "The two documented LASA pairs are NOT held out -- the rule was designed against them. The seed-42 false-fire rate is the fresh measurement.",
+  "regression": {
+    "n": 22,
+    "failures": 0,
+    "cases": [
+      {
+        "id": "ZOLTIRAX-absent-drug",
+        "query": "ZOLTIRAX 200 MG",
+        "kind": "documented_survivor",
+        "expected": [
+          "gated",
+          "empty"
+        ],
+        "got": "gated",
+        "ok": true,
+        "candidates": [
+          {
+            "product": "ZOVIRAX",
+            "din": "DIN569771",
+            "score": 80.0,
+            "name_match": "look_alike",
+            "missing_tokens": [
+              "ZOLTIRAX"
+            ]
+          },
+          {
+            "product": "ZOVIRAX",
+            "din": "DIN2039524",
+            "score": 80.0,
+            "name_match": "look_alike",
+            "missing_tokens": [
+              "ZOLTIRAX"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "TYLENOL-PM-EXTRA-absent-product",
+        "query": "TYLENOL PM EXTRA",
+        "kind": "documented_survivor",
+        "expected": [
+          "gated",
+          "empty"
+        ],
+        "got": "gated",
+        "ok": true,
+        "candidates": [
+          {
+            "product": "TYLENOL EXTRA STRENGTH",
+            "din": "DIN559407",
+            "score": 89.66,
+            "name_match": "look_alike",
+            "missing_tokens": [
+              "PM"
+            ]
+          },
+          {
+            "product": "TYLENOL EXTRA STRENGTH CAPLETS",
+            "din": "DIN723908",
+            "score": 89.66,
+            "name_match": "look_alike",
+            "missing_tokens": [
+              "PM"
+            ]
+          },
+          {
+            "product": "EXTRA STRENGTH TYLENOL FLU DAYTIME",
+            "din": "DIN2275996",
+            "score": 89.66,
+            "name_match": "look_alike",
+            "missing_tokens": [
+              "PM"
+            ]
+          },
+          {
+            "product": "EXTRA STRENGTH TYLENOL SINUS DAYTIME",
+            "din": "DIN2276003",
+            "score": 89.66,
+            "name_match": "look_alike",
+            "missing_tokens": [
+              "PM"
+            ]
+          },
+          {
+            "product": "EXTRA STRENGTH TYLENOL SINUS NIGHTTIME",
+            "din": "DIN2276038",
+            "score": 89.66,
+            "name_match": "look_alike",
+            "missing_tokens": [
+              "PM"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "TYLENOL-PM-EXTRA-STRENGTH-absent-product",
+        "query": "TYLENOL PM EXTRA STRENGTH",
+        "kind": "documented_survivor",
+        "expected": [
+          "gated",
+          "empty"
+        ],
+        "got": "gated",
+        "ok": true,
+        "candidates": [
+          {
+            "product": "TYLENOL EXTRA STRENGTH",
+            "din": "DIN559407",
+            "score": 100.0,
+            "name_match": "look_alike",
+            "missing_tokens": [
+              "PM"
+            ]
+          },
+          {
+            "product": "TYLENOL EXTRA STRENGTH CAPLETS",
+            "din": "DIN723908",
+            "score": 93.62,
+            "name_match": "look_alike",
+            "missing_tokens": [
+              "PM"
+            ]
+          },
+          {
+            "product": "EXTRA STRENGTH TYLENOL FLU DAYTIME",
+            "din": "DIN2275996",
+            "score": 93.62,
+            "name_match": "look_alike",
+            "missing_tokens": [
+              "PM"
+            ]
+          },
+          {
+            "product": "EXTRA STRENGTH TYLENOL SINUS DAYTIME",
+            "din": "DIN2276003",
+            "score": 93.62,
+            "name_match": "look_alike",
+            "missing_tokens": [
+              "PM"
+            ]
+          },
+          {
+            "product": "EXTRA STRENGTH TYLENOL SINUS NIGHTTIME",
+            "din": "DIN2276038",
+            "score": 93.62,
+            "name_match": "look_alike",
+            "missing_tokens": [
+              "PM"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ZOVIRAX-real-brand",
+        "query": "ZOVIRAX 200 MG",
+        "kind": "real_product",
+        "expected": [
+          "not_gated"
+        ],
+        "got": "not_gated",
+        "ok": true,
+        "candidates": [
+          {
+            "product": "ZOVIRAX",
+            "din": "DIN569771",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "ZOVIRAX",
+            "din": "DIN2039524",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          }
+        ]
+      },
+      {
+        "id": "TYLENOL-EXTRA-STRENGTH-real-brand",
+        "query": "TYLENOL EXTRA STRENGTH",
+        "kind": "real_product",
+        "expected": [
+          "not_gated"
+        ],
+        "got": "not_gated",
+        "ok": true,
+        "candidates": [
+          {
+            "product": "TYLENOL EXTRA STRENGTH",
+            "din": "DIN559407",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "TYLENOL EXTRA STRENGTH CAPLETS",
+            "din": "DIN723908",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "EXTRA STRENGTH TYLENOL FLU DAYTIME",
+            "din": "DIN2275996",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "EXTRA STRENGTH TYLENOL SINUS DAYTIME",
+            "din": "DIN2276003",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "EXTRA STRENGTH TYLENOL SINUS NIGHTTIME",
+            "din": "DIN2276038",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          }
+        ]
+      },
+      {
+        "id": "METFORMIN-generic-name",
+        "query": "METFORMIN 500 MG",
+        "kind": "real_product",
+        "expected": [
+          "not_gated"
+        ],
+        "got": "not_gated",
+        "ok": true,
+        "candidates": [
+          {
+            "product": "SANDOZ METFORMIN FC",
+            "din": "DIN2246820",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "SANDOZ METFORMIN FC",
+            "din": "DIN2246821",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "METFORMIN",
+            "din": "DIN2353377",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "METFORMIN",
+            "din": "DIN2353385",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "JAMP METFORMIN",
+            "din": "DIN2380196",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          }
+        ]
+      },
+      {
+        "id": "APO-METFORMIN-branded-generic",
+        "query": "APO-METFORMIN 500 MG",
+        "kind": "real_product",
+        "expected": [
+          "not_gated"
+        ],
+        "got": "not_gated",
+        "ok": true,
+        "candidates": [
+          {
+            "product": "APO-METFORMIN ER",
+            "din": "DIN2305062",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "APO-METFORMIN ER",
+            "din": "DIN2460653",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "PRO-METFORMIN",
+            "din": "DIN2314894",
+            "score": 92.31,
+            "name_match": "manufacturer",
+            "missing_tokens": [
+              "APO"
+            ]
+          },
+          {
+            "product": "PRO-METFORMIN",
+            "din": "DIN2314908",
+            "score": 92.31,
+            "name_match": "manufacturer",
+            "missing_tokens": [
+              "APO"
+            ]
+          },
+          {
+            "product": "AURO-METFORMIN",
+            "din": "DIN2438275",
+            "score": 88.89,
+            "name_match": "manufacturer",
+            "missing_tokens": [
+              "APO"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "GRAVOL-form-differs",
+        "query": "GRAVOL TABLETS",
+        "kind": "real_product",
+        "expected": [
+          "not_gated"
+        ],
+        "got": "not_gated",
+        "ok": true,
+        "candidates": [
+          {
+            "product": "GRAVOL SUPPOSITORIES",
+            "din": "DIN13609",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "GRAVOL TABLETS",
+            "din": "DIN13803",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "KIDS GRAVOL LIQUID",
+            "din": "DIN230197",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "KIDS GRAVOL SUPPOSITORIES",
+            "din": "DIN783595",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "GRAVOL LIQUID GELS",
+            "din": "DIN2245867",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          }
+        ]
+      },
+      {
+        "id": "MOTRIN-strength-differs",
+        "query": "MOTRIN 400 MG",
+        "kind": "real_product",
+        "expected": [
+          "not_gated"
+        ],
+        "got": "not_gated",
+        "ok": true,
+        "candidates": [
+          {
+            "product": "MOTRIN 200MG",
+            "din": "DIN2186934",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "INFANTS' MOTRIN",
+            "din": "DIN2238626",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "CHILDREN'S MOTRIN",
+            "din": "DIN2242365",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "MOTRIN 300MG",
+            "din": "DIN2242632",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "MOTRIN 400MG",
+            "din": "DIN2242658",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          }
+        ]
+      },
+      {
+        "id": "ASPIRIN-81",
+        "query": "ASPIRIN 81 MG",
+        "kind": "real_product",
+        "expected": [
+          "not_gated"
+        ],
+        "got": "not_gated",
+        "ok": true,
+        "candidates": [
+          {
+            "product": "ASPIRIN REGULAR STRENGTH",
+            "din": "DIN2150328",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "ASPIRIN EXTRA STRENGTH",
+            "din": "DIN2150336",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "ASPIRIN COATED FOR DELAYED RELEASE REGULAR STRENGTH",
+            "din": "DIN2150417",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "ASPIRIN 81MG",
+            "din": "DIN2237726",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "ASPIRIN 81MG QUICK CHEWS",
+            "din": "DIN2289970",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          }
+        ]
+      },
+      {
+        "id": "DIGOXIN-narrow-therapeutic-index",
+        "query": "DIGOXIN 0.125 MG",
+        "kind": "real_product",
+        "expected": [
+          "not_gated"
+        ],
+        "got": "not_gated",
+        "ok": true,
+        "candidates": [
+          {
+            "product": "DIGOXIN INJECTION C.S.D.",
+            "din": "DIN2048264",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "JAMP DIGOXIN",
+            "din": "DIN2498502",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "JAMP DIGOXIN",
+            "din": "DIN2498510",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "PMS-DIGOXIN",
+            "din": "DIN2242320",
+            "score": 77.78,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "PMS-DIGOXIN",
+            "din": "DIN2335700",
+            "score": 77.78,
+            "name_match": "exact",
+            "missing_tokens": []
+          }
+        ]
+      },
+      {
+        "id": "LANTUS-non-oral",
+        "query": "LANTUS",
+        "kind": "real_product",
+        "expected": [
+          "not_gated"
+        ],
+        "got": "not_gated",
+        "ok": true,
+        "candidates": [
+          {
+            "product": "LANTUS",
+            "din": "DIN2245689",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "LANTUS",
+            "din": "DIN2251930",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "LANTUS",
+            "din": "DIN2294338",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          }
+        ]
+      },
+      {
+        "id": "ATORVASTATIN-common-generic",
+        "query": "ATORVASTATIN 20 MG",
+        "kind": "real_product",
+        "expected": [
+          "not_gated"
+        ],
+        "got": "not_gated",
+        "ok": true,
+        "candidates": [
+          {
+            "product": "SANDOZ ATORVASTATIN",
+            "din": "DIN2324946",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "SANDOZ ATORVASTATIN",
+            "din": "DIN2324954",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "SANDOZ ATORVASTATIN",
+            "din": "DIN2324962",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "SANDOZ ATORVASTATIN",
+            "din": "DIN2324970",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "ATORVASTATIN",
+            "din": "DIN2348705",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          }
+        ]
+      },
+      {
+        "id": "AMOXICILLIN-common-generic",
+        "query": "AMOXICILLIN 500 MG",
+        "kind": "real_product",
+        "expected": [
+          "not_gated"
+        ],
+        "got": "not_gated",
+        "ok": true,
+        "candidates": [
+          {
+            "product": "AMOXICILLIN",
+            "din": "DIN2352753",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "AMOXICILLIN",
+            "din": "DIN2352788",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "AMOXICILLIN",
+            "din": "DIN2401509",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "AMOXICILLIN",
+            "din": "DIN2401541",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          },
+          {
+            "product": "SANDOZ AMOXICILLIN",
+            "din": "DIN2495864",
+            "score": 100.0,
+            "name_match": "exact",
+            "missing_tokens": []
+          }
+        ]
+      },
+      {
+        "id": "ZZZQQQ-nonsense",
+        "query": "ZZZQQQ 25 MG TAB",
+        "kind": "absent",
+        "expected": [
+          "empty",
+          "gated"
+        ],
+        "got": "empty",
+        "ok": true,
+        "candidates": []
+      },
+      {
+        "id": "XYZZY-nonsense",
+        "query": "XYZZY",
+        "kind": "absent",
+        "expected": [
+          "empty",
+          "gated"
+        ],
+        "got": "empty",
+        "ok": true,
+        "candidates": []
+      },
+      {
+        "id": "FLIMZAROL-invented",
+        "query": "FLIMZAROL",
+        "kind": "absent",
+        "expected": [
+          "empty",
+          "gated"
+        ],
+        "got": "empty",
+        "ok": true,
+        "candidates": []
+      },
+      {
+        "id": "VERAXOLIN-invented",
+        "query": "VERAXOLIN",
+        "kind": "absent",
+        "expected": [
+          "empty",
+          "gated"
+        ],
+        "got": "empty",
+        "ok": true,
+        "candidates": []
+      },
+      {
+        "id": "COUMADIN-not-marketed-in-canada",
+        "query": "COUMADIN",
+        "kind": "absent",
+        "expected": [
+          "empty",
+          "gated"
+        ],
+        "got": "empty",
+        "ok": true,
+        "candidates": []
+      },
+      {
+        "id": "PHARMACY-label-noise",
+        "query": "PHARMACY",
+        "kind": "absent",
+        "expected": [
+          "empty",
+          "gated"
+        ],
+        "got": "empty",
+        "ok": true,
+        "candidates": []
+      },
+      {
+        "id": "REFILLS-label-noise",
+        "query": "REFILLS",
+        "kind": "absent",
+        "expected": [
+          "empty",
+          "gated"
+        ],
+        "got": "empty",
+        "ok": true,
+        "candidates": []
+      },
+      {
+        "id": "QTY-30-label-noise",
+        "query": "QTY 30",
+        "kind": "absent",
+        "expected": [
+          "empty",
+          "gated"
+        ],
+        "got": "empty",
+        "ok": true,
+        "candidates": []
+      }
+    ]
+  },
+  "false_fire": {
+    "seed": 42,
+    "arms": [
+      {
+        "label": "exact reference brands used verbatim as the label",
+        "n": 500,
+        "counts": {
+          "empty": 1,
+          "gated": 4,
+          "not_gated": 495
+        },
+        "gated_rate_pct": 0.8,
+        "gated_examples": [
+          {
+            "query": "FAMOTIDINE OMEGA   -(WITH PRESERVATIVE,BENZYL ALCOHOL)",
+            "top": "FAMOTIDINE",
+            "missing_tokens": [
+              "OMEGA",
+              "WITH",
+              "PRESERVATIVE",
+              "BENZYL",
+              "ALCOHOL"
+            ]
+          },
+          {
+            "query": "FAMOTIDINE OMEGA  -(WITHOUT PRESERVATIVE)",
+            "top": "FAMOTIDINE",
+            "missing_tokens": [
+              "OMEGA",
+              "WITHOUT",
+              "PRESERVATIVE"
+            ]
+          },
+          {
+            "query": "ABILIFY MAINTENA",
+            "top": "ABILIFY",
+            "missing_tokens": [
+              "MAINTENA"
+            ]
+          },
+          {
+            "query": "SANDOZ ESOMEPRAZOLE",
+            "top": "ESOMEPRAZOLE",
+            "missing_tokens": [
+              "SANDOZ"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "generic-name-only labels (manufacturer prefix dropped)",
+        "n": 200,
+        "counts": {
+          "empty": 2,
+          "gated": 6,
+          "not_gated": 192
+        },
+        "gated_rate_pct": 3.0,
+        "gated_examples": [
+          {
+            "query": "DICLOFENAC EC",
+            "top": "DICLOFENAC",
+            "missing_tokens": [
+              "EC"
+            ]
+          },
+          {
+            "query": "MONTELUKAST CHEWABLE TABLET",
+            "top": "MONTELUKAST",
+            "missing_tokens": [
+              "CHEWABLE"
+            ]
+          },
+          {
+            "query": "OLANZAPINE ODT",
+            "top": "OLANZAPINE",
+            "missing_tokens": [
+              "ODT"
+            ]
+          },
+          {
+            "query": "ISMN",
+            "top": "ISDN",
+            "missing_tokens": [
+              "ISMN"
+            ]
+          },
+          {
+            "query": "CIPROFLOXACIN XL",
+            "top": "CIPROFLOXACIN",
+            "missing_tokens": [
+              "XL"
+            ]
+          },
+          {
+            "query": "DILTIAZEM HCL ER",
+            "top": "DILTIAZEM T",
+            "missing_tokens": [
+              "HCL",
+              "ER"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

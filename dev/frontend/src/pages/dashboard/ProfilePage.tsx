@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Pencil, Pill, Calendar, KeyRound, HeartHandshake, Settings2, Globe, Bell, BellOff, Volume2, VolumeX } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -18,7 +19,8 @@ import { voice } from '@/lib/voiceAssistant';
 import type { Patient } from '@/types';
 
 export default function ProfilePage() {
-  useVoicePageAnnounce('My Profile');
+  const { t } = useTranslation();
+  useVoicePageAnnounce(t('profile.title'));
   const authUser = useAuthStore((s) => s.user);
 
   const [patient, setPatient] = useState<Patient | null>(null);
@@ -46,7 +48,7 @@ export default function ProfilePage() {
           preferred_language: data.preferred_language,
         });
       })
-      .catch(() => setLoadError('Could not load your profile. Please refresh and try again.'));
+      .catch(() => setLoadError(t('profile.loadError')));
   };
 
   useEffect(() => {
@@ -62,9 +64,9 @@ export default function ProfilePage() {
       const { data } = await patientsApi.update(form);
       setPatient(data);
       setEditing(false);
-      setSaveSuccess('Profile updated.');
+      setSaveSuccess(t('profile.saved'));
     } catch {
-      setSaveError('Could not save your profile. Please try again.');
+      setSaveError(t('profile.saveError'));
     }
   };
 
@@ -72,17 +74,17 @@ export default function ProfilePage() {
     setPwError('');
     setPwSuccess('');
     if (pwForm.next !== pwForm.confirm) {
-      setPwError('New passwords do not match.');
+      setPwError(t('profile.pwMismatch'));
       return;
     }
     try {
       await patientsApi.changePassword(pwForm.current, pwForm.next);
-      setPwSuccess('Password changed successfully.');
+      setPwSuccess(t('profile.pwChanged'));
       setPwForm({ current: '', next: '', confirm: '' });
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { detail?: { error?: { message?: string } } } } })
         ?.response?.data?.detail?.error?.message;
-      setPwError(msg ?? 'Could not change your password.');
+      setPwError(msg ?? t('profile.pwError'));
     }
   };
 
@@ -104,10 +106,12 @@ export default function ProfilePage() {
   }
 
   const initials = `${patient.first_name[0] ?? ''}${patient.last_name[0] ?? ''}`.toUpperCase();
+  // Language endonyms are deliberately NOT translated.
+  const languageName = patient.preferred_language === 'fr' ? 'Français' : 'English';
 
   return (
     <div className="space-y-6 page-enter max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-slate-900">My Profile</h1>
+      <h1 className="text-2xl font-bold text-slate-900">{t('profile.title')}</h1>
 
       {/* Profile summary */}
       <Card>
@@ -120,15 +124,15 @@ export default function ProfilePage() {
             <p className="text-sm text-slate-500">{authUser?.email}</p>
             <button
               type="button"
-              onClick={() => window.alert('Avatar uploads aren’t available yet.')}
+              onClick={() => window.alert(t('profile.uploadUnavailable'))}
               className="text-xs text-teal-600 hover:underline mt-1 min-h-[44px] inline-flex items-center"
             >
-              Upload photo
+              {t('profile.uploadPhoto')}
             </button>
           </div>
           {!editing && (
             <Button variant="secondary" onClick={() => setEditing(true)}>
-              <Pencil className="h-4 w-4" /> Edit Profile
+              <Pencil className="h-4 w-4" /> {t('profile.edit')}
             </Button>
           )}
         </div>
@@ -140,29 +144,29 @@ export default function ProfilePage() {
           stat. The DB column/API field stay (no migration), just not
           displayed. */}
       <div>
-        <SectionHeader>Medication Summary</SectionHeader>
+        <SectionHeader>{t('profile.summaryTitle')}</SectionHeader>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
           <StatCard
-            label="Active Prescriptions"
+            label={t('profile.activePrescriptions')}
             value={String(activeCount)}
             icon={<Pill className="h-5 w-5" strokeWidth={1.8} />}
             iconBg="bg-navy/10 text-navy"
           />
           <StatCard
-            label="Last Scan"
+            label={t('profile.lastScan')}
             value={patient.last_scan_at ? new Date(patient.last_scan_at).toLocaleDateString() : '—'}
             icon={<Calendar className="h-5 w-5" strokeWidth={1.8} />}
             iconBg="bg-purple-50 text-purple-600"
           />
         </div>
         <Link to="/dashboard/medications" className="text-xs text-teal-600 hover:underline mt-2 inline-block">
-          View my medications →
+          {t('profile.viewMedications')}
         </Link>
       </div>
 
       {/* Personal details */}
       <div>
-        <SectionHeader>Personal Details</SectionHeader>
+        <SectionHeader>{t('profile.detailsTitle')}</SectionHeader>
         <Card className="mt-3">
           {saveError && <div className="mb-3"><Alert variant="error" message={saveError} /></div>}
           {saveSuccess && !editing && <div className="mb-3"><Alert variant="success" message={saveSuccess} /></div>}
@@ -170,12 +174,12 @@ export default function ProfilePage() {
           {editing ? (
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input label="First name" value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} />
-                <Input label="Last name" value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} />
+                <Input label={t('profile.firstName')} value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} />
+                <Input label={t('profile.lastName')} value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} />
               </div>
-              <Input label="Phone number" value={form.phone_number} onChange={(e) => setForm({ ...form, phone_number: e.target.value })} />
+              <Input label={t('profile.phoneNumber')} value={form.phone_number} onChange={(e) => setForm({ ...form, phone_number: e.target.value })} />
               <div>
-                <label className="label" htmlFor="preferred-language">Preferred language</label>
+                <label className="label" htmlFor="preferred-language">{t('profile.preferredLanguage')}</label>
                 <select
                   id="preferred-language"
                   className="input-field"
@@ -187,15 +191,15 @@ export default function ProfilePage() {
                 </select>
               </div>
               <div className="flex gap-3">
-                <Button variant="secondary" onClick={() => setEditing(false)}>Cancel</Button>
-                <Button onClick={handleSave}>Save</Button>
+                <Button variant="secondary" onClick={() => setEditing(false)}>{t('common.cancel')}</Button>
+                <Button onClick={handleSave}>{t('common.save')}</Button>
               </div>
             </div>
           ) : (
             <dl className="space-y-2.5 text-sm">
-              <div className="flex justify-between"><dt className="text-slate-500">Date of birth</dt><dd className="text-slate-900 font-medium">{patient.date_of_birth}</dd></div>
-              <div className="flex justify-between"><dt className="text-slate-500">Phone</dt><dd className="text-slate-900 font-medium">{patient.phone_number || '—'}</dd></div>
-              <div className="flex justify-between"><dt className="text-slate-500">Language</dt><dd className="text-slate-900 font-medium">{patient.preferred_language === 'fr' ? 'Français' : 'English'}</dd></div>
+              <div className="flex justify-between"><dt className="text-slate-500">{t('profile.dob')}</dt><dd className="text-slate-900 font-medium">{patient.date_of_birth}</dd></div>
+              <div className="flex justify-between"><dt className="text-slate-500">{t('profile.phone')}</dt><dd className="text-slate-900 font-medium">{patient.phone_number || '—'}</dd></div>
+              <div className="flex justify-between"><dt className="text-slate-500">{t('profile.language')}</dt><dd className="text-slate-900 font-medium">{languageName}</dd></div>
             </dl>
           )}
         </Card>
@@ -203,12 +207,12 @@ export default function ProfilePage() {
 
       {/* Caregiver / emergency contact — no such data is collected today, so this is a safe fallback, not fabricated info */}
       <div>
-        <SectionHeader>Caregiver / Emergency Contact</SectionHeader>
+        <SectionHeader>{t('profile.caregiverTitle')}</SectionHeader>
         <Card className="mt-3">
           <EmptyState
             icon={HeartHandshake}
-            title="No caregiver or emergency contact on file"
-            description="This information isn't collected yet. Contact support if you'd like to add a caregiver to your account."
+            title={t('profile.caregiverEmptyTitle')}
+            description={t('profile.caregiverEmptyBody')}
           />
         </Card>
       </div>
@@ -216,53 +220,53 @@ export default function ProfilePage() {
       {/* Preferences / accessibility — read-only summary; edited from Settings to avoid duplicating that logic */}
       <div>
         <SectionHeader
-          action={<Link to="/dashboard/settings" className="text-xs text-teal-600 hover:underline flex items-center gap-1"><Settings2 className="h-3 w-3" /> Edit in Settings</Link>}
+          action={<Link to="/dashboard/settings" className="text-xs text-teal-600 hover:underline flex items-center gap-1"><Settings2 className="h-3 w-3" /> {t('profile.editInSettings')}</Link>}
         >
-          Preferences &amp; Accessibility
+          {t('profile.preferencesTitle')}
         </SectionHeader>
         <Card className="mt-3 divide-y divide-slate-100">
           <div className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
             <Globe className="h-4 w-4 text-teal-600 shrink-0" />
-            <p className="text-sm text-slate-700 flex-1">Preferred language</p>
-            <p className="text-sm font-medium text-slate-900">{patient.preferred_language === 'fr' ? 'Français' : 'English'}</p>
+            <p className="text-sm text-slate-700 flex-1">{t('profile.preferredLanguage')}</p>
+            <p className="text-sm font-medium text-slate-900">{languageName}</p>
           </div>
           <div className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
             {patient.notifications_enabled ? <Bell className="h-4 w-4 text-teal-600 shrink-0" /> : <BellOff className="h-4 w-4 text-slate-400 shrink-0" />}
-            <p className="text-sm text-slate-700 flex-1">Medication reminders</p>
-            <p className="text-sm font-medium text-slate-900">{patient.notifications_enabled ? 'On' : 'Off'}</p>
+            <p className="text-sm text-slate-700 flex-1">{t('profile.reminders')}</p>
+            <p className="text-sm font-medium text-slate-900">{patient.notifications_enabled ? t('common.on') : t('common.off')}</p>
           </div>
           <div className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
             {voice.isEnabled() ? <Volume2 className="h-4 w-4 text-teal-600 shrink-0" /> : <VolumeX className="h-4 w-4 text-slate-400 shrink-0" />}
-            <p className="text-sm text-slate-700 flex-1">Voice assistant</p>
-            <p className="text-sm font-medium text-slate-900">{voice.isEnabled() ? 'On' : 'Off'}</p>
+            <p className="text-sm text-slate-700 flex-1">{t('profile.voiceAssistant')}</p>
+            <p className="text-sm font-medium text-slate-900">{voice.isEnabled() ? t('common.on') : t('common.off')}</p>
           </div>
         </Card>
       </div>
 
       <div>
-        <SectionHeader>Security</SectionHeader>
+        <SectionHeader>{t('profile.securityTitle')}</SectionHeader>
         <Card className="mt-3">
           <h2 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
-            <KeyRound className="h-4 w-4 text-teal-600" /> Change Password
+            <KeyRound className="h-4 w-4 text-teal-600" /> {t('profile.changePassword')}
           </h2>
           {pwError && <div className="mb-3"><Alert variant="error" message={pwError} /></div>}
           {pwSuccess && <div className="mb-3"><Alert variant="success" message={pwSuccess} /></div>}
           <div className="space-y-4">
             <Input
-              label="Current password" type="password" value={pwForm.current}
+              label={t('profile.currentPassword')} type="password" value={pwForm.current}
               onChange={(e) => setPwForm({ ...pwForm, current: e.target.value })}
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
-                label="New password" type="password" value={pwForm.next}
+                label={t('profile.newPassword')} type="password" value={pwForm.next}
                 onChange={(e) => setPwForm({ ...pwForm, next: e.target.value })}
               />
               <Input
-                label="Confirm new password" type="password" value={pwForm.confirm}
+                label={t('profile.confirmPassword')} type="password" value={pwForm.confirm}
                 onChange={(e) => setPwForm({ ...pwForm, confirm: e.target.value })}
               />
             </div>
-            <Button onClick={handleChangePassword}>Update Password</Button>
+            <Button onClick={handleChangePassword}>{t('profile.updatePassword')}</Button>
           </div>
         </Card>
       </div>

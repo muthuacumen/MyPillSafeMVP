@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
@@ -8,6 +9,7 @@ interface DisclaimerModalProps {
 
 /** Cannot be dismissed by clicking outside — only the "I Understand" button closes it (Priority 5). */
 export function DisclaimerModal({ open, onAccept }: DisclaimerModalProps) {
+  const { t } = useTranslation();
   if (!open) return null;
 
   return (
@@ -24,17 +26,15 @@ export function DisclaimerModal({ open, onAccept }: DisclaimerModalProps) {
           </div>
           <div>
             <h2 id="disclaimer-title" className="font-semibold text-slate-900 text-lg">
-              Important Notice
+              {t('disclaimerModal.title')}
             </h2>
             <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-              MyPillSafe is a decision support tool only. It does not replace professional
-              medical advice. Always confirm medication information with a licensed
-              pharmacist or physician before taking any medication.
+              {t('disclaimerModal.body')}
             </p>
           </div>
         </div>
         <Button onClick={onAccept} className="w-full mt-6" size="lg">
-          I Understand
+          {t('disclaimerModal.accept')}
         </Button>
       </div>
     </div>

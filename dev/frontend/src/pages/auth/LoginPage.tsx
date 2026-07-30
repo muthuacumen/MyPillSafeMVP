@@ -42,10 +42,11 @@ export default function LoginPage() {
     }
   };
 
+  // Copy lives in `auth.features.*`; only the icon and the key stay here.
   const features = [
-    { icon: ScanLine, key: 'feature1', title: 'Prescription Scanning', desc: 'Reads your prescription and builds your personal medication profile' },
-    { icon: Activity, key: 'feature2', title: 'Pill Verification', desc: 'Checks a pill photo’s colour, shape, and imprint against your profile — not the whole formulary' },
-    { icon: ShieldCheck, key: 'feature3', title: 'Cited Answers', desc: 'Medication questions answered from Health Canada monographs, with citations, in your language' },
+    { icon: ScanLine, key: 'feature1' },
+    { icon: Activity, key: 'feature2' },
+    { icon: ShieldCheck, key: 'feature3' },
   ];
 
   return (
@@ -56,7 +57,7 @@ export default function LoginPage() {
         <div className="absolute -bottom-40 -left-20 h-[500px] w-[500px] rounded-full bg-white/8 blur-3xl" />
 
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
-          <Link to="/" className="inline-flex w-fit focus-visible:ring" aria-label="Back to home">
+          <Link to="/" className="inline-flex w-fit focus-visible:ring" aria-label={t('auth.backHome')}>
             <Logo onDark className="h-9" />
           </Link>
 
@@ -71,25 +72,25 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-4">
-              {features.map(({ icon: Icon, key, title, desc }) => (
+              {features.map(({ icon: Icon, key }) => (
                 <div key={key} className="flex items-start gap-4">
                   <div className="h-10 w-10 rounded-xl bg-white/15 border border-white/25 flex items-center justify-center shrink-0">
                     <Icon className="h-5 w-5 text-white" strokeWidth={1.8} />
                   </div>
                   <div>
-                    <p className="font-semibold text-white text-sm">{title}</p>
-                    <p className="text-teal-100/70 text-xs mt-0.5">{desc}</p>
+                    <p className="font-semibold text-white text-sm">{t(`auth.features.${key}.title`)}</p>
+                    <p className="text-teal-100/70 text-xs mt-0.5">{t(`auth.features.${key}.desc`)}</p>
                   </div>
                 </div>
               ))}
             </div>
 
             <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-teal-100/60">
-              <span>Capstone MVP</span>
+              <span>{t('auth.badge')}</span>
               <span>·</span>
-              <span>Decision-support only</span>
+              <span>{t('auth.decisionSupportOnly')}</span>
               <span>·</span>
-              <span>Always confirm with your pharmacist</span>
+              <span>{t('auth.alwaysConfirm')}</span>
             </div>
           </div>
 
@@ -108,7 +109,7 @@ export default function LoginPage() {
         <div className="relative w-full max-w-md animate-fade-in">
           {/* Mobile logo */}
           <div className="flex items-center mb-8 lg:hidden">
-            <Link to="/" aria-label="Back to home">
+            <Link to="/" aria-label={t('auth.backHome')}>
               <Logo className="h-9" />
             </Link>
           </div>
@@ -136,7 +137,7 @@ export default function LoginPage() {
               <Input
                 label={t('auth.login.email')}
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t('auth.placeholders.email')}
                 autoComplete="email"
                 autoFocus
                 icon={<Mail className="h-4 w-4" />}

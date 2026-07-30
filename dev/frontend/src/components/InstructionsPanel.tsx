@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Loader2, Languages } from 'lucide-react';
 import { instructionsApi } from '@/api/instructions';
 import type { Prescription } from '@/types';
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function InstructionsPanel({ prescription }: Props) {
+  const { t } = useTranslation();
   const [lang, setLang] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -37,7 +39,7 @@ export default function InstructionsPanel({ prescription }: Props) {
       });
       setMessage(data.message);
     } catch {
-      setError('Could not load instructions. Please try again.');
+      setError(t('instructions.error'));
     } finally {
       setLoading(false);
     }
@@ -47,7 +49,7 @@ export default function InstructionsPanel({ prescription }: Props) {
     <div className="pt-3 border-t border-slate-100">
       <div className="flex items-center gap-1.5 mb-2">
         <Languages className="h-3.5 w-3.5 text-slate-400" />
-        <span className="text-xs font-medium text-slate-500">Read my instructions</span>
+        <span className="text-xs font-medium text-slate-500">{t('instructions.readMine')}</span>
       </div>
       <div className="flex gap-1 mb-2 flex-wrap">
         {LANGUAGES.map((l) => (

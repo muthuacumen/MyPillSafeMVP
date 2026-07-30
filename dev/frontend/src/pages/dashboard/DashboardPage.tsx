@@ -147,7 +147,11 @@ export default function DashboardPage() {
   const loadPrescriptions = useCallback(() => {
     setPrescriptionsError('');
     setPrescriptions(null);
-    prescriptionsApi.listMine()
+    // APPROVED only -- today's schedule is a schedule-bearing surface, and a
+    // pending scan proposal has no place on it until the user approves it
+    // (FixbyOPUS3 §0.1). Unreviewed medications surface on My Medications,
+    // which is where they get reviewed.
+    prescriptionsApi.listApproved()
       .then(({ data }) => {
         setPrescriptions(data);
         voice.speak(`Good morning ${firstName}. You have ${data.length} medication${data.length === 1 ? '' : 's'} scheduled today.`);
@@ -273,11 +277,11 @@ export default function DashboardPage() {
             <Card>
               <EmptyState
                 icon={Pill}
-                title="No medications scheduled yet"
-                description="Scan a prescription label to start tracking your daily schedule and reminders."
+                title={t('dashboard.noSchedTitle')}
+                description={t('dashboard.noSchedDesc')}
                 action={
                   <Link to="/dashboard/scan-prescription" className="btn-primary min-h-[44px]">
-                    <ScanLine className="h-4 w-4" /> Scan a prescription
+                    <ScanLine className="h-4 w-4" /> {t('dashboard.scanAPrescription')}
                   </Link>
                 }
               />
@@ -295,7 +299,7 @@ export default function DashboardPage() {
                       })()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Next dose</p>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">{t('dashboard.nextDose')}</p>
                       <p className="text-3xl font-extrabold text-slate-900 mt-1 truncate">
                         {nextDose.row.prescription.drug_name}
                         {nextDose.row.prescription.dosage ? ` · ${nextDose.row.prescription.dosage}` : ''}
@@ -303,8 +307,11 @@ export default function DashboardPage() {
                       <p className="text-lg font-semibold text-slate-600 mt-1">
                         {nextDose.row.label} ·{' '}
                         {nextDose.minutesUntil < 60
-                          ? `in ${nextDose.minutesUntil} min`
-                          : `in ${Math.floor(nextDose.minutesUntil / 60)}h ${nextDose.minutesUntil % 60}m`}
+                          ? t('dashboard.inMinutes', { n: nextDose.minutesUntil })
+                          : t('dashboard.inHoursMinutes', {
+                              h: Math.floor(nextDose.minutesUntil / 60),
+                              m: nextDose.minutesUntil % 60,
+                            })}
                       </p>
                     </div>
                   </div>
@@ -316,17 +323,17 @@ export default function DashboardPage() {
                 <Card padding="sm" className="text-center">
                   <Hourglass className="h-4 w-4 text-slate-400 mx-auto" />
                   <p className="text-xl font-bold text-slate-900 mt-1">{scheduleStatus.upcoming}</p>
-                  <p className="text-xs text-slate-500">Upcoming</p>
+                  <p className="text-xs text-slate-500">{t('dashboard.upcoming')}</p>
                 </Card>
                 <Card padding="sm" className="text-center border-teal-200 bg-teal-50/40">
                   <CalendarClock className="h-4 w-4 text-teal-600 mx-auto" />
                   <p className="text-xl font-bold text-teal-700 mt-1">{scheduleStatus.due}</p>
-                  <p className="text-xs text-teal-700">Due now</p>
+                  <p className="text-xs text-teal-700">{t('dashboard.dueNow')}</p>
                 </Card>
                 <Card padding="sm" className="text-center">
                   <CheckCircle2 className="h-4 w-4 text-slate-400 mx-auto" />
                   <p className="text-xl font-bold text-slate-900 mt-1">{scheduleStatus.past}</p>
-                  <p className="text-xs text-slate-500">Past</p>
+                  <p className="text-xs text-slate-500">{t('dashboard.past')}</p>
                 </Card>
               </div>
 
@@ -374,7 +381,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-4">
-          <SectionHeader>Safety alerts</SectionHeader>
+          <SectionHeader>{t('dashboard.safetyAlerts')}</SectionHeader>
           {scansError ? (
             <Card padding="sm"><ErrorState message={scansError} onRetry={loadScans} /></Card>
           ) : scans === null ? (
@@ -384,7 +391,7 @@ export default function DashboardPage() {
               <div className="h-8 w-8 rounded-lg bg-success-bg flex items-center justify-center shrink-0">
                 <ShieldCheck className="h-4 w-4 text-success-text" />
               </div>
-              <p className="text-xs text-slate-600">No safety alerts — your recent scans matched your prescriptions.</p>
+              <p className="text-xs text-slate-600">{t('dashboard.noSafetyAlerts')}</p>
             </Card>
           ) : (
             <div className="space-y-2.5">
@@ -400,7 +407,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          <SectionHeader>Reminders</SectionHeader>
+          <SectionHeader>{t('dashboard.reminders')}</SectionHeader>
           <Card padding="sm" className="flex items-center gap-3">
             <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${patient?.notifications_enabled ? 'bg-teal-50' : 'bg-slate-100'}`}>
               {patient?.notifications_enabled ? (
@@ -411,10 +418,14 @@ export default function DashboardPage() {
             </div>
             <div>
               <p className="text-xs font-semibold text-slate-900">
-                {patient ? (patient.notifications_enabled ? 'Reminders are on' : 'Reminders are off') : 'Loading…'}
+                {patient
+                  ? patient.notifications_enabled
+                    ? t('dashboard.remindersOn')
+                    : t('dashboard.remindersOff')
+                  : t('common.loading')}
               </p>
               <p className="text-xs text-slate-500 mt-0.5">
-                <Link to="/dashboard/settings" className="text-teal-600 hover:underline">Manage in Settings</Link>
+                <Link to="/dashboard/settings" className="text-teal-600 hover:underline">{t('dashboard.manageInSettings')}</Link>
               </p>
             </div>
           </Card>

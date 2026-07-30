@@ -83,7 +83,11 @@ export function startDoseReminderEngine(): () => void {
 
   const tick = async () => {
     try {
-      const { data: prescriptions } = await prescriptionsApi.listMine();
+      // APPROVED only. A medication a user has not reviewed must never fire
+      // a reminder -- a scanned proposal is not yet a prescription
+      // (FixbyOPUS3 §0.1). The backend enforces the same filter; this is the
+      // caller stating its intent, not the safety boundary itself.
+      const { data: prescriptions } = await prescriptionsApi.listApproved();
       const events = computeTodaysDoseEvents(prescriptions);
       const fired = getFired();
       const now = Date.now();

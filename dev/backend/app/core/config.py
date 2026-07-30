@@ -22,7 +22,6 @@ class Settings(BaseSettings):
     FRONTEND_ORIGIN: str = "http://localhost:5173"
 
     OPENAPI_ENABLED: bool = True
-    ML_PIPELINE_ENABLED: bool = False
     # Real PaddleOCR prescription parsing. Was left off by default, which meant
     # every upload silently returned canned demo text regardless of the image —
     # keep this on so a fresh clone (no .env override) doesn't regress into
@@ -53,6 +52,26 @@ class Settings(BaseSettings):
     # BRAINS_SERVICE_URL directly with NO health check in that case, so every
     # existing dev setup / test stays byte-identical in behaviour and latency.
     BRAINS_SERVICE_URLS: str = ""
+
+    # --- Rx parsing (FixbyOPUS3) --------------------------------------------
+    # The medication PROPOSER is swappable behind these two values; the
+    # guardrails (app/services/rx_guardrails.py) and the server-side reminder
+    # -time derivation are proposer-agnostic and ALWAYS apply, so flipping
+    # either flag changes who proposes, never which safety rules run.
+    #
+    # RX_LLM_PARSE_ENABLED=false is the kill-switch: the deterministic regex
+    # parser proposes instead, still guarded, still derived. It is also what
+    # happens automatically whenever the sidecar or Ollama is unreachable --
+    # honest degradation, never a fabricated prescription.
+    RX_LLM_PARSE_ENABLED: bool = True
+    # 'qwen' -> the sidecar's local qwen2.5:7b-instruct (Muthu's durable
+    # 2026-07-28 model decision: self-contained, zero marginal cost).
+    # 'regex' -> skip the LLM entirely, same as RX_LLM_PARSE_ENABLED=false.
+    # A future 'haiku' value is DOCUMENTED, not implemented: Claude Haiku 4.5
+    # measured strictly better on the 2026-07-28 evaluation (12/12 labels,
+    # 50/50 fields, 0 safety events vs qwen's 11/12, 49/50, 0) and is recorded
+    # as a finding -- see documentation/evaluation/rx_parsing/README.md.
+    RX_PARSE_BACKEND: str = "qwen"
 
 
 settings = Settings()

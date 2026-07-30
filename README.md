@@ -34,8 +34,9 @@ in Canada facing language barriers** who manage multiple medications:
 7. [Test Suite & CI](#test-suite--ci)
 8. [Docker & Cloud Deploy](#docker--cloud-deploy)
 9. [Known Limitations](#known-limitations-by-design)
-10. [Research Grounding](#research-grounding)
-11. [Team](#team)
+10. [Measured Limitations: Prescription Scanning](#measured-limitations-prescription-scanning)
+11. [Research Grounding](#research-grounding)
+12. [Team](#team)
 
 ---
 
@@ -57,8 +58,6 @@ local sidecar microservice; the other two live inside the app itself.
 ┌──────────────────────────────────────────────────────────────────────────┐
 │  BROWSER — React 18 SPA + PWA (Vite :5173)                               │
 │  Public: Landing · About chain (Vision/Problem/Science/Team) · Contact   │
-│          + floating MyPillSafe Assistant (project explainer, EN/FR,      │
-│            voice input; medication questions redirect to guarded Q&A)    │
 │  Patient: Dashboard · Scan Prescription · Scan Pill · My Medications ·   │
 │           Ask (Q&A) · Scan History · Help · Profile · Settings           │
 │  Admin:   Stats · Users                                                  │
@@ -127,7 +126,7 @@ PillSafe/                        (this repo — app layer only)
 │   └── integration/             App×brains integration plan, phase results,
 │                                LOCAL_TESTING.md (launch guide + seeded test accounts)
 ├── dev/backend/                 FastAPI app — auth, patients, prescriptions (OB5 OCR +
-│                                DIN linking), pill-scan proxy, Q&A (CB4), assistant,
+│                                DIN linking), pill-scan proxy, Q&A (CB4),
 │                                reminders/instructions, scans, admin
 ├── dev/brains/                  Brains sidecar (FastAPI :8100) — serves the frozen
 │                                IMB1_v0 / SB2 / BB3 packages to the app
@@ -164,8 +163,7 @@ monograph Q&A report the sidecar as unavailable instead of crashing.
 copy .env.example .env
 ```
 Defaults work out of the box. Add an Anthropic key as `LLM_API_KEY` to enable CB4
-(generated Q&A and assistant answers); without a key those paths fall back or degrade
-gracefully.
+(generated Q&A answers); without a key those paths fall back or degrade gracefully.
 
 ### 2. Brains sidecar (Terminal 1, optional but recommended, :8100)
 
@@ -183,7 +181,7 @@ cd dev\backend
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
-pip install -r requirements-optional.txt   # PaddleOCR (Rx scanning), Claude SDK, voice STT
+pip install -r requirements-optional.txt   # Claude SDK (CB4)
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 API docs: <http://127.0.0.1:8000/docs> · Health: <http://127.0.0.1:8000/health>
@@ -202,8 +200,8 @@ Open **<http://localhost:5173>**. Chrome's address-bar install icon installs the
 
 See **[documentation/integration/LOCAL_TESTING.md](documentation/integration/LOCAL_TESTING.md)**
 for five pre-seeded patient accounts (each with three confirmed real OTC medications),
-suggested end-to-end flows (pill verify/reject/abstain, Q&A with citations, assistant
-widget, French paths), and expected timing behaviour.
+suggested end-to-end flows (pill verify/reject/abstain, Q&A with citations, French
+paths), and expected timing behaviour.
 
 Useful to know:
 
@@ -254,7 +252,6 @@ take `Authorization: Bearer <token>`. Errors use one envelope:
 | Reference | `GET /reference/search` | Authenticated proxy to the sidecar's DIN name search |
 | Pill scan | `POST /analyze/pill/v2` | The only pill endpoint: sidecar IMB1→SB2, returns verify/reject/abstain + per-attribute breakdown + disclaimer; empty profile short-circuits |
 | Q&A (BB3→CB4) | `POST /qa/chat` | Resolver statuses (confirm, pick-list, refusals) surface as real UI flows; answers cite DIN-scoped monograph sections |
-| Assistant | `POST /assistant/chat` · `POST /assistant/voice` | Public project-explainer widget (KB + CB4, EN/FR, speech-to-text); medication questions are redirected to the guarded Q&A |
 | Reminders / Instructions | `POST /reminders/message` · `POST /instructions/message` | Template-based, en/fr/ar/es, zero external calls |
 | Scans | `GET /scans/me` | Safety Records history (verify/reject/abstain per scan) |
 | Contact | `POST /contact` | Public form |
@@ -277,8 +274,7 @@ venv\Scripts\python.exe -m pytest tests/ -v
 The backend suite covers auth, patients, prescriptions (incl. multi-medication OCR
 parsing and DIN suggestion/confirmation), the pill-scan proxy (flag off/on, sidecar-down
 degradation, empty-profile short-circuit), Q&A (CB4 called/mocked, guard retry, offline
-fallback), the assistant (intent gate, confidence zones, rate limiting), reminders,
-instructions, scans, contact, and admin.
+fallback), reminders, instructions, scans, contact, and admin.
 
 CI (GitHub Actions) runs the backend suite plus frontend `type-check` and `build` on
 every push to `main`. The brains sidecar has its own smoke test
@@ -324,6 +320,24 @@ five-brain system.
 - **Instruction sentences are template-based** (en/fr/ar/es) built from structured fields,
   not live translation of the OCR text.
 - **PWA install needs HTTPS** off localhost; camera access likewise.
+
+---
+
+## Measured Limitations: Prescription Scanning
+
+Label reading is the one pipeline whose limits are *measured and published* rather than
+described. The full experiment record — 24 evaluation labels with expected answers, a
+three-system comparison (rule-based parser / local qwen2.5:7b / Claude Haiku 4.5), the
+shipped pipeline's own acceptance run, and the script that reproduces all of it — lives in:
+
+**[`documentation/evaluation/rx_parsing/`](documentation/evaluation/rx_parsing/README.md)**
+
+Headlines, in counts rather than percentages because the sample is 24 labels: on the 12
+held-out labels the rule-based parser scored 1/12 with **2 safety events**; the shipped
+local-model pipeline scores 11/12 with **0**. Haiku 4.5 measured 12/12 and is recorded as a
+finding, not wired as a dependency. What still fails, and what has not been measured at all,
+is written down in the same document. The user-facing version of this disclosure is at
+`/about/brains/prescription-reader`.
 
 ---
 

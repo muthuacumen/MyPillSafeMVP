@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Pill, ScanLine, Trash2, Clock4, ImageIcon, MessageCircleQuestion } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Pill, ScanLine, Trash2, Clock4, ImageIcon, MessageCircleQuestion, CameraOff } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
@@ -8,6 +9,7 @@ import ReminderAudio from '@/components/ReminderAudio';
 import PrescriptionImageModal from '@/components/PrescriptionImageModal';
 import InstructionsPanel from '@/components/InstructionsPanel';
 import { DinLinkPanel } from '@/components/DinLinkPanel';
+import { MedicationReviewCard } from '@/components/MedicationReviewCard';
 import { prescriptionsApi } from '@/api/prescriptions';
 import { useVoicePageAnnounce } from '@/hooks/useVoicePageAnnounce';
 import { voice } from '@/lib/voiceAssistant';
@@ -22,7 +24,8 @@ const SLOT_BADGE: Record<string, string> = {
 };
 
 export default function MyMedicationsPage() {
-  useVoicePageAnnounce('My Medications');
+  const { t } = useTranslation();
+  useVoicePageAnnounce(t('meds.title'));
   const firstName = useAuthStore((s) => s.user?.first_name) || 'there';
   const [prescriptions, setPrescriptions] = useState<Prescription[] | null>(null);
   const [error, setError] = useState('');
@@ -33,63 +36,98 @@ export default function MyMedicationsPage() {
     try {
       const { data } = await prescriptionsApi.listMine();
       setPrescriptions(data);
-      voice.speak(`You have ${data.length} active prescription${data.length === 1 ? '' : 's'}.`);
+      voice.speak(
+        data.length === 1 ? t('meds.announceOne') : t('meds.announceMany', { count: data.length }),
+      );
     } catch {
-      setError('Could not load your medications. Please try again.');
+      setError(t('meds.loadError'));
     }
-  }, []);
+  }, [t]);
+
+  // Pending medications are PROPOSALS from a scan -- they carry no reminders
+  // and are not part of the medication list until the user approves them, so
+  // they render in their own amber review panel above the real list rather
+  // than mixed in with it (FixbyOPUS3 Task A4).
+  const pending = prescriptions?.filter((p) => p.review_status === 'pending') ?? [];
+  const approved = prescriptions?.filter((p) => p.review_status !== 'pending') ?? [];
+
+  const handleApproved = (updated: Prescription) =>
+    setPrescriptions((prev) => prev?.map((p) => (p.id === updated.id ? updated : p)) ?? null);
 
   useEffect(() => {
     load();
   }, [load]);
 
   const handleRemove = async (id: string) => {
-    if (!window.confirm('Remove this medication from your active list?')) return;
+    if (!window.confirm(t('meds.removeConfirm'))) return;
     await prescriptionsApi.remove(id);
     setPrescriptions((prev) => prev?.filter((p) => p.id !== id) ?? null);
   };
 
   const handleConfirmDin = async (id: string, din: string) => {
     const { data } = await prescriptionsApi.update(id, { din });
-    setPrescriptions(
-      (prev) => prev?.map((p) => (p.id === id ? { ...p, din: data.din, din_confirmed: data.din_confirmed } : p)) ?? null,
-    );
+    // Take the server's row wholesale rather than cherry-picking fields. The
+    // earlier version merged only `din` and `din_confirmed`, which silently
+    // dropped `pill_verifiable` -- resolved by the backend during this very
+    // call -- so the "can't be checked by photo" badge did not appear until
+    // the next page load. That is the one moment it matters most: the person
+    // who just linked an insulin DIN is exactly who needs telling. Spreading
+    // the response also stops the next field added to PrescriptionOut from
+    // reintroducing the same class of bug.
+    setPrescriptions((prev) => prev?.map((p) => (p.id === id ? { ...p, ...data } : p)) ?? null);
     setDinEditingId(null);
   };
 
   return (
     <div className="space-y-6 page-enter max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">My Medications</h1>
+        <h1 className="text-2xl font-bold text-slate-900">{t('meds.title')}</h1>
         <Link to="/dashboard/scan-prescription">
           <Button>
-            <ScanLine className="h-4 w-4" /> Add Prescription
+            <ScanLine className="h-4 w-4" /> {t('meds.add')}
           </Button>
         </Link>
       </div>
 
       {error && <Alert variant="error" message={error} />}
 
+      {pending.length > 0 && (
+        <section className="space-y-4" aria-labelledby="review-heading">
+          <div>
+            <h2 id="review-heading" className="text-lg font-bold text-slate-900">
+              {t('review.title')}
+            </h2>
+            <p className="text-sm text-slate-600 mt-1">{t('review.subtitle')}</p>
+          </div>
+          {pending.map((p) => (
+            <MedicationReviewCard
+              key={p.id}
+              prescription={p}
+              onApproved={handleApproved}
+              onDinConfirmed={(din) => handleConfirmDin(p.id, din)}
+            />
+          ))}
+        </section>
+      )}
+
       {prescriptions && prescriptions.length === 0 && (
         <Card className="text-center py-14">
           <div className="h-16 w-16 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center mx-auto mb-4">
             <Pill className="h-8 w-8 text-teal-600" />
           </div>
-          <p className="font-semibold text-slate-900">No medications yet</p>
-          <p className="text-sm text-slate-500 mt-1.5 max-w-sm mx-auto">
-            Scan your first prescription label and we&apos;ll keep track of your dosage and schedule.
-          </p>
+          <p className="font-semibold text-slate-900">{t('meds.emptyTitle')}</p>
+          <p className="text-sm text-slate-500 mt-1.5 max-w-sm mx-auto">{t('meds.emptyBody')}</p>
           <Link to="/dashboard/scan-prescription" className="inline-block mt-5">
             <Button size="lg">
-              <ScanLine className="h-4 w-4" /> Scan Your First Prescription
+              <ScanLine className="h-4 w-4" /> {t('meds.emptyCta')}
             </Button>
           </Link>
         </Card>
       )}
 
-      {prescriptions && prescriptions.length > 0 && (
+      {approved.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {prescriptions.map((p) => (
+          {approved.map((p) => (
             <Card key={p.id} className="space-y-3">
               <div className="flex items-start justify-between">
                 <div>
@@ -99,7 +137,7 @@ export default function MyMedicationsPage() {
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
-                    aria-label={`View original prescription for ${p.drug_name}`}
+                    aria-label={t('meds.viewOriginal', { name: p.drug_name })}
                     onClick={() => setViewingImageId(p.id)}
                     className="h-11 w-11 rounded-xl flex items-center justify-center text-slate-400 hover:text-teal-600 hover:bg-teal-50 transition-colors"
                   >
@@ -107,7 +145,7 @@ export default function MyMedicationsPage() {
                   </button>
                   <button
                     type="button"
-                    aria-label={`Remove ${p.drug_name}`}
+                    aria-label={t('meds.remove', { name: p.drug_name })}
                     onClick={() => handleRemove(p.id)}
                     className="h-11 w-11 rounded-xl flex items-center justify-center text-slate-400 hover:text-danger-text hover:bg-danger-bg transition-colors"
                   >
@@ -119,12 +157,15 @@ export default function MyMedicationsPage() {
               <div className="flex flex-wrap gap-2">
                 {p.frequency_type === 'PRN' ? (
                   <span className="badge bg-amber-50 text-amber-700 border border-amber-200">
-                    As needed{p.max_daily_dose ? ` · max ${p.max_daily_dose}/24h` : ''}
+                    {t('meds.asNeeded')}
+                    {p.max_daily_dose ? ` · ${t('meds.maxPerDay', { dose: p.max_daily_dose })}` : ''}
                   </span>
                 ) : (
                   p.time_slots.map((slot) => (
                     <span key={slot} className={`badge ${SLOT_BADGE[slot] ?? ''}`}>
-                      {slot.charAt(0).toUpperCase() + slot.slice(1)}
+                      {/* Unknown slots fall back to the raw value rather than
+                          rendering a bare i18n key at the user. */}
+                      {t(`meds.slots.${slot}`, { defaultValue: slot })}
                     </span>
                   ))
                 )}
@@ -145,7 +186,7 @@ export default function MyMedicationsPage() {
                   to={`/dashboard/qa?din=${encodeURIComponent(p.din)}&name=${encodeURIComponent(p.drug_name)}`}
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-700 underline w-fit"
                 >
-                  <MessageCircleQuestion className="h-3.5 w-3.5" /> Ask about this medication
+                  <MessageCircleQuestion className="h-3.5 w-3.5" /> {t('meds.askAbout')}
                 </Link>
               )}
 
@@ -157,23 +198,37 @@ export default function MyMedicationsPage() {
                   onCancel={() => setDinEditingId(null)}
                 />
               ) : p.din_confirmed && p.din ? (
-                <div className="flex items-center justify-between gap-3 rounded-lg border border-success-border bg-success-bg px-3 py-2">
-                  <p className="text-xs text-success-text font-medium">Linked to DIN {p.din}</p>
-                  <button
-                    type="button"
-                    className="text-xs font-semibold text-teal-700 underline shrink-0"
-                    onClick={() => setDinEditingId(p.id)}
-                  >
-                    Change
-                  </button>
-                </div>
+                <>
+                  <div className="flex items-center justify-between gap-3 rounded-lg border border-success-border bg-success-bg px-3 py-2">
+                    <p className="text-xs text-success-text font-medium">
+                      {t('meds.linkedToDin', { din: p.din })}
+                    </p>
+                    <button
+                      type="button"
+                      className="text-xs font-semibold text-teal-700 underline shrink-0"
+                      onClick={() => setDinEditingId(p.id)}
+                    >
+                      {t('meds.change')}
+                    </button>
+                  </div>
+                  {/* Task B3. Rendered ONLY on an explicit `false` -- `null`
+                      means we could not establish it, and an unfounded
+                      "can't be checked by photo" would teach a user not to
+                      verify a pill they actually could verify. */}
+                  {p.pill_verifiable === false && (
+                    <p className="flex items-start gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+                      <CameraOff className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                      {t('review.notPillVerifiable')}
+                    </p>
+                  )}
+                </>
               ) : (
                 <button
                   type="button"
                   className="text-xs font-semibold text-teal-700 underline text-left"
                   onClick={() => setDinEditingId(p.id)}
                 >
-                  Link this medication to a DIN
+                  {t('meds.linkToDin')}
                 </button>
               )}
             </Card>

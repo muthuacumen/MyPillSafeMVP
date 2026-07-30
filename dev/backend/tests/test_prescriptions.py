@@ -167,6 +167,43 @@ async def test_upload_prescription_creates_one_row_per_medication(
 
 
 @pytest.mark.asyncio
+async def test_upload_prescription_with_garbled_realistic_ocr_text_never_crashes(
+    client: AsyncClient, auth_headers: dict, monkeypatch: pytest.MonkeyPatch
+):
+    """FixbySonnet1 Task 1 regression: a real pharmacy label's raw OCR text
+    (no RX markers, >1,000 chars of noisy header/footer text) used to crash
+    the INSERT with StringDataRightTruncationError because the whole-dump
+    fallback put the entire OCR text into frequency_text (String(255)) and
+    a pharmacy header into drug_name. Must now be a clean 201."""
+    monkeypatch.setattr(settings, "OCR_PIPELINE_ENABLED", True)
+
+    noise_line = "SPOT HOSPITAL PHARMACY DIVISION RECEIPT CODE 998877 " * 20
+    garbled_raw_text = (noise_line + "\n") * 3 + (
+        "Amoxicillin 500mg Capsules\n"
+        "Take 1 capsule three times daily with food for infection - do not exceed 21 capsules\n"
+    ) + (noise_line + "\n") * 10
+    assert len(garbled_raw_text) > 1000
+
+    async def _fake_extract_text(image_bytes: bytes, filename: str, content_type: str) -> str:
+        return garbled_raw_text
+
+    monkeypatch.setattr(ocr_service, "extract_text", _fake_extract_text)
+
+    name, content, ctype = _fake_image()
+    response = await client.post(
+        "/api/v1/prescriptions",
+        headers=auth_headers,
+        files={"image": (name, content, ctype)},
+    )
+    assert response.status_code == 201
+    data = response.json()
+    assert len(data) == 1
+    assert "HOSPITAL" not in data[0]["drug_name"].upper()
+    assert len(data[0]["drug_name"]) <= 255
+    assert len(data[0]["frequency_text"] or "") <= 255
+
+
+@pytest.mark.asyncio
 async def test_get_prescription_image_requires_ownership(client: AsyncClient, auth_headers: dict):
     name, content, ctype = _fake_image()
     create_resp = await client.post(

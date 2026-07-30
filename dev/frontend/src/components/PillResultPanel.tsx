@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import {
   AlertTriangle,
   ArrowRight,
@@ -29,13 +31,16 @@ interface PillResultPanelProps {
 // normal zero-diff rule (binding rule 1) -- it may only add this persistent,
 // non-dismissible, identically-styled strip to every result state; decision
 // colour tokens and all existing state logic/rendering are untouched.
-const STANDARD_DISCLAIMER = 'Decision support only — always confirm with your pharmacist or physician.';
-
-function SafetyStrip({ text }: { text?: string | null }) {
+//
+// FixbySonnet1 Task 7: every string literal below was extracted to an i18n
+// key (`pillResult.*`, i18n/locales/{en,fr}.json) -- non-negotiable #3 still
+// applies, so this was a byte-for-byte copy swap only: no decision-state
+// logic, colour token, or JSX structure changed.
+function SafetyStrip({ text, t }: { text?: string | null; t: TFunction }) {
   return (
     <div className="flex items-start gap-2 rounded-xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700">
       <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5 text-slate-500" />
-      <span>{text || STANDARD_DISCLAIMER}</span>
+      <span>{text || t('pillResult.disclaimerDefault')}</span>
     </div>
   );
 }
@@ -43,34 +48,34 @@ function SafetyStrip({ text }: { text?: string | null }) {
 /** Builds the "imprint matched exactly; colour and shape matched" sentence
  * from a candidate's per-attribute breakdown (SB2 CONTRACT.md §4 -- this
  * breakdown is mandatory to surface, not debug data). */
-function describeBreakdown(b: PillCandidateBreakdown): string {
+function describeBreakdown(t: TFunction, b: PillCandidateBreakdown): string {
   let imprintPart: string;
   if (b.imprint_exact) {
-    imprintPart = 'imprint matched exactly';
+    imprintPart = t('pillResult.breakdown.imprintExact');
   } else if (b.ask_to_flip) {
-    imprintPart = "imprint couldn't be read on this side";
+    imprintPart = t('pillResult.breakdown.imprintAskToFlip');
   } else if (typeof b.imprint_fuzzy === 'number' && b.imprint_fuzzy > 0) {
-    imprintPart = 'imprint matched closely';
+    imprintPart = t('pillResult.breakdown.imprintFuzzy');
   } else {
-    imprintPart = "imprint couldn't be confirmed";
+    imprintPart = t('pillResult.breakdown.imprintUnconfirmed');
   }
 
   const colourOk = b.colour_score >= 0.75;
   const shapeOk = b.shape_score >= 0.99;
   let restPart: string;
-  if (colourOk && shapeOk) restPart = 'colour and shape matched';
-  else if (colourOk) restPart = 'colour matched, shape was uncertain';
-  else if (shapeOk) restPart = 'shape matched, colour was uncertain';
-  else restPart = 'colour and shape were uncertain';
+  if (colourOk && shapeOk) restPart = t('pillResult.breakdown.colourAndShapeMatched');
+  else if (colourOk) restPart = t('pillResult.breakdown.colourMatchedShapeUncertain');
+  else if (shapeOk) restPart = t('pillResult.breakdown.shapeMatchedColourUncertain');
+  else restPart = t('pillResult.breakdown.colourAndShapeUncertain');
 
   return `${imprintPart}; ${restPart}.`;
 }
 
-function CandidateHeadline({ candidate }: { candidate: PillRankedCandidate }) {
+function CandidateHeadline({ candidate, t }: { candidate: PillRankedCandidate; t: TFunction }) {
   return (
     <>
       <p className="font-semibold text-slate-900">
-        {candidate.product ?? 'Unknown product'}
+        {candidate.product ?? t('pillResult.unknownProduct')}
         {candidate.strength ? ` · ${candidate.strength}` : ''}
       </p>
       <p className="text-xs text-slate-500 mt-0.5">DIN {candidate.din}</p>
@@ -78,14 +83,9 @@ function CandidateHeadline({ candidate }: { candidate: PillRankedCandidate }) {
   );
 }
 
-function ShadowFusionHint({ show }: { show: boolean | undefined }) {
+function ShadowFusionHint({ show, t }: { show: boolean | undefined; t: TFunction }) {
   if (!show) return null;
-  return (
-    <Alert
-      variant="info"
-      message="Image quality note: possible shadow interference — consider retaking on a flat, well-lit surface."
-    />
-  );
+  return <Alert variant="info" message={t('pillResult.shadowFusionHint')} />;
 }
 
 /** Renders the three SB2 decision states (verify/reject/abstain) as
@@ -94,6 +94,7 @@ function ShadowFusionHint({ show }: { show: boolean | undefined }) {
  * styled like reject (see documentation/integration/INTEGRATION_PLAN.md
  * Phase 3). */
 export function PillResultPanel({ result, onRetake, onGoToPrescriptions }: PillResultPanelProps) {
+  const { t } = useTranslation();
   const [selectedDin, setSelectedDin] = useState<string | null>(null);
 
   if (result.status === 'no_profile') {
@@ -103,13 +104,12 @@ export function PillResultPanel({ result, onRetake, onGoToPrescriptions }: PillR
           <div className="h-14 w-14 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center mx-auto mb-4">
             <Info className="h-7 w-7 text-teal-600" />
           </div>
-          <p className="font-semibold text-slate-900">No confirmed medications yet</p>
+          <p className="font-semibold text-slate-900">{t('pillResult.noProfile.title')}</p>
           <p className="text-sm text-slate-500 mt-1.5 max-w-sm mx-auto">
-            {result.message ??
-              'Pill checking works against your confirmed medications. Scan a prescription and confirm its DIN, then come back here.'}
+            {result.message ?? t('pillResult.noProfile.defaultMessage')}
           </p>
           <Button className="mt-5" onClick={onGoToPrescriptions}>
-            Scan a Prescription <ArrowRight className="h-4 w-4" />
+            {t('pillResult.noProfile.cta')} <ArrowRight className="h-4 w-4" />
           </Button>
         </Card>
       </div>
@@ -120,19 +120,19 @@ export function PillResultPanel({ result, onRetake, onGoToPrescriptions }: PillR
   if (record && !record.detected) {
     return (
       <div className="space-y-4 animate-slide-up">
-        <Alert variant="warning" message="Couldn't find a pill in that photo." />
+        <Alert variant="warning" message={t('pillResult.notDetected.alert')} />
         <Card>
-          <p className="text-sm font-semibold text-slate-900 mb-2">Tips for a clearer photo</p>
+          <p className="text-sm font-semibold text-slate-900 mb-2">{t('pillResult.notDetected.tipsTitle')}</p>
           <ul className="text-sm text-slate-600 space-y-1.5 list-disc list-inside">
-            <li>Make sure the capture card is fully inside the frame</li>
-            <li>Turn on your camera flash, or use bright, even lighting</li>
-            <li>Place the pill on a flat surface, away from shadows</li>
-            <li>Photograph one pill at a time</li>
+            <li>{t('pillResult.notDetected.tip1')}</li>
+            <li>{t('pillResult.notDetected.tip2')}</li>
+            <li>{t('pillResult.notDetected.tip3')}</li>
+            <li>{t('pillResult.notDetected.tip4')}</li>
           </ul>
         </Card>
-        <SafetyStrip />
+        <SafetyStrip t={t} />
         <Button variant="secondary" onClick={onRetake}>
-          <RefreshCw className="h-4 w-4" /> Try Again
+          <RefreshCw className="h-4 w-4" /> {t('pillResult.notDetected.tryAgain')}
         </Button>
       </div>
     );
@@ -141,7 +141,7 @@ export function PillResultPanel({ result, onRetake, onGoToPrescriptions }: PillR
   const match = result.match;
   if (!match) return null;
 
-  const disclaimer = <SafetyStrip text={match.disclaimer} />;
+  const disclaimer = <SafetyStrip text={match.disclaimer} t={t} />;
 
   if (match.decision === 'verify') {
     const top = match.ranked_candidates[0];
@@ -152,15 +152,15 @@ export function PillResultPanel({ result, onRetake, onGoToPrescriptions }: PillR
             <CheckCircle2 className="h-6 w-6 text-success-text shrink-0" />
             <div className="flex-1">
               {top ? (
-                <CandidateHeadline candidate={top} />
+                <CandidateHeadline candidate={top} t={t} />
               ) : (
                 <p className="font-semibold text-slate-900">DIN {match.matched_din}</p>
               )}
-              {top && <p className="text-sm text-slate-700 mt-2">{describeBreakdown(top.breakdown)}</p>}
+              {top && <p className="text-sm text-slate-700 mt-2">{describeBreakdown(t, top.breakdown)}</p>}
             </div>
           </div>
         </Card>
-        <ShadowFusionHint show={record?.shadow_fusion_suspected} />
+        <ShadowFusionHint show={record?.shadow_fusion_suspected} t={t} />
         {match.matched_din && (
           <Link
             to={`/dashboard/qa?din=${encodeURIComponent(match.matched_din)}${
@@ -168,12 +168,12 @@ export function PillResultPanel({ result, onRetake, onGoToPrescriptions }: PillR
             }`}
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-teal-700 underline w-fit"
           >
-            <MessageCircleQuestion className="h-4 w-4" /> Ask about this medication
+            <MessageCircleQuestion className="h-4 w-4" /> {t('pillResult.verify.askAboutMedication')}
           </Link>
         )}
         {disclaimer}
         <Button variant="secondary" onClick={onRetake}>
-          Scan Another
+          {t('pillResult.scanAnother')}
         </Button>
       </div>
     );
@@ -182,15 +182,15 @@ export function PillResultPanel({ result, onRetake, onGoToPrescriptions }: PillR
   if (match.decision === 'reject') {
     return (
       <div className="space-y-4 animate-slide-up">
-        <Alert variant="error" message="This doesn't match any medication in your profile." />
+        <Alert variant="error" message={t('pillResult.reject.alert')} />
         <div className="flex items-start gap-3 rounded-xl p-4 text-sm bg-danger-bg border border-danger-border text-danger-text">
           <XCircle className="h-5 w-5 shrink-0 mt-0.5" />
-          <span>If you were about to take this pill, stop and verify with a pharmacist before taking it.</span>
+          <span>{t('pillResult.reject.warning')}</span>
         </div>
-        <ShadowFusionHint show={record?.shadow_fusion_suspected} />
+        <ShadowFusionHint show={record?.shadow_fusion_suspected} t={t} />
         {disclaimer}
         <Button variant="secondary" onClick={onRetake}>
-          Scan Another
+          {t('pillResult.scanAnother')}
         </Button>
       </div>
     );
@@ -200,16 +200,14 @@ export function PillResultPanel({ result, onRetake, onGoToPrescriptions }: PillR
   if (match.abstain_action === 'ask_to_flip') {
     return (
       <div className="space-y-4 animate-slide-up">
-        <Alert variant="warning" message="We couldn't read a clear imprint on this side." />
+        <Alert variant="warning" message={t('pillResult.askToFlip.alert')} />
         <Card>
-          <p className="text-sm text-slate-700">
-            Turn the pill over and photograph the other side so we can check its imprint.
-          </p>
+          <p className="text-sm text-slate-700">{t('pillResult.askToFlip.instructions')}</p>
         </Card>
-        <ShadowFusionHint show={record?.shadow_fusion_suspected} />
+        <ShadowFusionHint show={record?.shadow_fusion_suspected} t={t} />
         {disclaimer}
         <Button onClick={onRetake}>
-          <RefreshCw className="h-4 w-4" /> Photograph Other Side
+          <RefreshCw className="h-4 w-4" /> {t('pillResult.askToFlip.cta')}
         </Button>
       </div>
     );
@@ -220,7 +218,7 @@ export function PillResultPanel({ result, onRetake, onGoToPrescriptions }: PillR
   const selected = selectedDin ? shortlist.find((c) => c.din === selectedDin) : undefined;
   return (
     <div className="space-y-4 animate-slide-up">
-      <Alert variant="warning" message="We're not fully certain — is it one of these?" />
+      <Alert variant="warning" message={t('pillResult.shortlist.alert')} />
       <div className="space-y-2">
         {shortlist.map((c) => (
           <button
@@ -234,7 +232,7 @@ export function PillResultPanel({ result, onRetake, onGoToPrescriptions }: PillR
                 : 'border-slate-200 bg-white hover:border-teal-300'
             }`}
           >
-            <CandidateHeadline candidate={c} />
+            <CandidateHeadline candidate={c} t={t} />
           </button>
         ))}
       </div>
@@ -244,20 +242,20 @@ export function PillResultPanel({ result, onRetake, onGoToPrescriptions }: PillR
           <div className="flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-warning-text shrink-0" />
             <div>
-              <CandidateHeadline candidate={selected} />
-              <p className="text-sm text-slate-700 mt-2">{describeBreakdown(selected.breakdown)}</p>
+              <CandidateHeadline candidate={selected} t={t} />
+              <p className="text-sm text-slate-700 mt-2">{describeBreakdown(t, selected.breakdown)}</p>
               <p className="text-xs font-semibold text-warning-text mt-3">
-                This is not a confirmed match — verify with a pharmacist before taking this pill.
+                {t('pillResult.shortlist.notConfirmed')}
               </p>
             </div>
           </div>
         </Card>
       )}
 
-      <ShadowFusionHint show={record?.shadow_fusion_suspected} />
+      <ShadowFusionHint show={record?.shadow_fusion_suspected} t={t} />
       {disclaimer}
       <Button variant="secondary" onClick={onRetake}>
-        Scan Another
+        {t('pillResult.scanAnother')}
       </Button>
     </div>
   );

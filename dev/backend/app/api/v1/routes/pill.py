@@ -125,7 +125,9 @@ async def analyze_pill_v2(
     brains_url = await resolve_brains_url()
 
     try:
-        async with httpx.AsyncClient(timeout=180.0) as http_client:
+        # FixbySonnet1 Task 4a: split connect from read so a down sidecar
+        # fails fast (~5s) instead of hanging for the full read timeout.
+        async with httpx.AsyncClient(timeout=httpx.Timeout(180.0, connect=5.0)) as http_client:
             response = await http_client.post(
                 f"{brains_url}/pill/analyze",
                 files={"image": (image.filename or "pill.jpg", image_bytes, image.content_type or "image/jpeg")},

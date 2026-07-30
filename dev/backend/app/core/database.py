@@ -64,6 +64,16 @@ async def _add_missing_columns(conn) -> None:
             ("max_daily_dose", "INTEGER"),
             ("din", "VARCHAR(8)"),
             ("din_confirmed", "BOOLEAN NOT NULL DEFAULT 0"),
+            # FixbyOPUS3 Task A3 -- the review workflow. The DDL default is
+            # 'pending' (what a NEW row must be); pre-existing rows are
+            # backfilled to 'approved' immediately below, because they were
+            # created before a review screen existed and demoting them would
+            # switch off a working user's reminders.
+            ("review_status", "VARCHAR(16) NOT NULL DEFAULT 'pending'"),
+            ("parse_source", "VARCHAR(16)"),
+            ("parse_flags", "VARCHAR(255)"),
+            # FixbyOPUS3 Task B3 -- NULL means "not established", never False.
+            ("pill_verifiable", "BOOLEAN"),
         ],
         "analyses": [
             # Phase 3 (pill-scan v2) -- see app/models/analysis.py.
@@ -82,6 +92,13 @@ async def _add_missing_columns(conn) -> None:
         for name, ddl_type in columns:
             if name not in existing:
                 await conn.exec_driver_sql(f"ALTER TABLE {table} ADD COLUMN {name} {ddl_type}")
+                if table == "prescriptions" and name == "review_status":
+                    # One-time grandfathering, run ONLY on the ALTER (never on
+                    # a boot where the column already existed, which would
+                    # bulk-approve every genuinely pending proposal).
+                    await conn.exec_driver_sql(
+                        "UPDATE prescriptions SET review_status = 'approved'"
+                    )
 
     # ALTER TABLE ADD COLUMN never creates an index -- add it explicitly
     # (idempotent) so pre-existing dev DBs get the same indexes that

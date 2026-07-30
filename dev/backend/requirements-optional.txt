@@ -25,10 +25,3 @@
 # Claude with the packed, cited context BB3's sidecar assembles. Pinned to
 # the latest SDK as of the Phase 4 build (was 0.40.0).
 anthropic==0.117.0
-
-# MyPillSafe Assistant voice input (Phase 5) — POST /api/v1/assistant/voice.
-# CPU + int8 "base" model, lazy singleton (app/services/voice_transcribe.py).
-# Heavier than rapidfuzz (pulls in ctranslate2) so it stays optional like the
-# rest of this file; /assistant/voice degrades to a clean 500 without it,
-# /assistant/chat (text) works fine either way.
-faster-whisper==1.1.0

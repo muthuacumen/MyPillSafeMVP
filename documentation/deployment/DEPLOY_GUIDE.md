@@ -544,7 +544,6 @@ Stop the sidecar on the laptop (Ctrl-C), then:
 | Check | Expected |
 |---|---|
 | Landing / about / login / register | **Still work** — the public site must not depend on any sidecar |
-| Assistant widget (project explainer + voice) | **Still works** — it is droplet-local |
 | Rx scan | Clear "temporarily unavailable" error — **never fabricated text** |
 | Pill scan | Clear service-unavailable message |
 | Med Q&A | Clear service-unavailable message |
@@ -593,6 +592,17 @@ box still has comfortable free RAM.
 cd /opt/mypillsafe/repo && sudo git pull
 sudo sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=<new_tag>/" .env
 sudo docker compose -f docker/docker-compose.yml -f docker/docker-compose.prod.yml --env-file .env up -d
+```
+
+**If the change touched the brains packages** (`BB3/`, `IMB1_v0/`, `SB2/`) **or `dev/brains/`,
+restart the sidecar — that is the ONLY way those changes reach production.** They live on the
+laptop, in no image and no compose file, so the build-and-push above ships nothing from them:
+the droplet would keep calling a sidecar still running the old code. `BB3/` in particular is
+laptop-local and **not in git at all** (settled 2026-07-30), so the repo is no record of its state.
+
+```powershell
+# [LAPTOP] — Ctrl-C the sidecar, start it again (§3.1), then re-confirm CHECKPOINT 11
+#            from the droplet before calling the deploy done.
 ```
 
 **Roll back** — set `IMAGE_TAG` to the previous tag and re-run the last command.

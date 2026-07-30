@@ -1,7 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import { AppFooter } from './AppFooter';
-import { AssistantWidget } from '@/components/AssistantWidget';
 
 export default function PublicLayout() {
   return (
@@ -11,7 +10,6 @@ export default function PublicLayout() {
         <Outlet />
       </main>
       <AppFooter />
-      <AssistantWidget />
     </div>
   );
 }

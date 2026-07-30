@@ -28,8 +28,7 @@ export default defineConfig({
       workbox: {
         // Precache the static shell ONLY -- /api/** must never be served
         // from the service worker cache (no offline-API pretense; stale
-        // medication answers would be a safety risk -- see assistant_kb
-        // "install-app" KB entry).
+        // medication answers would be a safety risk).
         globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2}'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],

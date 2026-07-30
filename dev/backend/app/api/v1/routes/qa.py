@@ -34,9 +34,11 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/qa", tags=["qa"])
 
 # Per spec: 60s context mode (sidecar resolve+retrieve+pack only, no LLM) /
-# 180s full mode (sidecar's own local-7B generation via Ollama).
-CONTEXT_MODE_TIMEOUT_SECONDS = 60.0
-FULL_MODE_TIMEOUT_SECONDS = 180.0
+# 180s full mode (sidecar's own local-7B generation via Ollama). Connect is
+# split to 5s (FixbySonnet1 Task 4a) so a down sidecar fails fast instead of
+# hanging for the full read timeout.
+CONTEXT_MODE_TIMEOUT_SECONDS = httpx.Timeout(60.0, connect=5.0)
+FULL_MODE_TIMEOUT_SECONDS = httpx.Timeout(180.0, connect=5.0)
 
 
 def _brains_unreachable_error(url: str) -> HTTPException:
@@ -85,7 +87,7 @@ async def qa_chat(
 
 
 async def _sidecar_qa_chat(
-    body: QAChatRequest, din_token: str | None, mode: str, timeout: float, brains_url: str
+    body: QAChatRequest, din_token: str | None, mode: str, timeout: httpx.Timeout, brains_url: str
 ) -> httpx.Response:
     try:
         async with httpx.AsyncClient(timeout=timeout) as http_client:

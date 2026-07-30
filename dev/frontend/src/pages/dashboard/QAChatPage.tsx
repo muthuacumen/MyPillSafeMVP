@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   AlertCircle,
   Cloud,
@@ -19,8 +20,9 @@ import { useVoicePageAnnounce } from '@/hooks/useVoicePageAnnounce';
 import { qaApi } from '@/api/qa';
 import type { QAChatResponse } from '@/types';
 
-const STANDARD_DISCLAIMER = 'Decision-support only — not medical advice. Verify with a pharmacist.';
-
+// Language endonyms are deliberately NOT translated -- an Arabic speaker
+// looks for "العربية", not for the word "Arabic" rendered in French. The
+// `code` is what the API receives and must stay in English.
 const LANGUAGES = [
   { code: 'English', label: 'English' },
   { code: 'French', label: 'Français' },
@@ -48,6 +50,7 @@ function dinFromTag(tag: string): string | null {
 }
 
 function VoiceBadge({ voice: v, model }: { voice: QAChatResponse['voice']; model?: string }) {
+  const { t } = useTranslation();
   if (v === 'cb4') {
     return (
       <span className="inline-flex items-center gap-1 text-[11px] font-medium text-teal-700 bg-teal-50 border border-teal-200 rounded-full px-2 py-0.5">
@@ -58,7 +61,7 @@ function VoiceBadge({ voice: v, model }: { voice: QAChatResponse['voice']; model
   if (v === 'local_7b') {
     return (
       <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5">
-        <HardDrive className="h-3 w-3" /> Offline fallback (local model)
+        <HardDrive className="h-3 w-3" /> {t('qa.offlineFallback')}
       </span>
     );
   }
@@ -93,6 +96,7 @@ interface TurnCardProps {
 }
 
 function TurnCard({ turn, onConfirm, onDeclineConfirm }: TurnCardProps) {
+  const { t } = useTranslation();
   const r = turn.response;
 
   return (
@@ -105,7 +109,7 @@ function TurnCard({ turn, onConfirm, onDeclineConfirm }: TurnCardProps) {
 
       {turn.loading && (
         <div className="flex items-center gap-2 text-sm text-slate-500 px-1">
-          <Loader2 className="h-4 w-4 animate-spin" /> Thinking this through — this can take a few seconds…
+          <Loader2 className="h-4 w-4 animate-spin" /> {t('qa.thinking')}
         </div>
       )}
 
@@ -116,10 +120,10 @@ function TurnCard({ turn, onConfirm, onDeclineConfirm }: TurnCardProps) {
           <p className="text-sm text-slate-800">{r.answer}</p>
           <div className="flex gap-2 mt-3">
             <Button size="sm" onClick={() => onConfirm(r.resolution?.candidates?.[0]?.name ?? '', turn.question)}>
-              Yes, I meant {r.resolution?.candidates?.[0]?.name}
+              {t('qa.yesIMeant', { name: r.resolution?.candidates?.[0]?.name ?? '' })}
             </Button>
             <Button size="sm" variant="secondary" onClick={onDeclineConfirm}>
-              No
+              {t('qa.no')}
             </Button>
           </div>
         </Card>
@@ -165,7 +169,7 @@ function TurnCard({ turn, onConfirm, onDeclineConfirm }: TurnCardProps) {
         <Card className="max-w-[95%]">
           <div className="flex items-center gap-2 mb-2">
             <ListChecks className="h-4 w-4 text-teal-600" />
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Formulary list</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{t('qa.formularyList')}</span>
           </div>
           <pre className="whitespace-pre-wrap font-sans text-sm text-slate-800 leading-relaxed">{r.answer}</pre>
         </Card>
@@ -191,7 +195,8 @@ function TurnCard({ turn, onConfirm, onDeclineConfirm }: TurnCardProps) {
 }
 
 export default function QAChatPage() {
-  useVoicePageAnnounce('Ask about my medication');
+  const { t } = useTranslation();
+  useVoicePageAnnounce(t('qa.title'));
   const [searchParams] = useSearchParams();
   const dinBypass = searchParams.get('din') || undefined;
   const dinBypassName = searchParams.get('name') || undefined;
@@ -212,15 +217,15 @@ export default function QAChatPage() {
           confirmed_name: confirmedName,
           language,
         });
-        setTurns((prev) => prev.map((t) => (t.id === id ? { ...t, loading: false, response: data } : t)));
+        setTurns((prev) => prev.map((turn) => (turn.id === id ? { ...turn, loading: false, response: data } : turn)));
       } catch (err: unknown) {
         const message =
           (err as { response?: { data?: { detail?: { error?: { message?: string } } } } })?.response?.data?.detail
-            ?.error?.message ?? 'Something went wrong asking that question. Please try again.';
-        setTurns((prev) => prev.map((t) => (t.id === id ? { ...t, loading: false, error: message } : t)));
+            ?.error?.message ?? t('qa.genericError');
+        setTurns((prev) => prev.map((turn) => (turn.id === id ? { ...turn, loading: false, error: message } : turn)));
       }
     },
-    [dinBypass, language],
+    [dinBypass, language, t],
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -241,12 +246,11 @@ export default function QAChatPage() {
       ...prev,
       {
         id: newId(),
-        question: '(declined)',
+        question: t('qa.declined'),
         loading: false,
         response: {
           status: 'not_found',
-          answer:
-            "I couldn't find that medication in the Canadian formulary -- please check the spelling, give the ingredient name, or the DIN from the package.",
+          answer: t('qa.notFound'),
           voice: 'none',
         },
       },
@@ -259,11 +263,11 @@ export default function QAChatPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <MessageCircleQuestion className="h-6 w-6 text-teal-600" />
-            Ask about my medication
+            {t('qa.title')}
           </h1>
           {dinBypassName && (
             <p className="text-sm text-teal-700 mt-1">
-              Asking about <span className="font-semibold">{dinBypassName}</span>
+              {t('qa.askingAbout')} <span className="font-semibold">{dinBypassName}</span>
               {dinBypass ? ` (DIN ${dinBypass})` : ''}
             </p>
           )}
@@ -271,7 +275,7 @@ export default function QAChatPage() {
         <select
           value={language}
           onChange={(e) => setLanguage(e.target.value)}
-          aria-label="Answer language"
+          aria-label={t('qa.answerLanguage')}
           className="input-field !w-auto text-sm py-1.5"
         >
           {LANGUAGES.map((l) => (
@@ -286,11 +290,8 @@ export default function QAChatPage() {
         {turns.length === 0 && (
           <Card className="text-center py-10">
             <MessageCircleQuestion className="h-10 w-10 text-teal-300 mx-auto mb-3" />
-            <p className="font-semibold text-slate-900">Ask a question about a medication</p>
-            <p className="text-sm text-slate-500 mt-1.5 max-w-sm mx-auto">
-              For example: "what foods should I avoid with warfarin" or "can I take this with food".
-              Name the medication, or pick one from your profile.
-            </p>
+            <p className="font-semibold text-slate-900">{t('qa.emptyTitle')}</p>
+            <p className="text-sm text-slate-500 mt-1.5 max-w-sm mx-auto">{t('qa.emptyBody')}</p>
           </Card>
         )}
         {turns.map((turn) => (
@@ -302,19 +303,19 @@ export default function QAChatPage() {
         <div className="flex-1">
           <Input
             ref={inputRef}
-            placeholder="Ask about a medication…"
+            placeholder={t('qa.placeholder')}
             value={input}
             onChange={(e) => setInput(e.target.value)}
           />
         </div>
         <Button type="submit" disabled={!input.trim()}>
-          <Send className="h-4 w-4" /> Ask
+          <Send className="h-4 w-4" /> {t('qa.ask')}
         </Button>
       </form>
 
       <p className="flex items-start gap-1.5 text-xs text-slate-400 pb-2">
         <ShieldAlert className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-        {STANDARD_DISCLAIMER}
+        {t('qa.disclaimer')}
       </p>
     </div>
   );

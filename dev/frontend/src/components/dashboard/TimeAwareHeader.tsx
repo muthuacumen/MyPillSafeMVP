@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ScanLine, ArrowRight } from 'lucide-react';
-import { getTimeSlot, TIME_SLOT_ICON, TIME_SLOT_GREETING, TIME_SLOT_HERO_GRADIENT } from '@/lib/timeOfDay';
+import { getTimeSlot, TIME_SLOT_ICON, TIME_SLOT_GREETING_KEY, TIME_SLOT_HERO_GRADIENT } from '@/lib/timeOfDay';
 
 interface TimeAwareHeaderProps {
   firstName: string;
@@ -14,6 +15,7 @@ interface TimeAwareHeaderProps {
  * subtree so schedule/stat cards below don't re-render every second.
  */
 export function TimeAwareHeader({ firstName, tagline, analyzeLabel }: TimeAwareHeaderProps) {
+  const { t } = useTranslation();
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -23,7 +25,7 @@ export function TimeAwareHeader({ firstName, tagline, analyzeLabel }: TimeAwareH
 
   const slot = getTimeSlot(now);
   const Icon = TIME_SLOT_ICON[slot];
-  const greeting = TIME_SLOT_GREETING[slot];
+  const greeting = t(TIME_SLOT_GREETING_KEY[slot]);
   const timeLabel = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' });
   const dateLabel = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
   const name = firstName.charAt(0).toUpperCase() + firstName.slice(1);

@@ -383,3 +383,36 @@ async def test_qa_chat_invalid_din_returns_422(client: AsyncClient, auth_headers
     )
     assert resp.status_code == 422
     assert resp.json()["detail"]["error"]["code"] == "INVALID_DIN"
+
+
+class _UnreachableAsyncClient:
+    """FixbySonnet1 Task 4a: mirrors test_pill_v2.py's/test_prescriptions.py's
+    idiom -- a ConnectError must map to the existing BRAINS_UNAVAILABLE 503,
+    now surfacing fast (connect=5.0) instead of after the full read timeout."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *exc_info):
+        return False
+
+    async def post(self, url, **kwargs):
+        raise httpx.ConnectError("connection refused", request=httpx.Request("POST", url))
+
+
+@pytest.mark.asyncio
+async def test_qa_chat_sidecar_unreachable_returns_503(
+    client: AsyncClient, auth_headers: dict, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.setattr(settings, "LLM_API_KEY", "")  # full mode -- exercises _sidecar_qa_chat directly
+    monkeypatch.setattr(httpx, "AsyncClient", _UnreachableAsyncClient)
+
+    resp = await client.post(
+        "/api/v1/qa/chat", headers=auth_headers, json={"message": "what foods should I avoid with warfarin"}
+    )
+
+    assert resp.status_code == 503
+    assert resp.json()["detail"]["error"]["code"] == "BRAINS_UNAVAILABLE"

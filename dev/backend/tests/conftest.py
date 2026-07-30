@@ -48,6 +48,25 @@ def _ocr_pipeline_disabled_by_default(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(settings, "OCR_PIPELINE_ENABLED", False)
 
 
+@pytest.fixture(autouse=True)
+def _rx_llm_parse_disabled_by_default(monkeypatch: pytest.MonkeyPatch):
+    """FixbyOPUS3: prescription create now also calls the sidecar's
+    `/rx/extract` (local qwen). Same hermeticity problem as OCR above, but
+    sharper -- if a sidecar happens to be running on this machine the suite
+    would silently start measuring a 7B model's opinions, and the same test
+    would pass or fail depending on whether someone had a service up.
+    (Measured, not hypothetical: two prescription tests failed exactly this
+    way during this build while the sidecar was live.)
+
+    Default every test to the deterministic regex proposer. The guardrails
+    and the server-side time derivation still run -- they are proposer-
+    agnostic by design -- so this switches off the model, never the safety
+    layer. Tests that exercise the LLM path (test_rx_review_flow.py) turn
+    the flag back on and mock `rx_extract_service.extract_medications`.
+    """
+    monkeypatch.setattr(settings, "RX_LLM_PARSE_ENABLED", False)
+
+
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def setup_db():
     async with test_engine.begin() as conn:

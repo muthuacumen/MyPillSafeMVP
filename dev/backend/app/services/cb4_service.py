@@ -90,7 +90,9 @@ CONTRADICTION_REFUSAL = (
     "monograph lists related contraindications or warnings, so please confirm with your "
     "pharmacist or doctor before taking it.")
 
-GUARD_CHECK_TIMEOUT_SECONDS = 20.0
+# Connect split to 5s (FixbySonnet1 Task 4a) so a down sidecar fails fast
+# instead of hanging for the full read timeout.
+GUARD_CHECK_TIMEOUT_SECONDS = httpx.Timeout(20.0, connect=5.0)
 
 _DEFAULT_GUARD_FLAGS = {
     "json_degenerate_retried": False,

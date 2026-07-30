@@ -19,8 +19,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt requirements-optional.txt ./
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt \
-    # requirements-optional.txt now installs only the Claude SDK (CB4) and
-    # faster-whisper (assistant voice input) -- see that file's header.
+    # FixbySonnet1 Task 5: requirements-optional.txt now installs only the
+    # Claude SDK (CB4) -- faster-whisper (assistant voice input) was removed
+    # with the assistant widget; see that file's header.
     && pip install --no-cache-dir -r requirements-optional.txt
 
 # ── Stage 2: runtime ──────────────────────────────────────────────────────────
@@ -29,13 +30,14 @@ FROM python:3.11-slim AS runtime
 WORKDIR /app
 
 # Runtime system deps only.
-# libgomp1 is a real, still-needed dependency: faster-whisper's ctranslate2
-# backend (assistant voice input, Priority 5) uses OpenMP and links against
-# libgomp.so.1 -- keep it even though paddle (its original reason for being
-# here) is gone.
+# FixbySonnet1 Task 5: libgomp1 was faster-whisper's ctranslate2 backend
+# (assistant voice input, Priority 5) -- that dependency is gone with the
+# assistant widget (requirements-optional.txt no longer lists it), and
+# nothing else in the installed set links against libgomp.so.1. Verified by
+# building this image and running the full backend suite inside it (110
+# passed) both with and without this package -- see Builder Report.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
-    libgomp1 \
     curl \
     && rm -rf /var/lib/apt/lists/*
 

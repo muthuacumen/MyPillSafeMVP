@@ -54,14 +54,6 @@ _OPENAPI_TAGS = [
         "description": "Public contact form submission — no auth required.",
     },
     {
-        "name": "assistant",
-        "description": (
-            "**Public, no auth.** The MyPillSafe Assistant — a project-explainer chatbot "
-            "(`/assistant/chat`, `/assistant/voice`). Explains how MyPillSafe works; never "
-            "answers medication-specific questions (redirects to `/api/v1/qa/chat` instead)."
-        ),
-    },
-    {
         "name": "admin",
         "description": (
             "**Admin only.** Platform stats, user management, "

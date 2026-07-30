@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 from app.api.v1.routes import (
     admin,
-    assistant,
     auth,
     contact,
     dev,
@@ -22,7 +21,6 @@ api_router.include_router(pill.router)
 api_router.include_router(prescriptions.router)
 api_router.include_router(reference.router)
 api_router.include_router(qa.router)
-api_router.include_router(assistant.router)
 api_router.include_router(reminders.router)
 api_router.include_router(instructions.router)
 api_router.include_router(scans.router)
