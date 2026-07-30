@@ -306,6 +306,12 @@ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:80
 
 ✅ **CHECKPOINT 6:** both neighbour sites respond exactly as they did before the reboot.
 
+> **Expect `301`, not `200`, from `http://127.0.0.1:80` once §9 has run certbot.**
+> That is the HTTP→HTTPS redirect on the default vhost — the correct post-TLS
+> answer, not a neighbour regression. Only a connection failure or a 5xx is a
+> problem here. Note also that JidokaAcumen is bare-metal uvicorn and so never
+> appears in `docker ps` — verify it over HTTP, not from the container list.
+
 ### 5.2 — Swap headroom (cheap OOM insurance)
 
 ```bash
@@ -432,7 +438,9 @@ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:80
 ```
 
 ✅ **CHECKPOINT 10:** JAcI and PathoIntern still healthy; free RAM still positive with
-room to spare.
+room to spare. As at CHECKPOINT 6, `http://127.0.0.1:80` returns **`301`** once TLS
+is in place (the certbot redirect), and JidokaAcumen is verified over HTTP rather
+than in `docker ps`.
 
 ### 7.6 — Verify the container can actually reach the sidecar
 
@@ -445,6 +453,54 @@ sudo docker exec pillsafe_backend python -c "import httpx; print(httpx.get('http
 
 ✅ **CHECKPOINT 11:** prints `200`. If it fails while §3.3's `curl` from the droplet
 host worked, the problem is container→tailnet routing, not Tailscale itself — see §11.
+
+### 7.7 — Verify DB schema parity (MANDATORY on any redeploy)
+
+**This step exists because skipping it took the site down on 2026-07-30.** The
+app is code-first: `create_all` creates missing *tables* but **never alters an
+existing one**, so a column added to a model since the last deploy does not
+reach Postgres by itself. The symptom is brutal and misleading — the brains all
+answer `200`, and then every read AND write of that table returns 500. On
+2026-07-30 that meant `GET /prescriptions/me` 500 (My Medications *and* the 30 s
+dose-reminder poll dead) plus every Rx scan failing after three healthy sidecar
+calls, which looks exactly like a broken scanner rather than a missing column.
+
+```bash
+# [DROPLET] every column the models declare must exist in Postgres
+sudo docker exec pillsafe_backend python - <<'PY'
+import asyncio
+from app.core.database import engine, Base
+import app.models.user, app.models.patient, app.models.analysis, app.models.prescription  # noqa
+
+async def main():
+    async with engine.begin() as conn:
+        for table in Base.metadata.sorted_tables:
+            rows = await conn.exec_driver_sql(
+                "SELECT column_name FROM information_schema.columns "
+                "WHERE table_schema = current_schema() AND table_name = %s", (table.name,))
+            live = {r[0] for r in rows.fetchall()}
+            if not live:
+                continue
+            missing = {c.name for c in table.columns} - live
+            print(f"{'MISSING ' + str(sorted(missing)) if missing else 'ok':<40} {table.name}")
+
+asyncio.run(main())
+PY
+```
+
+✅ **CHECKPOINT 11b:** every table prints `ok`. If anything prints `MISSING`, the
+boot-time sync did not cover it — apply the repair script and re-check:
+
+```bash
+# [DROPLET] idempotent, additive-only, safe to re-run
+sudo docker exec -i pillsafe_postgres psql -U pillsafe_user -d pillsafe \
+  < /opt/mypillsafe/repo/docker/fix_prescriptions_schema.sql
+```
+
+The permanent guard is the dialect-aware sync in `app/core/database.py`
+(`_add_missing_columns`, now running on Postgres as well as SQLite) plus
+`dev/backend/tests/test_column_sync.py`, whose parity test fails if a model
+column is ever added without registering it there.
 
 ---
 
@@ -518,7 +574,7 @@ credentials and seeded profiles are in `documentation/integration/LOCAL_TESTING.
 | 5 | Pill scan, correct pill | `verify` — green |
 | 6 | Pill scan, wrong pill | `reject` — red |
 | 7 | Pill scan, ambiguous/flip | `abstain` — **amber, never styled as red or green** |
-| 8 | Q&A: *"Can I take celecoxib if I'm allergic to sulfa drugs?"* | Answer begins **"No"**, cites DIN 2239942. This is the F9-11 polarity probe — a "Yes" here is a serious regression |
+| 8 | Q&A: *"Can I take celecoxib if I'm allergic to sulfa drugs?"* | Answer begins **"No"** and cites **a celecoxib DIN whose contraindications carry the sulfonamide bar**. This is the F9-11 polarity probe — a "Yes" here is a serious regression. **Do NOT require DIN 2239942**: post-WP-F5 the packer selects generic celecoxib monographs by score, so pinning one DIN files a false regression. The load-bearing criteria are the "No" and the sulfonamide citation, not which DIN supplies it |
 | 9 | Q&A in French | Localized answer, citations intact |
 | 10 | PWA install | Install prompt available; app opens standalone |
 | 11 | Mobile 360px | No horizontal scroll; 5-tab bottom bar fits |
