@@ -97,19 +97,43 @@ async def client(db_session: AsyncSession) -> AsyncClient:
 
 
 @pytest_asyncio.fixture
-async def auth_token(client: AsyncClient) -> str:
-    """Register a fresh patient account and return its access token."""
-    response = await client.post(
+async def approve_user(db_session: AsyncSession):
+    """Do what an admin's Approve button does: flip `is_active` to True.
+
+    Registration is admin-gated by default now (REQUIRE_ADMIN_APPROVAL), so
+    /register no longer hands back a token. Every test that just needs "a
+    signed-in patient" wants the POST-approval state, and the honest way to
+    get there is to approve — NOT to switch REQUIRE_ADMIN_APPROVAL off in a
+    global fixture, which would run the entire suite against a configuration
+    production does not use and leave the shipped path covered by only a
+    handful of tests.
+    """
+    async def _approve(email: str) -> User:
+        result = await db_session.execute(select(User).where(User.email == email))
+        user = result.scalar_one()
+        user.is_active = True
+        await db_session.flush()
+        return user
+
+    return _approve
+
+
+@pytest_asyncio.fixture
+async def auth_token(client: AsyncClient, approve_user) -> str:
+    """Register a fresh patient account, approve it, return an access token."""
+    email = f"patient_{uuid.uuid4().hex[:10]}@pillsafe.dev"
+    await client.post(
         "/api/v1/auth/register",
         json={
-            "email": f"patient_{uuid.uuid4().hex[:10]}@pillsafe.dev",
+            "email": email,
             "password": "Test1234",
             "first_name": "Test",
             "last_name": "Patient",
             "date_of_birth": "1990-01-01",
         },
     )
-    return response.json()["access_token"]
+    user = await approve_user(email)
+    return create_access_token(user.id, user.role)
 
 
 @pytest_asyncio.fixture
@@ -122,7 +146,10 @@ async def admin_headers(client: AsyncClient, db_session: AsyncSession) -> dict:
     """Register a normal account then promote it to ADMIN directly in the DB.
 
     Deliberately doesn't go through /dev/seed-admin — that endpoint 404s
-    outside APP_ENV=development, which CI does not run with.
+    outside APP_ENV=development, which CI does not run with. `is_active` is
+    set here too, for the same reason approve_user exists: registration is
+    admin-gated, so a freshly registered account is inactive and
+    get_current_user would reject its token.
     """
     email = f"admin_{uuid.uuid4().hex[:10]}@pillsafe.dev"
     await client.post(
@@ -138,6 +165,7 @@ async def admin_headers(client: AsyncClient, db_session: AsyncSession) -> dict:
     result = await db_session.execute(select(User).where(User.email == email))
     user = result.scalar_one()
     user.role = UserRole.ADMIN.value
+    user.is_active = True
     await db_session.flush()
     token = create_access_token(user.id, user.role)
     return {"Authorization": f"Bearer {token}"}

@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Linkedin } from 'lucide-react';
 import AboutNav from '@/components/AboutNav';
+import { TEAM } from '@/data/team';
 
 // Content pack §6 -- names/roles transcribed verbatim; task bullets are
 // Phase 6 additions (Muthu's verification item 3), written to be at parity
@@ -8,16 +10,10 @@ import AboutNav from '@/components/AboutNav';
 // language only -- no fabricated metrics, credentials, or awards -- each
 // bullet describes a real surface this app actually has.
 //
-// PEOPLE'S NAMES AND INITIALS ARE NOT TRANSLATED and therefore stay here in
-// code. Roles and responsibility bullets are language, and live in
+// The member array moved to @/data/team -- names are not translated, but they
+// were duplicated in three places, which is how a misspelling spread. Roles
+// and responsibility bullets are language and live in
 // `public.team.members.*` in both locale files.
-const TEAM = [
-  { key: 'mj', initials: 'MJ', name: 'Muthuraj Jayakumar', avatarBg: 'bg-navy' },
-  { key: 'sr', initials: 'SR', name: 'Sumanth Reddy', avatarBg: 'bg-teal-600' },
-  { key: 'lr', initials: 'LR', name: 'Lohith Reddy', avatarBg: 'bg-burnt' },
-  { key: 'ao', initials: 'AO', name: 'Ali Ozdemir', avatarBg: 'bg-coral' },
-  { key: 'am', initials: 'AM', name: 'Abdullah Mohammed', avatarBg: 'bg-navy' },
-];
 
 const FOCUS_KEYS = ['focus1', 'focus2', 'focus3', 'focus4'] as const;
 
@@ -43,17 +39,29 @@ export default function TeamPage() {
 
       <div className="max-w-5xl mx-auto py-12 px-4 space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {TEAM.map(({ key, initials, name, avatarBg }) => (
+          {TEAM.map(({ key, initials, name, avatarBg, linkedin }) => (
             <div key={key} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden card-hover">
               <div className="p-6 border-b border-slate-100">
                 <div className="flex items-center gap-4">
                   <div className={`${avatarBg} text-white w-14 h-14 rounded-2xl flex items-center justify-center font-black text-lg flex-shrink-0`}>
                     {initials}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <h2 className="font-bold text-navy leading-tight">{name}</h2>
                     <p className="text-slate-500 text-sm">{t(`public.team.members.${key}.role`)}</p>
                   </div>
+                  {/* An icon-only link is unlabelled to a screen reader, so the
+                      accessible name has to name the person -- five identical
+                      "LinkedIn" links would be useless in a links list. */}
+                  <a
+                    href={linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={t('public.team.linkedinAria', { name })}
+                    className="ml-auto flex-shrink-0 inline-flex items-center justify-center h-11 w-11 rounded-xl text-slate-400 hover:text-[#0A66C2] hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                  >
+                    <Linkedin className="h-5 w-5" />
+                  </a>
                 </div>
               </div>
               <div className="p-6">

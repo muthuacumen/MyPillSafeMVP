@@ -386,7 +386,21 @@ Fill in, at minimum:
 | `OCR_PIPELINE_ENABLED` | `true` — **never `false` in production**, it fabricates prescription text |
 | `BRAINS_SERVICE_URLS` | `http://<LAPTOP_TS_IP>:8100` (comma-separate more as members join) |
 | `LLM_API_KEY` | Muthu's Anthropic key (CB4's voice) |
+| `REQUIRE_ADMIN_APPROVAL` | `true` — every new signup needs approving before it can sign in |
+| `ADMIN_EMAILS` | your own email — see §7.2a, this is the only way to get an admin in production |
 | `IMAGE_TAG` | the `$TAG` from §4 |
+
+Optional (leave blank and the contact form behaves exactly as it does today —
+201 plus a line in `uploads/contact_messages.jsonl`, which stays the system of
+record):
+
+| Variable | Value |
+|---|---|
+| `SMTP_HOST` | e.g. IONOS's SMTP host — `mypillsafe.ca`'s MX and SPF both point at IONOS |
+| `SMTP_PORT` | `587` |
+| `SMTP_USER` / `SMTP_PASSWORD` | the mailbox login (or a Gmail app password) |
+| `SMTP_FROM` | `info@mypillsafe.ca` — falls back to `SMTP_USER` if blank |
+| `CONTACT_TO` | `info@mypillsafe.ca` — `Reply-To` is set to the submitter |
 
 ```bash
 # [DROPLET]
@@ -397,9 +411,43 @@ sudo chmod 600 .env
 > Docker's resolver and will not resolve tailnet names — the hostname form fails in a
 > way that looks like the sidecar is down.
 
-> **Cost note:** with open registration and a real `LLM_API_KEY`, anyone who registers
-> can spend Anthropic tokens. Set a spend limit in the Anthropic console — the app's
-> rate limiter is not a billing control.
+> **Cost note:** registration is no longer open — `REQUIRE_ADMIN_APPROVAL=true` means a
+> new account cannot sign in, and therefore cannot spend Anthropic tokens, until you
+> approve it. Still set a spend limit in the Anthropic console; approval is a gate on
+> who gets in, not a cap on what an approved user can spend.
+
+### 7.2a — Become an admin (do this after §7.4, once the stack is up)
+
+`/dev/seed-admin` returns **404** whenever `APP_ENV != development`, so there is no
+endpoint that mints an admin in production. `ADMIN_EMAILS` is the mechanism instead: on
+every start, the backend promotes each listed address that **already has an account** to
+`role=ADMIN, is_active=true`. It promotes, it never creates — so register first.
+
+1. Bring the stack up (§7.4).
+2. Register normally at `https://mypillsafe.ca/register`. You will get the
+   "awaiting approval" screen — that is correct, and expected.
+3. Put that same address in `.env` as `ADMIN_EMAILS` (comma-separate for several).
+4. Restart just the backend:
+
+```bash
+# [DROPLET]
+cd /opt/mypillsafe/repo
+sudo docker compose -f docker/docker-compose.yml -f docker/docker-compose.prod.yml --env-file .env up -d --force-recreate backend
+sudo docker compose -f docker/docker-compose.yml -f docker/docker-compose.prod.yml logs backend | grep ADMIN_EMAILS
+```
+
+✅ **CHECKPOINT 7a:** the log shows `ADMIN_EMAILS: promoted <you> to active ADMIN`
+and a summary line `N configured, N matched, 1 promoted`. Sign in — **Admin → Users**
+is now reachable. On any later restart the same log reads `is already an active admin`
+and `0 promoted`; that is the idempotent no-op, not a failure.
+
+> If the log says `no account yet for <you>` you skipped step 2 — register, then
+> restart again. Nothing is broken; the promotion simply had no row to act on.
+
+> **Everyone else on the team signs up the same way and waits for you.** Their
+> accounts land in **Admin → Users** sorted to the top with an amber
+> *Pending approval* badge and an **Approve** button. That button is the existing
+> activate endpoint — there is no separate approval API.
 
 ### 7.3 — Render the config and prove nothing binds publicly
 
@@ -571,7 +619,9 @@ credentials and seeded profiles are in `documentation/integration/LOCAL_TESTING.
 | # | Check | Expected |
 |---|---|---|
 | 1 | Landing + all 5 about pages | Render, navy brand, no fabricated stats |
-| 2 | Register → login | Works; a wrong password shows an inline error (no reload) |
+| 2 | Register → login | Register shows **"awaiting approval"** and does **not** reach the dashboard; logging in before approval shows the blue *awaiting approval* notice (not a red error); a wrong password still shows the inline red error (no reload). Approve the account in **Admin → Users**, then login reaches the dashboard |
+| 2a | Contact form | Returns the thank-you. `uploads/contact_messages.jsonl` has the new line **whether or not SMTP is configured** — if you did set SMTP, the mail also lands in `info@mypillsafe.ca` and hitting Reply addresses the submitter |
+| 2b | About page diagram | The C4 architecture figure renders; clicking it opens the full-size overlay, and **Escape** closes it |
 | 3 | Rx scan with a real label photo | **Real OCR text reaches the parser** — see the two failure signatures below before judging this one |
 | 4 | DIN suggestions → confirm | Suggestion list appears; confirming persists |
 | 5 | Pill scan, correct pill | `verify` — green |

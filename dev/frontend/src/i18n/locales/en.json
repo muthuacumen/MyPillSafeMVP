@@ -62,6 +62,7 @@
       "forgotPasswordNote": "Password reset isn't available in this preview yet. Please contact support for help accessing your account.",
       "noAccount": "Don't have an account?",
       "createFree": "Create one free",
+      "pendingApproval": "Your account is awaiting administrator approval. You'll be able to sign in as soon as it's approved.",
       "disclaimer": "Decision support tool only. Always confirm with your pharmacist."
     },
     "register": {
@@ -76,6 +77,9 @@
       "submit": "Create Account",
       "haveAccount": "Already have an account?",
       "signIn": "Sign in",
+      "pendingTitle": "Account created — awaiting approval",
+      "pendingBody": "Thanks for signing up. An administrator reviews every new account before it can be used. You'll be able to sign in once yours is approved.",
+      "pendingCta": "Back to sign in",
       "disclaimer": "Decision support tool only. Always confirm with your pharmacist or physician."
     },
     "brand": {
@@ -293,7 +297,10 @@
     "confirmDeactivate": "Deactivate this user? They will not be able to log in.",
     "confirmDelete": "Permanently delete this user and all their data?",
     "noPatient": "No profile",
-    "recentAnalyses": "Recent Analyses"
+    "recentAnalyses": "Recent Analyses",
+    "pendingApproval": "Pending approval",
+    "approve": "Approve account",
+    "pendingSummary": "{{count}} awaiting approval"
   },
   "din": {
     "title": "Is this your medication?",
@@ -392,7 +399,7 @@
     "signIn": "Sign In",
     "getStarted": "Get Started",
     "disclaimer": "Decision-support only — not medical advice. Always verify with a pharmacist or physician.",
-    "credits": "MyPillSafe · 2026 · Muthuraj Jayakumar, Sumanth Reddy, Lohith Reddy, Ali Ozdemir, Abdullah Mohammed"
+    "credits": "MyPillSafe · 2026 ·"
   },
   "disclaimerModal": {
     "title": "Important Notice",
@@ -635,7 +642,13 @@
           "desc": "A mandatory smoke test or spot-check ran on every build of the project — and every single one caught at least one real bug. The deterministic safety guards have a combined zero failures across all evaluation rounds; every incident came from the model-judgment layer, which is exactly why models don't make the decisions."
         }
       },
-      "scopeNote": "MyPillSafe is a Conestoga College capstone project, built for Canada (DIN-based, Health Canada monographs). It is decision-support only."
+      "scopeNote": "MyPillSafe is a Conestoga College capstone project, built for Canada (DIN-based, Health Canada monographs). It is decision-support only.",
+      "diagramTitle": "System architecture",
+      "diagramCaption": "MyPillSafe container architecture (C4 level 2) — every box that runs, and every link between them. The brains host sits on a private network and is never publicly reachable.",
+      "diagramAlt": "C4 container diagram of MyPillSafe. A patient and an administrator use a React web app, which reaches an nginx TLS gateway at mypillsafe.ca and then a FastAPI API handling orchestration, sessions and patient approval behind deterministic safety guardrails. The API reads and writes a PostgreSQL database, stores prescription photos in a file volume, and calls a Brains Service over a private network. That service hosts a deterministic verify-reject-abstain matcher, an offline Ollama language model, and isolated PaddleOCR workers for pill imprints and prescription labels, reading from a reference-data workbook and a searchable Canadian monograph index. Only a question and its cited passages are ever sent to the external Claude API.",
+      "diagramZoomHint": "Click the diagram to enlarge",
+      "diagramZoomLabel": "Enlarge the architecture diagram",
+      "diagramCloseLabel": "Close the enlarged diagram"
     },
     "vision": {
       "breadcrumb": "Vision & Mission",
@@ -794,7 +807,8 @@
           "focus4": "Documented deviations and bugs surfaced during verification passes, rather than letting them go unreported."
         }
       },
-      "footerNote": "MyPillSafe is a capstone project of the Conestoga College graduate program in AI & Machine Learning."
+      "footerNote": "MyPillSafe is a capstone project of the Conestoga College graduate program in AI & Machine Learning.",
+      "linkedinAria": "{{name}} on LinkedIn"
     },
     "contact": {
       "title": "Contact Us",

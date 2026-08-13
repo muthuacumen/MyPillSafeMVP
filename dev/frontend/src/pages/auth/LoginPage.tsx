@@ -23,6 +23,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const { t } = useTranslation();
   const [serverError, setServerError] = useState('');
+  const [pendingApproval, setPendingApproval] = useState(false);
   const [showForgotNote, setShowForgotNote] = useState(false);
 
   const {
@@ -33,12 +34,21 @@ export default function LoginPage() {
 
   const onSubmit = async (data: FormData) => {
     setServerError('');
+    setPendingApproval(false);
     try {
       await login(data);
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: { error?: { message?: string } } } } })
-        ?.response?.data?.detail?.error?.message;
-      setServerError(msg ?? 'Login failed. Please try again.');
+      const error = (
+        err as { response?: { data?: { detail?: { error?: { code?: string; message?: string } } } } }
+      )?.response?.data?.detail?.error;
+      // A pending account is NOT a failed sign-in — the password was right.
+      // Rendering it as a red "invalid credentials" error would send people
+      // off resetting a password that works fine.
+      if (error?.code === 'ACCOUNT_PENDING_APPROVAL') {
+        setPendingApproval(true);
+        return;
+      }
+      setServerError(error?.message ?? 'Login failed. Please try again.');
     }
   };
 
@@ -133,6 +143,9 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
               {serverError && <Alert variant="error" message={serverError} />}
+              {/* Informational, not an error: the credentials were accepted,
+                  the account just isn't approved yet. */}
+              {pendingApproval && <Alert variant="info" message={t('auth.login.pendingApproval')} />}
 
               <Input
                 label={t('auth.login.email')}

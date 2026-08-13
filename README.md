@@ -355,7 +355,7 @@ live with the frozen research packages and their contracts, not in this repo.
 ## Team
 
 **MyPillSafe · 2026** — Muthuraj Jayakumar · Sumanth Reddy · Lohith Reddy · Ali Ozdemir ·
-Abdullah Mohammed
+Abdallah Mohamed
 
 Roles and per-member responsibilities: see `/about/team` in the app.
 

@@ -101,7 +101,7 @@ const EXEMPT_TEXT = new Set([
   'Sumanth Reddy',
   'Lohith Reddy',
   'Ali Ozdemir',
-  'Abdullah Mohammed',
+  'Abdallah Mohamed',
   'documentation/evaluation/rx_parsing/',
   'NLM Pill Image Recognition Challenge (2016)',
   'ePillID (Usuyama et al., 2020)',

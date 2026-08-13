@@ -8,6 +8,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.database import engine, init_db
+from app.services.admin_bootstrap import promote_configured_admins_safely
 
 logging.basicConfig(
     level=logging.INFO,
@@ -93,6 +94,9 @@ async def lifespan(app_instance: FastAPI):  # noqa: RUF029
     logger.info("PillSafe API starting — initialising database")
     await init_db()
     logger.info("Database ready")
+    # Runs after init_db so the users table is guaranteed to exist on a fresh
+    # deploy. Never raises — see promote_configured_admins_safely.
+    await promote_configured_admins_safely()
     yield
     logger.info("PillSafe API shutting down")
     await engine.dispose()

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Mail, Calendar, CheckCircle2, UserRound, ArrowLeft } from 'lucide-react';
+import { Mail, Calendar, CheckCircle2, UserRound, ArrowLeft, MailCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/Input';
 import { PasswordField } from '@/components/ui/PasswordField';
@@ -32,6 +32,10 @@ export default function RegisterPage() {
   const { register: registerUser } = useAuth();
   const { t } = useTranslation();
   const [serverError, setServerError] = useState('');
+  // Registration is admin-gated (backend returns 202 and no tokens), so the
+  // success path is NOT "go to the dashboard" -- there is no session to go
+  // to. Swap the form for a waiting state instead.
+  const [pendingApproval, setPendingApproval] = useState(false);
 
   const {
     register,
@@ -45,7 +49,9 @@ export default function RegisterPage() {
   const onSubmit = async (data: FormData) => {
     setServerError('');
     try {
-      await registerUser(data);
+      if ((await registerUser(data)) === 'pending_approval') {
+        setPendingApproval(true);
+      }
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { detail?: { error?: { message?: string } } } } })
         ?.response?.data?.detail?.error?.message;
@@ -126,6 +132,29 @@ export default function RegisterPage() {
             <LanguageSwitcher />
           </div>
 
+          {pendingApproval ? (
+            <div
+              role="status"
+              aria-live="polite"
+              className="card p-8 sm:p-10 shadow-lg shadow-slate-200/60 text-center"
+            >
+              <div className="mx-auto h-14 w-14 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center">
+                <MailCheck className="h-7 w-7 text-teal-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 mt-5">
+                {t('auth.register.pendingTitle')}
+              </h2>
+              <p className="text-slate-600 mt-3 text-sm leading-relaxed">
+                {t('auth.register.pendingBody')}
+              </p>
+              <Link
+                to="/login"
+                className="mt-7 inline-flex items-center justify-center min-h-[44px] px-5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-medium text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+              >
+                {t('auth.register.pendingCta')}
+              </Link>
+            </div>
+          ) : (
           <div className="card p-8 sm:p-10 shadow-lg shadow-slate-200/60">
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-slate-900">{t('auth.register.title')}</h2>
@@ -192,13 +221,16 @@ export default function RegisterPage() {
               </Button>
             </form>
           </div>
+          )}
 
-          <p className="mt-6 text-center text-sm text-slate-500">
-            {t('auth.register.haveAccount')}{' '}
-            <Link to="/login" className="text-teal-600 hover:text-teal-700 font-medium transition-colors">
-              {t('auth.register.signIn')}
-            </Link>
-          </p>
+          {!pendingApproval && (
+            <p className="mt-6 text-center text-sm text-slate-500">
+              {t('auth.register.haveAccount')}{' '}
+              <Link to="/login" className="text-teal-600 hover:text-teal-700 font-medium transition-colors">
+                {t('auth.register.signIn')}
+              </Link>
+            </p>
+          )}
 
           <p className="mt-6 text-center text-xs text-slate-400">
             {t('auth.register.disclaimer')}

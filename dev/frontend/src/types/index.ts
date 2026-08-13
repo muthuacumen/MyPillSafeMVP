@@ -14,6 +14,17 @@ export interface TokenResponse {
   expires_in: number;
 }
 
+/**
+ * 202 body from POST /auth/register while admin approval is required.
+ * Deliberately has no token field at all — the union with TokenResponse is
+ * what makes the compiler refuse `data.access_token` until the caller has
+ * narrowed which of the two responses it actually got.
+ */
+export interface PendingApprovalResponse {
+  status: 'pending_approval';
+  message: string;
+}
+
 export interface ApiError {
   error: {
     code: string;

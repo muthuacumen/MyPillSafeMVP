@@ -62,6 +62,7 @@
       "forgotPasswordNote": "La réinitialisation du mot de passe n'est pas encore disponible dans cet aperçu. Veuillez contacter le support pour accéder à votre compte.",
       "noAccount": "Pas encore de compte ?",
       "createFree": "Créer un compte gratuit",
+      "pendingApproval": "Votre compte est en attente d'approbation par un administrateur. Vous pourrez vous connecter dès qu'il sera approuvé.",
       "disclaimer": "Outil d'aide uniquement. Confirmez toujours avec votre pharmacien."
     },
     "register": {
@@ -76,6 +77,9 @@
       "submit": "Créer un compte",
       "haveAccount": "Déjà un compte ?",
       "signIn": "Se connecter",
+      "pendingTitle": "Compte créé — en attente d'approbation",
+      "pendingBody": "Merci de votre inscription. Un administrateur examine chaque nouveau compte avant qu'il puisse être utilisé. Vous pourrez vous connecter une fois le vôtre approuvé.",
+      "pendingCta": "Retour à la connexion",
       "disclaimer": "Outil d'aide uniquement. Confirmez toujours avec votre pharmacien."
     },
     "brand": {
@@ -293,7 +297,10 @@
     "confirmDeactivate": "Désactiver cet utilisateur ? Il ne pourra plus se connecter.",
     "confirmDelete": "Supprimer définitivement cet utilisateur et toutes ses données ?",
     "noPatient": "Pas de profil",
-    "recentAnalyses": "Analyses récentes"
+    "recentAnalyses": "Analyses récentes",
+    "pendingApproval": "En attente d'approbation",
+    "approve": "Approuver le compte",
+    "pendingSummary": "{{count}} en attente d'approbation"
   },
   "din": {
     "title": "Est-ce bien votre médicament?",
@@ -392,7 +399,7 @@
     "signIn": "Se connecter",
     "getStarted": "Commencer",
     "disclaimer": "Aide à la décision seulement — pas un avis médical. Vérifiez toujours auprès d'un pharmacien ou d'un médecin.",
-    "credits": "MyPillSafe · 2026 · Muthuraj Jayakumar, Sumanth Reddy, Lohith Reddy, Ali Ozdemir, Abdullah Mohammed"
+    "credits": "MyPillSafe · 2026 ·"
   },
   "disclaimerModal": {
     "title": "Avis important",
@@ -635,7 +642,13 @@
           "desc": "Un test de fumée ou une vérification ponctuelle obligatoire a été exécuté à chaque version du projet — et chacun d'eux a détecté au moins un vrai bogue. Les garde-fous de sécurité déterministes affichent zéro défaillance au total sur toutes les rondes d'évaluation ; chaque incident provenait de la couche de jugement du modèle, ce qui est précisément la raison pour laquelle les modèles ne prennent pas les décisions."
         }
       },
-      "scopeNote": "MyPillSafe est un projet de fin d'études du Conestoga College, conçu pour le Canada (fondé sur les DIN et les monographies de Santé Canada). Il s'agit d'une aide à la décision seulement."
+      "scopeNote": "MyPillSafe est un projet de fin d'études du Conestoga College, conçu pour le Canada (fondé sur les DIN et les monographies de Santé Canada). Il s'agit d'une aide à la décision seulement.",
+      "diagramTitle": "Architecture du système",
+      "diagramCaption": "Architecture par conteneurs de MyPillSafe (C4 niveau 2) — chaque composant en exécution et chaque lien entre eux. L'hôte des moteurs se trouve sur un réseau privé et n'est jamais accessible publiquement.",
+      "diagramAlt": "Diagramme de conteneurs C4 de MyPillSafe. Un patient et un administrateur utilisent une application web React, qui passe par une passerelle nginx TLS à mypillsafe.ca puis par une API FastAPI assurant l'orchestration, les sessions et l'approbation des patients derrière des garde-fous de sécurité déterministes. L'API lit et écrit dans une base PostgreSQL, conserve les photos d'ordonnance dans un volume de fichiers et appelle un service de moteurs sur un réseau privé. Ce service héberge un moteur de correspondance déterministe (vérifier, rejeter, s'abstenir), un modèle de langage Ollama hors ligne et des travailleurs PaddleOCR isolés pour les inscriptions sur les comprimés et les étiquettes d'ordonnance, s'appuyant sur un classeur de données de référence et un index consultable de monographies canadiennes. Seuls une question et les passages cités sont transmis à l'API Claude externe.",
+      "diagramZoomHint": "Cliquez sur le schéma pour l'agrandir",
+      "diagramZoomLabel": "Agrandir le schéma d'architecture",
+      "diagramCloseLabel": "Fermer le schéma agrandi"
     },
     "vision": {
       "breadcrumb": "Vision et mission",
@@ -794,7 +807,8 @@
           "focus4": "A documenté les écarts et les bogues relevés lors des passes de vérification, plutôt que de les laisser passer sous silence."
         }
       },
-      "footerNote": "MyPillSafe est un projet de fin d'études du programme d'études supérieures en intelligence artificielle et apprentissage automatique du Conestoga College."
+      "footerNote": "MyPillSafe est un projet de fin d'études du programme d'études supérieures en intelligence artificielle et apprentissage automatique du Conestoga College.",
+      "linkedinAria": "{{name}} sur LinkedIn"
     },
     "contact": {
       "title": "Nous joindre",

@@ -59,6 +59,14 @@ services:
       dockerfile: Dockerfile
     container_name: pillsafe_backend
     restart: unless-stopped
+    # Every Settings field in app/core/config.py arrives through this file —
+    # including REQUIRE_ADMIN_APPROVAL, ADMIN_EMAILS and the SMTP_* block.
+    # Do NOT restate them in the `environment:` mapping below: an explicit
+    # `environment:` entry always beats `env_file` for the same key, so
+    # `ADMIN_EMAILS: ${ADMIN_EMAILS:-}` would silently blank the real value
+    # whenever the var isn't also present at the interpolation level. That is
+    # the exact failure mode documented at length in docker-compose.prod.yml
+    # for BRAINS_SERVICE_URL.
     env_file:
       - ../.env
     environment:

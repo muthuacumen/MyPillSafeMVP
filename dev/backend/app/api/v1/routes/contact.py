@@ -8,6 +8,7 @@ from fastapi import APIRouter, status
 from pydantic import BaseModel, EmailStr
 
 from app.core.config import settings
+from app.services.mail_service import send_contact_email
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/contact", tags=["contact"])
@@ -33,5 +34,12 @@ async def submit_contact_message(payload: ContactRequest) -> dict:
     }
     with open(log_path, "a", encoding="utf-8") as fh:
         fh.write(json.dumps(entry) + "\n")
+
+    # Mail is attempted only AFTER the submission is durably on disk, and its
+    # result never reaches the caller. The JSONL file is the system of record;
+    # the mailbox is a convenience. A message must never be lost because a
+    # relay was down, misconfigured, or (the default) not configured at all.
+    if not await send_contact_email(payload.full_name, payload.email, payload.message):
+        logger.info("Contact submission logged only (no email sent): %s", payload.email)
 
     return {"message": "Thank you — we received your message and will respond soon."}

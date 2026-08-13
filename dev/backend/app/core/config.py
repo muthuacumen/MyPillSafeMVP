@@ -21,6 +21,39 @@ class Settings(BaseSettings):
 
     FRONTEND_ORIGIN: str = "http://localhost:5173"
 
+    # --- Registration gating -------------------------------------------------
+    # Every new signup lands inactive and an admin approves it. Deliberately
+    # rides on the EXISTING `users.is_active` column rather than a new
+    # `approval_status` one: this project is code-first with no migrations, and
+    # `create_all` never ALTERs an existing table -- a column added to the model
+    # but never to Postgres raises UndefinedColumn on every read AND write while
+    # every health check stays green. That is exactly what took the live site
+    # down on 2026-07-30. `is_active` already exists in production and already
+    # means "may this account authenticate", which is the whole question here.
+    #
+    # false is the kill-switch: registration goes back to today's behaviour
+    # (201 + tokens + refresh cookie, account active immediately).
+    REQUIRE_ADMIN_APPROVAL: bool = True
+    # Comma-separated, case-insensitive. Every matching EXISTING user is
+    # promoted to ADMIN and reactivated at boot (app/services/admin_bootstrap).
+    # This is the only way to mint an admin in production -- /dev/seed-admin
+    # 404s unless APP_ENV == "development".
+    ADMIN_EMAILS: str = ""
+
+    # --- Outbound mail (contact form) ---------------------------------------
+    # Inert by default: a blank SMTP_HOST/SMTP_USER/SMTP_PASSWORD makes
+    # mail_service return False without opening a socket, so the app ships and
+    # runs with no credentials at all. Filling these in is what turns the
+    # /contact notification on -- the JSONL log is written either way and is
+    # still the system of record.
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM: str = ""
+    SMTP_STARTTLS: bool = True
+    CONTACT_TO: str = "info@mypillsafe.ca"
+
     OPENAPI_ENABLED: bool = True
     # Real PaddleOCR prescription parsing. Was left off by default, which meant
     # every upload silently returned canned demo text regardless of the image —
