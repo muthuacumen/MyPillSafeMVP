@@ -71,6 +71,19 @@ except Exception as exc:  # pragma: no cover - defensive, exercised by /health
     sb2_reference = None  # type: ignore[assignment]
     _sb2_import_error = repr(exc)
 
+# STEP 7b: the label_to_din production caller. MUST be imported AFTER the
+# `sb2` try/except block directly above, never before -- `production_wiring`
+# transitively imports `nb08_verify`, which inserts `SB2_Prototype` onto
+# `sys.path` and does its own `import sb2`. If that ran FIRST (e.g. this
+# import moved above the block above), `sb2` would be cached from
+# SB2_Prototype for the REST OF THIS PROCESS -- silently switching every
+# endpoint (not just /pill/analyze) off whatever `config.SB2_ROOT` actually
+# selected (production `SB2/` by default). Importing it here, after `sb2`
+# is already resolved and cached, makes nb08_verify's own `import sb2`
+# transparently reuse that SAME cached module -- see production_wiring.py's
+# module docstring.
+import production_wiring  # noqa: E402
+
 try:
     from rapidfuzz import fuzz, process
 except Exception:  # pragma: no cover - rapidfuzz is a hard sidecar dependency
@@ -179,6 +192,22 @@ def _json_safe(obj: Any) -> Any:
 
 # --- /health -----------------------------------------------------------------
 
+def _stage2_deps_ok() -> Any:
+    """Can THIS interpreter build the Stage 2 scorer? Import-check only.
+
+    MEASURED 2026-08-14: `dev/brains/.venv` carries torch 2.13.0 and
+    transformers 5.14.1 but NO `bitsandbytes` and NO `accelerate`, while
+    `ConstrainedScorer` loads 4-bit NF4 -- and 4-bit is not a preference here
+    (bf16 is 8.88 GB against an 8.19 GB card). Checked with `importlib.util
+    .find_spec`, which does NOT execute the modules, so this stays cheap enough
+    for a 30-second poll.
+    """
+    import importlib.util
+    missing = [m for m in ("transformers", "bitsandbytes", "accelerate")
+               if importlib.util.find_spec(m) is None]
+    return True if not missing else f"missing: {', '.join(missing)}"
+
+
 @app.get("/health")
 def health() -> dict:
     if _REFERENCE_DF is not None:
@@ -207,6 +236,19 @@ def health() -> dict:
             else (_PROFILE_LOAD_ERROR or "unavailable")
         ),
         "torch_cuda_available": torch_cuda_available,
+        # M1 (2026-08-14) -- the two-stage imprint reader's CONFIGURATION, not a
+        # probe. `reader_backend_report()` reads config and module state only:
+        # it never loads the 4-bit scorer, because /health is polled every 30 s
+        # by the pool checker (backend/app/services/brains_registry.py) and a
+        # health check that could pull 2.5 GB of weights into an 8.2 GB card is
+        # a liability, not a check. `stage2_deps_ok` is the BLOCKER this build
+        # reported: the sidecar venv has transformers but no bitsandbytes, so
+        # `PILLSAFE_READER=two_stage` would fail at the first request. Surfaced
+        # here so a deploy can see it BEFORE a patient's photo does.
+        "reader": {
+            **production_wiring.reader_backend_report(),
+            "stage2_deps_ok": _stage2_deps_ok(),
+        },
         # File-exists check ONLY -- deliberately never imports paddle or spawns
         # a probe subprocess here. /health is polled by the pool checker every
         # 30s (see backend/app/services/brains_registry.py); a slow/heavy
@@ -353,8 +395,48 @@ async def pill_analyze(
             tmp.write(image_bytes)
             tmp_path = tmp.name
 
+        session = None
         try:
-            record = await run_in_threadpool(imb1.analyze_pill, tmp_path)
+            # M1 (2026-08-14): with the reader ENABLED, `/pill/analyze` produces
+            # a C6 record -- `faces[]` populated by the two-stage reader (A3
+            # presence gate -> A4c constrained read) -- instead of the legacy
+            # `imprint_reads` shape. This matters because `sb2.match_pill`
+            # branches on `record["contract_version"] == "C6"`: STEP 7b made the
+            # `label_to_din` map reachable, and only a C6 record makes it
+            # EFFECTIVE. `analyze()` hoists the `VerifySession` so ONE lexicon
+            # serves both the reader's ballot and SB2's map (PROV-1).
+            #
+            # DEFAULT IS OFF (`config.READER_ENABLED`). Unset, this is the
+            # byte-identical legacy line it replaces -- the reader loads a 4-bit
+            # VLM into an 8.6 GB card on first request, which is Muthu's
+            # deployment decision to make by setting `PILLSAFE_READER`, not a
+            # promotion's decision to make for him.
+            if config.READER_ENABLED and dins:
+                record, session = await run_in_threadpool(
+                    production_wiring.analyze, tmp_path, dins,
+                    reference_workbook=getattr(sb2_reference, "_DEFAULT_XLSX", None),
+                )
+                record = record.to_dict() if hasattr(record, "to_dict") else record
+            else:
+                record = await run_in_threadpool(imb1.analyze_pill, tmp_path)
+        except production_wiring.ReaderError as exc:
+            # M1 REPAIR 2026-08-14 (finding S7). MUST stay ABOVE the generic
+            # handler below -- `ReaderError` is an `Exception`, so the order of
+            # these two blocks IS the behaviour. Same status code (422) as the
+            # generic case on purpose: the client contract does not change and
+            # the droplet keeps its single failure branch. What changes is that
+            # the detail names the cause -- the ARMED reader failed on this
+            # request (after one retry), which is a VRAM/config condition an
+            # operator can act on, as opposed to "there is no pill in this
+            # photograph", which is the patient's to act on. See
+            # `production_wiring.ReaderError` for why this is a refusal and not
+            # a silent fallback to the legacy PaddleOCR reader.
+            raise HTTPException(
+                status_code=422,
+                detail={"error": {"code": production_wiring.READER_ERROR_CODE,
+                                  "message": str(exc),
+                                  "attempts": getattr(exc, "attempts", None)}},
+            ) from exc
         except Exception as exc:
             raise HTTPException(
                 status_code=422,
@@ -374,7 +456,25 @@ async def pill_analyze(
                 status_code=503,
                 detail={"error": {"code": "SB2_UNAVAILABLE", "message": _sb2_import_error or "sb2 package not importable"}},
             )
-        match = await run_in_threadpool(_sb2_match_pill, record, dins)
+        # STEP 7b (PRODUCTION_WIRING, formerly OWED): route through
+        # production_wiring.decide() instead of calling _sb2_match_pill
+        # directly. It builds a VerifySession from THIS request's own
+        # profile DINs and threads its label_to_din map through --
+        # transparently a no-op (identical to the line this replaces) when
+        # the imported sb2.match_pill does not accept the kwarg (production
+        # SB2/ as of 2026-08-13) or when session construction fails for any
+        # reason. See production_wiring.py's module docstring for the two
+        # measured, independent ways production SB2/ fails this today.
+        #
+        # M1: when `analyze()` above already built a session (reader path), the
+        # SAME object decides -- see `decide()`'s docstring for why rebuilding
+        # one here would hollow out PROV-1.
+        match = await run_in_threadpool(
+            production_wiring.decide, record, dins,
+            sb2_match_pill=_sb2_match_pill,
+            reference_workbook=getattr(sb2_reference, "_DEFAULT_XLSX", None),
+            session=session,
+        )
         return _json_safe({"record": record, "match": match})
 
     return _json_safe({"record": record, "match": None, "note": "no profile DINs supplied — matching skipped"})

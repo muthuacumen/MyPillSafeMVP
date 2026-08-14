@@ -46,6 +46,48 @@ SB2_ROOT = os.environ.get("SB2_ROOT") or _default_root("SB2", _LITERAL_DEFAULTS[
 BB3_ROOT = os.environ.get("BB3_ROOT") or _default_root("BB3", _LITERAL_DEFAULTS["BB3_ROOT"])
 BRAINS_PORT = int(os.environ.get("BRAINS_PORT", "8100"))
 
+# --- M1 (2026-08-14): the two-stage imprint reader ------------------------
+#
+# `PILLSAFE_READER` -- master switch for `/pill/analyze`'s imprint path.
+#   "off"  (DEFAULT, unchanged behaviour): call the legacy
+#          `imb1.analyze_pill(photo)`. No reader, no C6 record, no `faces[]`
+#          -- byte-identical to the pre-M1 sidecar.
+#   "two_stage": route through `production_wiring.analyze()`, which builds ONE
+#          `VerifySession` and runs A3 presence gate -> A4c constrained read.
+#
+# Defaulting to "off" is deliberate. The reader loads a 4-bit VLM into an
+# 8.6 GB card at first request; that is a deployment decision Muthu makes by
+# setting a variable, not one a code promotion makes for him.
+READER_MODE = (os.environ.get("PILLSAFE_READER") or "off").strip().lower()
+READER_ENABLED = READER_MODE in ("two_stage", "twostage", "on", "1", "true")
+
+# `PILLSAFE_STAGE1` -- WHICH instrument answers Stage 1 (the presence gate).
+#   "single" (DEFAULT): the SAME in-process 4.4B `Qwen/Qwen3-VL-4B-Instruct`
+#          NF4 weights Stage 2 already loads, via
+#          `ConstrainedScorer.generate_presence`. NB08_37 measured this ~20x
+#          faster than the 8.8B incumbent while passing the safety bars, and
+#          it keeps ONE model in VRAM instead of two.
+#   "ollama": the 8.8B `qwen3-vl:latest` over Ollama HTTP
+#          (`nb08_read16_vlm.call_a3`) -- the incumbent, kept switchable
+#          because Stage 1 is a KILL-ONLY screen: it can refuse to call
+#          Stage 2, never name a pill. A fallback for a kill-only screen must
+#          stay one config change away.
+#
+# 🔴 CORRECTED 2026-08-14 (REPAIR agent, finding S6) -- WHAT `ollama` DOES NOT
+# BUY YOU. It swaps STAGE 1 ONLY. `production_wiring.build_reader()` still
+# evaluates `scorer or get_scorer()` on that branch, because Stage 2 (the
+# constrained ranker) has no Ollama equivalent -- so `PILLSAFE_STAGE1=ollama`
+# STILL loads the 4-bit NF4 scorer and STILL requires `bitsandbytes`,
+# `accelerate` and a GPU. It is NOT a dependency-free fallback and must never
+# be recommended as the answer to a Stage 2 load failure. The only switch that
+# avoids the scorer entirely is `PILLSAFE_READER=off` above.
+STAGE1_BACKEND = (os.environ.get("PILLSAFE_STAGE1") or "single").strip().lower()
+
+# `PILLSAFE_SCORER_DEVICE` -- where Stage 2 runs. "cuda" (default) or "cpu".
+# CPU is measured at ~47 s per forward pass and there are ~15 candidates per
+# crop: usable only for a wiring smoke test, never for a request.
+SCORER_DEVICE = (os.environ.get("PILLSAFE_SCORER_DEVICE") or "cuda").strip().lower()
+
 for _root in (IMB1_ROOT, SB2_ROOT, BB3_ROOT):
     if _root and _root not in sys.path:
         sys.path.insert(0, _root)
