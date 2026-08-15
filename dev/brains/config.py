@@ -48,6 +48,9 @@ BRAINS_PORT = int(os.environ.get("BRAINS_PORT", "8100"))
 
 # --- M1 (2026-08-14): the two-stage imprint reader -------------------------
 # --- GOAL1 (2026-08-15): legacy paddle OCR path removed, "off" retired ----
+# --- T06 REPAIR (2026-08-15, finding 1): closed the silent-disable loophole -
+#     any value outside the valid set now raises, instead of only the
+#     explicitly-retired ones -- see below.
 #
 # `PILLSAFE_READER` -- master switch for `/pill/analyze`'s imprint path.
 #   "two_stage" (DEFAULT, since 2026-08-15): route through
@@ -71,22 +74,46 @@ BRAINS_PORT = int(os.environ.get("BRAINS_PORT", "8100"))
 _VALID_READER_MODES = ("two_stage", "twostage", "on", "1", "true")
 _RETIRED_READER_MODES = ("off", "0", "false", "none")
 
-# An unset or empty PILLSAFE_READER falls through the `or` below to the
-# default before this check ever runs, so only an EXPLICIT retired value
-# (someone still setting `PILLSAFE_READER=off`) can land here.
-READER_MODE = (os.environ.get("PILLSAFE_READER") or "two_stage").strip().lower()
-if READER_MODE in _RETIRED_READER_MODES:
+# T06 REPAIR (2026-08-15, finding 1): the refuter found that ANY value not in
+# _VALID_READER_MODES and not in _RETIRED_READER_MODES (a typo, stray
+# whitespace, anything unrecognized) fell through BOTH checks below with no
+# error and silently produced READER_ENABLED=False -- a second, undocumented
+# way to disable the reader that the comments above claimed did not exist.
+# Fixed by inverting the check: normalize first (unset/blank/whitespace-only
+# collapse to the "two_stage" default, same as before), then require
+# membership in _VALID_READER_MODES for EVERY other value -- unrecognized
+# values now raise exactly like retired ones, just with a different message.
+_RAW_READER_MODE = os.environ.get("PILLSAFE_READER")
+READER_MODE = (_RAW_READER_MODE or "").strip().lower() or "two_stage"
+if READER_MODE not in _VALID_READER_MODES:
+    if READER_MODE in _RETIRED_READER_MODES:
+        raise RuntimeError(
+            f"PILLSAFE_READER={READER_MODE!r} is no longer a valid value. The "
+            "legacy paddle OCR imprint path it selected was removed "
+            "2026-08-15 (archived at "
+            "Archive/2bdeleted/2026-08-15_paddleocr_removal/MANIFEST.md, "
+            "which also carries restore instructions). Valid values: "
+            "'two_stage' (the default; 'twostage', 'on', '1', 'true' are "
+            "accepted synonyms). Unset the variable to use the default "
+            "instead of disabling the reader -- there is no longer a way to "
+            "disable it."
+        )
     raise RuntimeError(
-        f"PILLSAFE_READER={READER_MODE!r} is no longer a valid value. The "
-        "legacy paddle OCR imprint path it selected was removed 2026-08-15 "
-        "(archived at "
-        "Archive/2bdeleted/2026-08-15_paddleocr_removal/MANIFEST.md, which "
-        "also carries restore instructions). Valid values: 'two_stage' "
-        "(the default; 'twostage', 'on', '1', 'true' are accepted synonyms). "
-        "Unset the variable to use the default instead of disabling the "
-        "reader -- there is no longer a way to disable it."
+        f"PILLSAFE_READER={_RAW_READER_MODE!r} is not a recognized value. "
+        f"Valid values: {_VALID_READER_MODES!r} (unset, empty, or "
+        "whitespace-only defaults to 'two_stage'). Values that used to "
+        f"disable the reader and are now retired: {_RETIRED_READER_MODES!r} "
+        "-- there is no longer a way to disable it, so no other value is "
+        "accepted either."
     )
-READER_ENABLED = READER_MODE in _VALID_READER_MODES
+# T06 REPAIR (2026-08-15, finding 1): READER_MODE is now GUARANTEED to be a
+# member of _VALID_READER_MODES at this point -- every other input raised
+# above instead of falling through. The valid set is a set of synonyms for
+# ONE arm (there is no second arm to select), so this is a constant, not a
+# computed membership test: no input can reach this line and still produce
+# False. If _VALID_READER_MODES is ever trimmed to exactly {"two_stage"},
+# this line does not need to change.
+READER_ENABLED = True
 
 # `PILLSAFE_STAGE1` -- WHICH instrument answers Stage 1 (the presence gate).
 #   "single" (DEFAULT): the SAME in-process 4.4B `Qwen/Qwen3-VL-4B-Instruct`
