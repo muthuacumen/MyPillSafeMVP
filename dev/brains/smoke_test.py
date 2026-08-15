@@ -141,10 +141,19 @@ def main() -> None:
         body = resp.json()
 
         # --- strict shape assertions ---
+        # GOAL1 (2026-08-15): the legacy `imprint_reads` key no longer exists
+        # anywhere -- the paddle OCR path that produced it was removed (archived
+        # in Archive/2bdeleted/2026-08-15_paddleocr_removal). This now asserts
+        # the C6 contract shape instead: `contract_version` present, and
+        # `faces` present as a list (populated when the two-stage reader is
+        # armed and a profile was supplied; empty otherwise -- see
+        # `nb08_imb1.build_record`'s own docstring for why an empty list means
+        # UNKNOWN, not a terminal no-imprint verdict).
         record = body.get("record")
         assert record is not None, f"missing record in response: {body}"
-        for key in ("detected", "colour_modes", "shape_out", "type_out", "imprint_reads"):
+        for key in ("detected", "contract_version", "colour_modes", "shape_out", "type_out", "faces"):
             assert key in record, f"record missing key {key!r}: {record}"
+        assert isinstance(record["faces"], list), f"record['faces'] should be a list: {record['faces']!r}"
 
         match = body.get("match")
         assert match is not None, f"expected a match (profile_dins was non-empty): {body}"
