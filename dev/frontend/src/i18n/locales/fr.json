@@ -34,6 +34,7 @@
     "adminUsers": "Gestion des utilisateurs",
     "signOut": "Se déconnecter",
     "menu": "Menu",
+    "trayCheck": "Vérifier un plateau",
     "short": {
       "dashboard": "Accueil",
       "scanRx": "Ordonnance",
@@ -281,6 +282,56 @@
     "uploadAPhoto": "Téléverser une photo",
     "deniedMessage": "L'accès à la caméra a été refusé ou n'est pas disponible. Vous pouvez téléverser une photo à la place.",
     "capturedPreviewAlt": "Aperçu de la photo capturée"
+  },
+  "trayCheck": {
+    "captureLabel": "Photographier le plateau",
+    "reshootCaptureLabel": "Photographier à nouveau pour la reprise",
+    "intro": "Photographiez les six alvéoles du plateau en une seule fois. MyPillSafe vérifie chaque emplacement séparément, de la même façon qu'il vérifie un comprimé à la fois.",
+    "uploading": "Vérification de votre plateau…",
+    "uploadingSub": "Cela peut prendre jusqu'à une minute pour six comprimés.",
+    "reshootTitle": "Un ou plusieurs emplacements ont besoin d'une photo plus claire",
+    "reshootBody": "Photographiez le plateau à nouveau pour que MyPillSafe puisse revérifier les emplacements marqués ci-dessous.",
+    "scanNewTray": "Vérifier un autre plateau",
+    "tryAgain": "Réessayer",
+    "slotLabel": "Emplacement {{n}}",
+    "dinLabel": "DIN {{din}}",
+    "contractErrorBadge": "Revérifiez cet emplacement avec votre pharmacien",
+    "verdictLabel": {
+      "verify": "Vérifié",
+      "reject": "Ne correspond pas",
+      "abstain": "Incertain",
+      "unreadable": "Illisible",
+      "noImprint": "Aucune inscription",
+      "empty": "Vide",
+      "error": "Erreur",
+      "readOnly": "Non vérifié"
+    },
+    "error": {
+      "disabled": "La vérification de plateau n'est pas encore activée sur ce serveur. Veuillez réessayer plus tard, ou utilisez Scanner un comprimé pour vérifier un comprimé à la fois.",
+      "badNoneRoute": "Cette demande de reprise n'a pas été comprise. Veuillez recommencer.",
+      "brainsUnavailable": "La vérification de plateau est temporairement indisponible — le service d'analyse est injoignable. Votre photo était correcte ; veuillez réessayer dans quelques minutes.",
+      "serverGeneric": "Une erreur s'est produite de notre côté. Veuillez réessayer.",
+      "default": "Impossible de vérifier ce plateau. Essayez un arrière-plan uni et bien éclairé, et assurez-vous que les six alvéoles sont visibles."
+    }
+  },
+  "msgCatalog": {
+    "tray.slot.verify": "Ce comprimé correspond à l'un des médicaments de votre liste. (provisoire)",
+    "tray.slot.reject": "Ce comprimé ne correspond à aucun médicament de votre liste. Ne le prenez pas. Consultez votre pharmacien. (provisoire)",
+    "tray.slot.abstain": "MyPillSafe n'a pas pu se prononcer sur ce comprimé. Consultez votre pharmacien. (provisoire)",
+    "tray.slot.abstain.ask_to_flip": "MyPillSafe doit voir l'autre côté de ce comprimé. Retournez-le et photographiez le plateau à nouveau. (provisoire)",
+    "tray.slot.abstain.shortlist": "MyPillSafe a réduit les possibilités pour ce comprimé, mais n'a pas pu confirmer une seule réponse. Consultez votre pharmacien. (provisoire)",
+    "tray.slot.empty": "Cet emplacement est vide. (provisoire)",
+    "tray.slot.error": "MyPillSafe n'a pas pu vérifier cet emplacement. Essayez de photographier le plateau à nouveau. (provisoire)",
+    "tray.slot.error.contract": "MyPillSafe n'a pas pu vérifier cet emplacement en toute sécurité et n'affiche donc aucun résultat. Ne vous fiez pas à cet emplacement. Consultez votre pharmacien. (provisoire)",
+    "tray.slot.read_only": "MyPillSafe n'a pas comparé ce comprimé à votre liste de médicaments. (provisoire)",
+    "tray.presence.none_retry": "Aucune inscription n'est visible sur la face de ce comprimé actuellement tournée vers le haut. Retournez le comprimé et photographiez le plateau à nouveau. (provisoire)",
+    "tray.hedge.pharmacist": "Aide à la décision seulement — pas une détermination clinique. Vérifiez auprès d'un pharmacien. (provisoire)",
+    "pill.presence.unreadable": "Nous n'avons pas pu lire les inscriptions sur ce comprimé. Essayez une autre photo, ou retournez le comprimé et photographiez l'autre côté.",
+    "pill.presence.none": "Ce comprimé ne porte aucune inscription ; MyPillSafe ne peut donc pas l'identifier. Veuillez consulter votre pharmacien.",
+    "pill.scope.unsupported": "MyPillSafe ne couvre encore aucun des médicaments de votre liste, il ne peut donc pas vérifier ce comprimé.",
+    "pill.scope.unsupported_note": "Certains médicaments de votre liste ne sont pas encore couverts par MyPillSafe. Ce comprimé pourrait en faire partie.",
+    "pill.scope.no_profile": "Aucun médicament ne figure encore sur votre liste, il n'y a donc rien avec quoi comparer ce comprimé.",
+    "frontend.trayGuard.contractError": "Cet emplacement n'a pas pu être vérifié en toute sécurité ; son résultat n'est donc pas affiché. Consultez votre pharmacien pour cet emplacement. (provisoire)"
   },
   "admin": {
     "dashboard": "Tableau de bord admin",

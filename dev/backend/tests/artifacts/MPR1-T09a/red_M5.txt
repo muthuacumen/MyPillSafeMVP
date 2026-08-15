@@ -1,0 +1,81 @@
+MPR1-T09a MUTATION M5
+defect  : SB2's RAW decision is persisted verbatim again -- a D-7 downgraded slot lands in `analyses.decision` as `verify` and Safety Records lights it up GREEN 'matched' for a pill the tray page said not to rely on
+file    : app\api\v1\routes\tray.py
+replaced: decision=decision,
+            abstain_action=abstain_action,
+with    : decision=slot["decision"],  # MUTANT
+            abstain_action=slot["abstain_action"],  # MUTANT
+bar     : tests/test_tray_slots.py::test_F1a_d7_downgraded_slot_is_never_matched_in_safety_records
+exit    : 1 (RED (expected))
+==============================================================================
+F                                                                        [100%]
+================================== FAILURES ===================================
+_______ test_F1a_d7_downgraded_slot_is_never_matched_in_safety_records ________
+
+client = <httpx.AsyncClient object at 0x00000267ED4027E0>
+auth_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4YmIyMWMxYy1lZWM1LTQwNzAtOTJiYS00ZWUzNzliZGN...VOVCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3ODY3OTQyNTksImV4cCI6MTc4Njc5Nzg1OX0.qpaZo72eNLaNY4R9x4GuzOH2kQ3sNmF-hmi6iKA14hE'}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000267ED403E90>
+db_session = <sqlalchemy.ext.asyncio.session.AsyncSession object at 0x00000267ED403320>
+
+    @pytest.mark.asyncio
+    async def test_F1a_d7_downgraded_slot_is_never_matched_in_safety_records(
+        client, auth_headers, monkeypatch, db_session: AsyncSession
+    ):
+        """[BLOCKER 1] The DECISION OF RECORD is the SLOT VERDICT, never SB2's raw
+        decision. A D-7 downgraded slot used to persist `decision="verify"`, which
+        `routes/scans.py` maps to a GREEN "matched" row -- Safety Records told the
+        patient the same pill was verified that the tray page told them not to
+        rely on. The raw decision survives ONLY in `label_info`, audit detail no
+        list/status mapping reads.
+        """
+        await _arm(monkeypatch, client, auth_headers, _full_tray("verify", record=RECORD_BAD_CONTRACT))
+        body = (await _post(client, auth_headers)).json()
+        assert body["slots"][0]["verdict"] == Verdict.ERROR  # D-7 held on the tray page
+    
+        listed = (await client.get("/api/v1/scans/me", headers=auth_headers)).json()
+        assert len(listed) == 1
+        row = listed[0]
+>       assert row["match_status"] != "matched"
+E       AssertionError: assert 'matched' != 'matched'
+
+tests\test_tray_slots.py:717: AssertionError
+---------------------------- Captured stderr setup ----------------------------
+2026-08-15 07:44:19,960  INFO      app.services.auth_service  User registered, awaiting admin approval: patient_23787180bf@pillsafe.dev
+2026-08-15 07:44:19,962  INFO      httpx  HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 202 Accepted"
+----------------------------- Captured log setup ------------------------------
+INFO     app.services.auth_service:auth_service.py:58 User registered, awaiting admin approval: patient_23787180bf@pillsafe.dev
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 202 Accepted"
+---------------------------- Captured stderr call -----------------------------
+2026-08-15 07:44:19,995  INFO      app.api.v1.routes.prescriptions  Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\105981a2-7510-445d-8834-1e6d1591e318\c2efbf4b-8f77-4d0f-95e3-a9f4ee050696.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+2026-08-15 07:44:19,995  WARNING   app.services.brains_client  Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+2026-08-15 07:44:19,995  INFO      app.api.v1.routes.prescriptions  Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+2026-08-15 07:44:20,007  INFO      httpx  HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+2026-08-15 07:44:20,026  WARNING   app.services.brains_client  Brains sidecar profile lookup failed (dins=['DIN13803']): connection refused
+2026-08-15 07:44:20,033  INFO      httpx  HTTP Request: PATCH http://test/api/v1/prescriptions/22f2163e-ac6e-47f7-9881-b20c0c5fa6d2 "HTTP/1.1 200 OK"
+2026-08-15 07:44:20,048  WARNING   app.services.tray_messages  Tray well carried a record that fails C6 validation: contract_version is 'C5', expected 'C6' -- refuse a record you do not understand rather than mis-read it
+2026-08-15 07:44:20,054  INFO      httpx  HTTP Request: POST http://test/api/v1/tray/analyze "HTTP/1.1 200 OK"
+2026-08-15 07:44:20,064  INFO      httpx  HTTP Request: GET http://test/api/v1/scans/me "HTTP/1.1 200 OK"
+------------------------------ Captured log call ------------------------------
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:148 Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\105981a2-7510-445d-8834-1e6d1591e318\c2efbf4b-8f77-4d0f-95e3-a9f4ee050696.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+WARNING  app.services.brains_client:brains_client.py:149 Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:213 Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+WARNING  app.services.brains_client:brains_client.py:240 Brains sidecar profile lookup failed (dins=['DIN13803']): connection refused
+INFO     httpx:_client.py:1742 HTTP Request: PATCH http://test/api/v1/prescriptions/22f2163e-ac6e-47f7-9881-b20c0c5fa6d2 "HTTP/1.1 200 OK"
+WARNING  app.services.tray_messages:tray_messages.py:229 Tray well carried a record that fails C6 validation: contract_version is 'C5', expected 'C6' -- refuse a record you do not understand rather than mis-read it
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/tray/analyze "HTTP/1.1 200 OK"
+INFO     httpx:_client.py:1742 HTTP Request: GET http://test/api/v1/scans/me "HTTP/1.1 200 OK"
+============================== warnings summary ===============================
+tests/test_tray_slots.py::test_F1a_d7_downgraded_slot_is_never_matched_in_safety_records
+tests/test_tray_slots.py::test_F1a_d7_downgraded_slot_is_never_matched_in_safety_records
+tests/test_tray_slots.py::test_F1a_d7_downgraded_slot_is_never_matched_in_safety_records
+tests/test_tray_slots.py::test_F1a_d7_downgraded_slot_is_never_matched_in_safety_records
+  D:\Projects\PillSafe\PillSafe\dev\backend\venv\Lib\site-packages\jose\jwt.py:311: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = timegm(datetime.utcnow().utctimetuple())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_tray_slots.py::test_F1a_d7_downgraded_slot_is_never_matched_in_safety_records
+1 failed, 4 warnings in 1.16s
+
+

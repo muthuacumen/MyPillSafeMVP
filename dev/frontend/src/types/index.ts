@@ -301,6 +301,99 @@ export interface QAChatResponse {
   model?: string;
 }
 
+/* --- Tray scan (MPR1-T04/T07). `POST /api/v1/tray/analyze` -- the multi-pill
+ * sibling of `/analyze/pill/v2`. One photo of up to six wells; the backend
+ * always returns exactly six SLOTS (`slot = well + 1`, computed server-side)
+ * so the frontend never does that arithmetic and never renders a grid with a
+ * hole in it. Schema is FROZEN per the T03/T04 briefs (MPR1 `_INDEX.md`
+ * "Frozen inter-table contract"); any drift found here is a STOP-and-report,
+ * not a local fix. */
+
+/** A backend message: `key` is a flat, pre-namespaced identifier (e.g.
+ * "tray.slot.abstain.ask_to_flip" sits alongside the shorter "tray.slot.abstain"
+ * as an unrelated sibling key, not a nested child of it) -- see
+ * `src/lib/trayMessages.ts` for why that means it is looked up by direct
+ * property access on the `msgCatalog` locale bundle, not through i18next's
+ * dot-splitting `t()`. `default_en` is the fallback for a key our locale
+ * files don't have yet (a future/unknown backend key); `provisional` flags a
+ * key outside C.6's reviewed closed set. */
+export interface TrayMsg {
+  key: string;
+  params: Record<string, unknown> | null;
+  default_en: string;
+  provisional: boolean;
+}
+
+/** The closed set of per-slot verdicts the frontend switches on
+ * (backend `app/services/tray_messages.py::Verdict`). */
+export type TraySlotVerdict =
+  | 'verify'
+  | 'reject'
+  | 'abstain'
+  | 'unreadable'
+  | 'no_imprint'
+  | 'empty'
+  | 'error'
+  | 'read_only';
+
+export type TraySlotAction = 'none' | 'flip_reshoot' | 'shortlist' | 'retry' | 'ask_pharmacist';
+
+export type TrayAlertLevel = 'ok' | 'warning' | 'danger' | 'info';
+
+export type TrayNoneRoute = 'retry' | 'terminal';
+
+export interface TraySlot {
+  /** 1..6, patient-facing. */
+  slot: number;
+  /** 0..5, the sidecar's own well index. */
+  well: number;
+  occupied: boolean;
+  /** False = the tray NONE/flip-reshoot loop can still ask for a reshoot on
+   * this slot; true = this slot's outcome will not change on a reshoot. */
+  terminal: boolean;
+  message: TrayMsg | null;
+  notes: TrayMsg[];
+  faces_seen: number;
+  verdict: TraySlotVerdict;
+  action: TraySlotAction;
+  alert: TrayAlertLevel;
+  decision: 'verify' | 'reject' | 'abstain' | null;
+  abstain_action: string | null;
+  /** Canonical 8-digit zero-padded DIN, withheld whenever the slot's
+   * message-owning layer (presence/scope, or the D-7 contract-error
+   * downgrade) does not want an identification shown beside its message. */
+  matched_din: string | null;
+  breakdown: Record<string, unknown> | null;
+  pharmacist_hedge: string;
+  error: string | null;
+  /** Non-null = the backend could not validate this slot's record against
+   * the C6 contract. D-7 (Muthu, 2026-08-14): the backend already downgrades
+   * such a slot to verdict "error" uniformly -- see
+   * `src/lib/trayContractGuard.ts` for the frontend's defense-in-depth. */
+  contract_error: string | null;
+}
+
+export interface TrayProfileSummary {
+  profile_n: number;
+  supported_n: number;
+  unsupported_n: number;
+  notice: TrayMsg | null;
+}
+
+export interface TrayAnalysisResponse {
+  status: 'ok' | 'no_profile' | 'unsupported_profile';
+  tray: boolean;
+  pipeline: string | null;
+  slot_count: number;
+  terminal: boolean;
+  none_route: TrayNoneRoute;
+  message: TrayMsg | null;
+  profile: TrayProfileSummary;
+  slots: TraySlot[];
+  timing_ms: Record<string, unknown>;
+  analysis_ids: string[];
+}
+
 export interface Patient {
   id: string;
   first_name: string;

@@ -78,6 +78,28 @@ class Settings(BaseSettings):
     BRAINS_SERVICE_URL: str = "http://127.0.0.1:8100"
     PILL_V2_ENABLED: bool = True
 
+    # --- Tray scan (MPR1-T04) ------------------------------------------------
+    # `/api/v1/tray/analyze` proxies the sidecar's `/tray/analyze`. Pure
+    # kill-switch, same shape as PILL_V2_ENABLED: off -> 501.
+    #
+    # DEFAULT OFF, and unlike PILL_V2_ENABLED it stays off until someone turns
+    # it on. The production sidecar does not serve `/tray/analyze` yet, so
+    # default-on meant the next routine deploy exposed tray scanning to real
+    # patients against a sidecar that cannot answer -- a feature shipped by
+    # forgetting rather than by deciding. Set TRAY_ANALYZE_ENABLED=true on a
+    # deployment whose sidecar actually has the route.
+    TRAY_ANALYZE_ENABLED: bool = False
+    # Server default for the tray NONE (no markings on any photographed face)
+    # route: "retry" -> Flip/Reshoot alongside Unreadable, which is Muthu's
+    # filed tray call (3); "terminal" -> the single-pill v3 1.8 message.
+    #
+    # WHETHER THE RETRY LOOP SHOULD EVER BECOME TERMINAL IS PENDING WITH MUTHU
+    # (a pill blank on BOTH faces would otherwise loop forever). Both routes
+    # are built and the request may override this per call, so the choice can
+    # be made later without touching the verdict layer. Do not "resolve" this
+    # by deleting a branch.
+    TRAY_NONE_ROUTE: str = "retry"
+
     # Sidecar pool (Task A3, deploy-readiness build): comma-separated URLs for
     # a team of laptop-hosted sidecars, health-checked so a closed laptop
     # doesn't take the demo down. Empty (the default) is the back-compat

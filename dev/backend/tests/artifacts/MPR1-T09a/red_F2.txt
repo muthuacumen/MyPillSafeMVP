@@ -1,0 +1,57 @@
+MPR1-T09a RED-FIRST F2 -- captured BEFORE the fix, pristine app/ tree
+selector: -k "test_F2a_tray_analyze_ships_disabled_by_default or test_F2b_shipped_default_makes_the_route_501"
+==============================================================================
+FF                                                                       [100%]
+================================== FAILURES ===================================
+_______________ test_F2a_tray_analyze_ships_disabled_by_default _______________
+
+    def test_F2a_tray_analyze_ships_disabled_by_default():
+        """[SERIOUS 5, backend half] Default-on shipped the feature at the next
+        routine deploy, against a production sidecar with no `/tray/analyze`.
+        `_env_file=None` reads the SHIPPED default, not this machine's .env."""
+        from app.core.config import Settings
+    
+>       assert Settings(_env_file=None).TRAY_ANALYZE_ENABLED is False
+E       AssertionError: assert True is False
+E        +  where True = Settings(APP_ENV='development', APP_VERSION='0.1.0', SECRET_KEY='change-this-secret-key-in-production', ALGORITHM='HS2...LYZE_ENABLED=True, TRAY_NONE_ROUTE='retry', BRAINS_SERVICE_URLS='', RX_LLM_PARSE_ENABLED=True, RX_PARSE_BACKEND='qwen').TRAY_ANALYZE_ENABLED
+E        +    where Settings(APP_ENV='development', APP_VERSION='0.1.0', SECRET_KEY='change-this-secret-key-in-production', ALGORITHM='HS2...LYZE_ENABLED=True, TRAY_NONE_ROUTE='retry', BRAINS_SERVICE_URLS='', RX_LLM_PARSE_ENABLED=True, RX_PARSE_BACKEND='qwen') = <class 'app.core.config.Settings'>(_env_file=None)
+
+tests\test_tray_slots.py:761: AssertionError
+________________ test_F2b_shipped_default_makes_the_route_501 _________________
+
+client = <httpx.AsyncClient object at 0x0000018A972176E0>
+auth_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzN2YxOTAwYy03YjBiLTQ4ODMtYjc2OC0wYzUwZTJhYWM...VOVCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3ODY3OTM5NjEsImV4cCI6MTc4Njc5NzU2MX0.BN4H--D0Jnq8l7pD6gQ1BvJyx55LZaZB8Kzyykuq3o0'}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000018A97216AE0>
+
+    @pytest.mark.asyncio
+    async def test_F2b_shipped_default_makes_the_route_501(client, auth_headers, monkeypatch):
+        from app.core.config import Settings
+    
+        monkeypatch.setattr(settings, "TRAY_ANALYZE_ENABLED",
+                            Settings(_env_file=None).TRAY_ANALYZE_ENABLED)
+        resp = await _post(client, auth_headers)
+>       assert resp.status_code == 501
+E       assert 200 == 501
+E        +  where 200 = <Response [200 OK]>.status_code
+
+tests\test_tray_slots.py:771: AssertionError
+---------------------------- Captured stderr setup ----------------------------
+2026-08-15 07:39:21,290  INFO      app.services.auth_service  User registered, awaiting admin approval: patient_44c3fcec39@pillsafe.dev
+2026-08-15 07:39:21,291  INFO      httpx  HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 202 Accepted"
+----------------------------- Captured log setup ------------------------------
+INFO     app.services.auth_service:auth_service.py:58 User registered, awaiting admin approval: patient_44c3fcec39@pillsafe.dev
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 202 Accepted"
+---------------------------- Captured stderr call -----------------------------
+2026-08-15 07:39:21,310  INFO      httpx  HTTP Request: POST http://test/api/v1/tray/analyze "HTTP/1.1 200 OK"
+------------------------------ Captured log call ------------------------------
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/tray/analyze "HTTP/1.1 200 OK"
+============================== warnings summary ===============================
+tests/test_tray_slots.py::test_F2b_shipped_default_makes_the_route_501
+  D:\Projects\PillSafe\PillSafe\dev\backend\venv\Lib\site-packages\jose\jwt.py:311: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = timegm(datetime.utcnow().utctimetuple())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_tray_slots.py::test_F2a_tray_analyze_ships_disabled_by_default
+FAILED tests/test_tray_slots.py::test_F2b_shipped_default_makes_the_route_501
+2 failed, 38 deselected, 1 warning in 0.71s

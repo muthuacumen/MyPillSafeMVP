@@ -1,9 +1,10 @@
 import { lazy, Suspense, type ComponentType, type ReactNode } from 'react';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import AppShell from '@/components/layout/AppShell';
 import PublicLayout from '@/components/layout/PublicLayout';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
+import { RequireTrayCheck } from './RequireTrayCheck';
 
 // Route-level code splitting — each page ships as its own chunk so a first
 // visit only downloads the public/auth bundle it needs, not the whole app
@@ -21,6 +22,7 @@ const LoginPage = () => lazyPage(() => import('@/pages/auth/LoginPage'));
 const RegisterPage = () => lazyPage(() => import('@/pages/auth/RegisterPage'));
 const DashboardPage = () => lazyPage(() => import('@/pages/dashboard/DashboardPage'));
 const AnalyzePage = () => lazyPage(() => import('@/pages/dashboard/AnalyzePage'));
+const TrayCheckPage = () => lazyPage(() => import('@/pages/dashboard/TrayCheckPage'));
 const MyMedicationsPage = () => lazyPage(() => import('@/pages/dashboard/MyMedicationsPage'));
 const QAChatPage = () => lazyPage(() => import('@/pages/dashboard/QAChatPage'));
 const ProfilePage = () => lazyPage(() => import('@/pages/dashboard/ProfilePage'));
@@ -62,7 +64,10 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-export const router = createBrowserRouter([
+// Exported so the route table can be asserted on directly (see
+// RequireTrayCheck.test.tsx, which checks the tray-check route is gated) and
+// mounted in a memory router by a test without touching `window.history`.
+export const routes: RouteObject[] = [
   {
     element: <PublicLayout />,
     children: [
@@ -98,6 +103,12 @@ export const router = createBrowserRouter([
       { path: 'analyze', element: <Navigate to="/dashboard/scan-pill" replace /> },
       { path: 'scan-prescription', element: <AnalyzePage /> },
       { path: 'scan-pill', element: <AnalyzePage /> },
+      // MPR1-T07: separate localhost tray-check page (6-slot grid) -- does
+      // NOT touch the marketing tray section on PillVisionPage. Behind
+      // VITE_TRAY_CHECK (default OFF, MPR1-T09b): without the flag this deep
+      // link redirects to the dashboard, so no deploy exposes the page by
+      // simply shipping the current main branch.
+      { path: 'tray-check', element: <RequireTrayCheck><TrayCheckPage /></RequireTrayCheck> },
       { path: 'medications', element: <MyMedicationsPage /> },
       { path: 'qa', element: <QAChatPage /> },
       { path: 'profile', element: <ProfilePage /> },
@@ -116,4 +127,6 @@ export const router = createBrowserRouter([
     ],
   },
   { path: '*', element: <NotFoundPage /> },
-]);
+];
+
+export const router = createBrowserRouter(routes);

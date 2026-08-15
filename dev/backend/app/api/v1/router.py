@@ -12,12 +12,14 @@ from app.api.v1.routes import (
     reference,
     reminders,
     scans,
+    tray,
 )
 
 api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(auth.router)
 api_router.include_router(patients.router)
 api_router.include_router(pill.router)
+api_router.include_router(tray.router)
 api_router.include_router(prescriptions.router)
 api_router.include_router(reference.router)
 api_router.include_router(qa.router)

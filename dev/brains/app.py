@@ -27,6 +27,7 @@ from __future__ import annotations
 import json as json_mod
 import math
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -42,6 +43,7 @@ import numpy as np
 import pandas as pd
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 # Prescription-label OCR (Task A1). A standalone, paddle-only, torch-free
@@ -83,6 +85,19 @@ except Exception as exc:  # pragma: no cover - defensive, exercised by /health
 # transparently reuse that SAME cached module -- see production_wiring.py's
 # module docstring.
 import production_wiring  # noqa: E402
+
+# MPR1-T03 (2026-08-14) -- the TRAY route's adapter. Imported AFTER
+# `production_wiring`, which is what puts `NB08_Notebook/src` on `sys.path`
+# (APPENDED, never inserted -- see its own comment on `src/colour.py` shadowing
+# the third-party `colour-science` package). Defensive for the same reason every
+# other brain import here is: a tray adapter that cannot import must not stop
+# /health, /pill/analyze or /qa/* from answering.
+_tray_import_error: str | None = None
+try:
+    import nb08_tray  # noqa: E402
+except Exception as exc:  # pragma: no cover - defensive, surfaced by /tray/analyze
+    nb08_tray = None  # type: ignore[assignment]
+    _tray_import_error = repr(exc)
 
 try:
     from rapidfuzz import fuzz, process
@@ -478,6 +493,136 @@ async def pill_analyze(
         return _json_safe({"record": record, "match": match})
 
     return _json_safe({"record": record, "match": None, "note": "no profile DINs supplied — matching skipped"})
+
+
+# --- /tray/analyze -----------------------------------------------------------
+#
+# MPR1-T03 (2026-08-14). One photograph of the six-well TRAY -> six answers.
+# Prereg + bars: `IMB1_Prototype/NB08_Notebook/notebooks/NB08_39_TrayRoute.ipynb`.
+# Adapter: `IMB1_Prototype/NB08_Notebook/src/nb08_tray.py` (frozen `nb08_pipe11`
+# localisation, reached through a package-context shim -- pipe11 is hash-pinned
+# and is adapted AROUND, never edited).
+#
+# WHY THIS IS A SEPARATE ROUTE AND NOT A FLAG ON /pill/analyze. The two endpoints
+# answer different questions with different failure modes: /pill/analyze has one
+# subject and any failure is the whole answer, while a tray has six subjects and
+# one dead well must not blank the other five. Folding a per-well isolation
+# contract into an endpoint whose consumers expect all-or-nothing would change
+# the meaning of its existing 4xx for every current caller.
+#
+# THE CONTRACT BELOW IS FROZEN by the MPR1 orchestrator; backend task T04 builds
+# against this exact shape. `nb08_tray.analyze_tray` also returns a `geometry`
+# diagnostic, which is POPPED here on purpose -- an additive fifth key is still
+# drift from a frozen body.
+
+#: Path-shaped runs: a drive-anchored Windows path, a UNC share, or a POSIX path
+#: of two or more segments. Matched so they can be REMOVED, never rendered.
+_PATHISH = re.compile(
+    r"""(?:[A-Za-z]:[\\/][^\s'"]*)        # C:\Users\...\tmpX.jpg
+      | (?:\\\\[^\s'"]+)                  # \\server\share\...
+      | (?:(?<![\w.])/(?:[^\s/'"]+/)+[^\s'"]*)   # /var/folders/.../tmpX.jpg
+    """, re.VERBOSE)
+
+#: What the wire gets when a message cannot be made safe.
+_TRAY_GENERIC_ERROR = "the tray photograph could not be processed"
+
+
+def _tray_safe_error(exc: Exception) -> str:
+    """A frame-level `error` string with NO server filesystem in it.
+
+    MPR1-T09c, closing T08 finding 8. The sidecar wrote the tray upload to a
+    `NamedTemporaryFile` and `nb08_tray` put that path in its exception message,
+    so `{"error": "unreadable image: C:\\Users\\muthu\\AppData\\...\\tmpX.jpg"}`
+    went out over the wire -- and `backend/.../routes/tray.py` passes the frame
+    error through verbatim, so it reached the browser of anyone who uploaded a
+    non-image. That is the sidecar's account layout and scratch directory handed
+    to an unauthenticated caller, for no diagnostic gain a user can act on.
+
+    The upstream messages are fixed too (`nb08_tray` no longer interpolates the
+    path). This is the BELT, not the braces: it is the last thing between an
+    exception message and the wire, so a future message that regains a path
+    still cannot ship one. Scrub the path-shaped runs; if any drive letter or
+    backslash SURVIVES the scrub, do not try to be clever -- return the generic
+    string. Operator detail is already on the server's own stderr.
+    """
+    msg = " ".join(_PATHISH.sub("", str(exc)).split())
+    # A message built AROUND a path ("unreadable image: <path>") is left dangling
+    # by the scrub; trim the orphaned punctuation rather than ship "image:".
+    msg = msg.rstrip(" :,-")
+    if len(msg) < 8 or "\\" in msg or "/" in msg or re.search(r"[A-Za-z]:[\\/]", msg):
+        return _TRAY_GENERIC_ERROR
+    return msg
+
+
+@app.post("/tray/analyze")
+async def tray_analyze(
+    photo: UploadFile = File(...),
+    profile_dins: str | None = Form(None),
+    match: bool = Form(True),
+) -> Any:
+    if nb08_tray is None:
+        raise HTTPException(
+            status_code=503,
+            detail={"error": {"code": "TRAY_UNAVAILABLE",
+                              "message": _tray_import_error or "nb08_tray not importable"}},
+        )
+
+    dins: list[str] = []
+    if profile_dins:
+        try:
+            parsed = json_mod.loads(profile_dins)
+        except json_mod.JSONDecodeError as exc:
+            raise HTTPException(
+                status_code=422,
+                detail={"error": {"code": "INVALID_PROFILE_DINS", "message": f"profile_dins must be a JSON array of DIN strings: {exc}"}},
+            ) from exc
+        if isinstance(parsed, list):
+            dins = [str(d) for d in parsed]
+
+    suffix = os.path.splitext(photo.filename or "")[1] or ".jpg"
+    image_bytes = await photo.read()
+
+    tmp_path: str | None = None
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            tmp.write(image_bytes)
+            tmp_path = tmp.name
+
+        try:
+            body = await run_in_threadpool(
+                nb08_tray.analyze_tray, tmp_path, dins,
+                match=bool(match),
+                sb2_match_pill=_sb2_match_pill,
+                reference_workbook=getattr(sb2_reference, "_DEFAULT_XLSX", None),
+            )
+        except nb08_tray.TrayReaderUnavailable as exc:
+            # MPR1-T09c (T08 finding 4). Reading was ASKED FOR (match=true with a
+            # profile) and the two-stage reader would not build. This used to
+            # degrade SILENTLY to appearance-only wells, which the backend renders
+            # as six "unreadable" slots -- indistinguishable from a bad photo, so
+            # the patient re-shoots a tray that was never the problem.
+            #
+            # 503, not 422: nothing is wrong with the photograph, the capability
+            # is missing right now. Same frozen frame-level shape (`{"error":
+            # "<string>"}`, one key), and ZERO well payloads -- a half-answered
+            # tray is the failure mode this whole route exists to prevent.
+            return JSONResponse(status_code=503,
+                                content={"error": _tray_safe_error(exc)})
+        except nb08_tray.TrayFrameError as exc:
+            # FRAME-level failure: unreadable image, or a card whose fiducials
+            # could not be read. There are no wells to isolate a failure INTO,
+            # so this is the one tray condition that is not a 200. The body is
+            # the contract's own `{"error": "..."}` -- a bare JSONResponse, not
+            # an HTTPException, because HTTPException would wrap it in `detail`
+            # and T04 builds against the frozen shape.
+            return JSONResponse(status_code=422,
+                                content={"error": _tray_safe_error(exc)})
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            os.remove(tmp_path)
+
+    body.pop("geometry", None)
+    return _json_safe(body)
 
 
 # --- /reference/search ---------------------------------------------------

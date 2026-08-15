@@ -1,0 +1,252 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2100" height="1485" viewBox="0 0 2100 1485" font-family="Arial, Helvetica, sans-serif">
+<defs>
+  <marker id="ah" markerWidth="10" markerHeight="8" refX="9.5" refY="4" orient="auto">
+    <polygon points="0,0 10,4 0,8" fill="#7A8894"/></marker>
+  <marker id="ah_inner" markerWidth="10" markerHeight="8" refX="9.5" refY="4" orient="auto">
+    <polygon points="0,0 10,4 0,8" fill="#9FB6CC"/></marker>
+</defs>
+<style>
+  .ti { font-size:40px; font-weight:700; fill:#12283F; }
+  .su { font-size:20px; fill:#4A5966; }
+  .nm { font-size:23px; font-weight:700; fill:#FFFFFF; text-anchor:middle; }
+  .tp { font-size:15px; fill:#DCE4EC; text-anchor:middle; }
+  .ds { font-size:17px; fill:#EAF0F5; text-anchor:middle; }
+  .cn { font-size:19px; font-weight:700; fill:#FFFFFF; text-anchor:middle; }
+  .ct { font-size:14px; fill:#E4F5F1; text-anchor:middle; }
+  .cd { font-size:15.5px; fill:#F1FAF8; text-anchor:middle; }
+  .an { font-size:14.5px; font-style:italic; fill:#C3D2DF; text-anchor:middle; }
+  .anc { font-size:14.5px; font-style:italic; fill:#D7F2EB; text-anchor:middle; }
+  .el { font-size:16px; fill:#3E4B57; text-anchor:middle; }
+  .eli { font-size:16px; fill:#CBDAE7; text-anchor:middle; }
+  .bg { font-size:16px; font-weight:700; fill:#FFFFFF; text-anchor:middle; }
+  .ch { font-size:12px; font-weight:700; fill:#FFFFFF; text-anchor:middle; }
+  .bd { font-size:19px; fill:#5A6570; }
+  .lg { font-size:16px; fill:#33404B; }
+  .kt { font-size:19px; font-weight:700; fill:#12283F; }
+  .kr { font-size:15.5px; fill:#2B3742; }
+  .kf { font-size:15px; font-style:italic; fill:#6B5433; }
+  .nt { font-size:16px; font-weight:700; fill:#1E3A5F; }
+  .nb { font-size:15px; fill:#3E4B57; }
+  .ft { font-size:15px; fill:#6F7C87; }
+</style>
+<rect width="2100" height="1485" fill="#FFFFFF"/>
+<text x="40" y="62" class="ti">Pill Vision (IMB1) — Component Diagram (C4 level 3)</text>
+<text x="40" y="100" class="su">What ships today, what is built but switched off, and how the two-stage reader arriving behind it changes the imprint — as of 2026-08-12.</text>
+<rect x="420" y="125" width="490" height="635" rx="5" fill="none" stroke="#9AA4AD" stroke-width="1.6" stroke-dasharray="9 6"/>
+<text x="438" y="153" class="bd">Droplet — public internet, mypillsafe.ca</text>
+<rect x="1150" y="125" width="910" height="1073" rx="5" fill="none" stroke="#9AA4AD" stroke-width="1.6" stroke-dasharray="9 6"/>
+<text x="1168" y="153" class="bd">Brains Host — private network, GPU, never public</text>
+<rect x="40" y="230" width="190" height="220" rx="4" fill="#8B99A6" stroke="#6F7C87" stroke-width="1.8"/>
+<text x="135.0" y="299.5" class="nm">Patient</text>
+<text x="135.0" y="332.5" class="tp">[Person]</text>
+<text x="135.0" y="359.5" class="ds">Puts one pill on</text>
+<text x="135.0" y="380.5" class="ds">the capture card</text>
+<text x="135.0" y="401.5" class="ds">and shoots it</text>
+<rect x="440" y="180" width="450" height="320" rx="4" fill="#1E3A5F" stroke="#16293F" stroke-width="1.8"/>
+<text x="665.0" y="212" class="nm">API</text>
+<text x="665.0" y="245" class="tp">[Container: FastAPI, Python]</text>
+<text x="665.0" y="272" class="ds">Hands the photo over; keeps none of it</text>
+<path d="M440,563 a225.0,18 0 0 1 450,0 v159 a225.0,18 0 0 1 -450,0 z" fill="#1E3A5F" stroke="#16293F" stroke-width="1.8"/>
+<path d="M440,563 a225.0,18 0 0 0 450,0" fill="none" stroke="#43617F" stroke-width="1.8"/>
+<text x="665.0" y="608.5" class="nm">Database</text>
+<text x="665.0" y="641.5" class="tp">[Container: PostgreSQL]</text>
+<text x="665.0" y="668.5" class="ds">Approved prescriptions — where</text>
+<text x="665.0" y="689.5" class="ds">the profile DINs come from</text>
+<text x="665.0" y="720.5" class="an">Pill photos are never written here, or anywhere.</text>
+<rect x="834.56" y="575" width="45.44" height="20" rx="10" fill="#2E7D5B"/><text x="857.28" y="589" class="ch">LIVE</text>
+<rect x="1170" y="175" width="870" height="600" rx="4" fill="#1E3A5F" stroke="#16293F" stroke-width="1.8"/>
+<text x="1605.0" y="207" class="nm">IMB1 — Pill Vision</text>
+<text x="1605.0" y="240" class="tp">[Container: IMB1_v0 — describes the pill; it never decides which medication it is]</text>
+<rect x="1170" y="815" width="420" height="180" rx="4" fill="#1E3A5F" stroke="#16293F" stroke-width="1.8"/>
+<text x="1380.0" y="841.5" class="nm">A3 — Presence Gate</text>
+<text x="1380.0" y="874.5" class="tp">[Container: Qwen3-VL 8.8B, via Ollama]</text>
+<text x="1380.0" y="901.5" class="ds">Stage 1. Answers one question about the</text>
+<text x="1380.0" y="922.5" class="ds">face: is there an imprint at all?</text>
+<text x="1380.0" y="943.5" class="ds">TEXT  ·  UNREADABLE  ·  NONE</text>
+<text x="1380.0" y="974.5" class="an">The three-way verdict is the model's own</text>
+<text x="1380.0" y="992.5" class="an">sentinel, and it is consumed, not re-derived.</text>
+<rect x="1521.84" y="825" width="58.160000000000004" height="20" rx="10" fill="#6F7C87"/><text x="1550.92" y="839" class="ch">STEP 7</text>
+<rect x="1630" y="815" width="410" height="180" rx="4" fill="#1E3A5F" stroke="#16293F" stroke-width="1.8"/>
+<text x="1835.0" y="841.5" class="nm">A4c — Ballot Reader</text>
+<text x="1835.0" y="874.5" class="tp">[Container: Qwen3-VL 4B NF4, transformers]</text>
+<text x="1835.0" y="901.5" class="ds">Stage 2. Does not generate a string: it</text>
+<text x="1835.0" y="922.5" class="ds">scores the closed ballot and returns the</text>
+<text x="1835.0" y="943.5" class="ds">winner with a PMI margin.</text>
+<text x="1835.0" y="974.5" class="an">Under transformers, not Ollama: Ollama exposes</text>
+<text x="1835.0" y="992.5" class="an">no logprobs, and the margin IS the safety.</text>
+<rect x="1971.84" y="825" width="58.160000000000004" height="20" rx="10" fill="#6F7C87"/><text x="2000.92" y="839" class="ch">STEP 7</text>
+<path d="M1170,1043 a435.0,18 0 0 1 870,0 v114 a435.0,18 0 0 1 -870,0 z" fill="#1E3A5F" stroke="#16293F" stroke-width="1.8"/>
+<path d="M1170,1043 a435.0,18 0 0 0 870,0" fill="none" stroke="#43617F" stroke-width="1.8"/>
+<text x="1605.0" y="1090.5" class="nm">Reference &amp; Allowlist</text>
+<text x="1605.0" y="1123.5" class="tp">[Data store: ca_appearance_harmonized_v3.xlsx  +  supported_dins.csv]</text>
+<text x="1605.0" y="1150.5" class="ds">The ballot's vocabulary: which products exist, and which of them are supported</text>
+<rect x="1940.04" y="1055" width="89.96000000000001" height="20" rx="10" fill="#E09B3D"/><text x="1985.02" y="1069" class="ch">BUILT · OFF</text>
+<rect x="460" y="285" width="410" height="200" rx="4" fill="#2A9D8F" stroke="#1F7A6E" stroke-width="1.8"/>
+<text x="665.0" y="312.5" class="cn">Pill Route</text>
+<text x="665.0" y="341.5" class="ct">[Component: POST /analyze/pill/v2]</text>
+<text x="665.0" y="367.5" class="cd">Forwards the photo and the DINs of</text>
+<text x="665.0" y="387.5" class="cd">medications the patient already</text>
+<text x="665.0" y="407.5" class="cd">approved. The pill photo is never stored.</text>
+<text x="665.0" y="437.5" class="anc">ARRIVING (C7): the profile now has to reach</text>
+<text x="665.0" y="455.5" class="anc">IMB1 as well, because the reader's ballot is</text>
+<text x="665.0" y="473.5" class="anc">built from it. That inverts the old rule.</text>
+<rect x="814.56" y="295" width="45.44" height="20" rx="10" fill="#2E7D5B"/><text x="837.28" y="309" class="ch">LIVE</text>
+<rect x="1190" y="258" width="405" height="162" rx="4" fill="#2A9D8F" stroke="#1F7A6E" stroke-width="1.8"/>
+<text x="1392.5" y="285.5" class="cn">Detector</text>
+<text x="1392.5" y="314.5" class="ct">[Component: FastSAM, zero-shot]</text>
+<text x="1392.5" y="340.5" class="cd">Isolates the pill on the capture card.</text>
+<text x="1392.5" y="360.5" class="cd">Detected 180 of 180 real photos.</text>
+<text x="1392.5" y="390.5" class="anc">The detector fine-tuned on studio images</text>
+<text x="1392.5" y="408.5" class="anc">missed 28% of these. Zero-shot ships.</text>
+<rect x="1539.56" y="268" width="45.44" height="20" rx="10" fill="#2E7D5B"/><text x="1562.28" y="282" class="ch">LIVE</text>
+<rect x="1615" y="258" width="405" height="162" rx="4" fill="#2A9D8F" stroke="#1F7A6E" stroke-width="1.8"/>
+<text x="1817.5" y="284.5" class="cn">Card Calibration &amp; Colour</text>
+<text x="1817.5" y="313.5" class="ct">[Component: imb1.card_calib + imb1.colour]</text>
+<text x="1817.5" y="339.5" class="cd">The card's printed patches white-balance</text>
+<text x="1817.5" y="359.5" class="cd">the frame; the pill's corrected colour is</text>
+<text x="1817.5" y="379.5" class="cd">looked up in a 13-class table.</text>
+<text x="1817.5" y="409.5" class="anc">Calculated, never learned.</text>
+<rect x="1964.56" y="268" width="45.44" height="20" rx="10" fill="#2E7D5B"/><text x="1987.28" y="282" class="ch">LIVE</text>
+<rect x="1190" y="440" width="405" height="162" rx="4" fill="#2A9D8F" stroke="#1F7A6E" stroke-width="1.8"/>
+<text x="1392.5" y="457.5" class="cn">Shape &amp; Type</text>
+<text x="1392.5" y="486.5" class="ct">[Component: imb1.shape_geom + the S2 CNN]</text>
+<text x="1392.5" y="512.5" class="cd">11 outline classes, plus a geometry rule</text>
+<text x="1392.5" y="532.5" class="cd">for the D-shape. Type is tablet or capsule,</text>
+<text x="1392.5" y="552.5" class="cd">and carries the lowest weight of all.</text>
+<text x="1392.5" y="582.5" class="anc">Wins in a studio eval, and costs accuracy</text>
+<text x="1392.5" y="600.5" class="anc">on real capture-card photos.</text>
+<rect x="1539.56" y="450" width="45.44" height="20" rx="10" fill="#2E7D5B"/><text x="1562.28" y="464" class="ch">LIVE</text>
+<rect x="1615" y="440" width="405" height="162" rx="4" fill="#2A9D8F" stroke="#1F7A6E" stroke-width="1.8"/>
+<text x="1817.5" y="457.5" class="cn">Imprint OCR</text>
+<text x="1817.5" y="486.5" class="ct">[Component: imb1.ocr_sub — torch-free subprocess]</text>
+<text x="1817.5" y="512.5" class="cd">PaddleOCR twice over the same face: i1</text>
+<text x="1817.5" y="532.5" class="cd">zero-shot and i3 CLAHE-enhanced. The two</text>
+<text x="1817.5" y="552.5" class="cd">reads are complementary, never pre-fused.</text>
+<text x="1817.5" y="582.5" class="anc">torch and paddle cannot share one Windows</text>
+<text x="1817.5" y="600.5" class="anc">process, so this is its own subprocess.</text>
+<rect x="1964.56" y="450" width="45.44" height="20" rx="10" fill="#2E7D5B"/><text x="1987.28" y="464" class="ch">LIVE</text>
+<rect x="1190" y="622" width="405" height="143" rx="4" fill="#2A9D8F" stroke="#1F7A6E" stroke-width="1.8"/>
+<text x="1392.5" y="649.0" class="cn">Ballot Builder</text>
+<text x="1392.5" y="678.0" class="ct">[Component: nb08_lexicon]</text>
+<text x="1392.5" y="704.0" class="cd">profile DINs ∩ allowlist → reference rows →</text>
+<text x="1392.5" y="724.0" class="cd">a closed ballot, plus an explicit NULL.</text>
+<text x="1392.5" y="754.0" class="anc">Assembled per call. No product is named in code.</text>
+<rect x="1495.04" y="632" width="89.96000000000001" height="20" rx="10" fill="#E09B3D"/><text x="1540.02" y="646" class="ch">BUILT · OFF</text>
+<rect x="1615" y="622" width="405" height="143" rx="4" fill="#2A9D8F" stroke="#1F7A6E" stroke-width="1.8"/>
+<text x="1817.5" y="649.0" class="cn">Record Builder</text>
+<text x="1817.5" y="678.0" class="ct">[Component: nb08_record — C6 + the C7 guard]</text>
+<text x="1817.5" y="704.0" class="cd">Assembles the record SB2 consumes, and</text>
+<text x="1817.5" y="724.0" class="cd">fails loudly if the two profiles disagree.</text>
+<text x="1817.5" y="754.0" class="anc">presence is consumed, never inferred.</text>
+<rect x="1920.04" y="632" width="89.96000000000001" height="20" rx="10" fill="#E09B3D"/><text x="1965.02" y="646" class="ch">BUILT · OFF</text>
+<polyline points="230,280 440,280" fill="none" stroke="#7A8894" stroke-width="2.1" marker-end="url(#ah)"/>
+<rect x="251.68" y="213" width="166.64000000000001" height="47.6" fill="#FFFFFF"/>
+<text x="335" y="228.0" class="el">Photographs a pill</text>
+<text x="335" y="248.8" class="el">[HTTPS]</text>
+<circle cx="262" cy="280" r="14" fill="#1E3A5F" stroke="#FFFFFF" stroke-width="2"/>
+<text x="262" y="286" class="bg">1</text>
+<polyline points="440,400 230,400" fill="none" stroke="#7A8894" stroke-width="2.1" marker-end="url(#ah)"/>
+<rect x="230.48" y="333" width="209.04000000000002" height="47.6" fill="#FFFFFF"/>
+<text x="335" y="348.0" class="el">What it saw,</text>
+<text x="335" y="368.8" class="el">and what SB2 made of it</text>
+<circle cx="408" cy="400" r="14" fill="#1E3A5F" stroke="#FFFFFF" stroke-width="2"/>
+<text x="408" y="406" class="bg">6</text>
+<polyline points="890,250 1170,250" fill="none" stroke="#7A8894" stroke-width="2.1" marker-end="url(#ah)"/>
+<rect x="921.24" y="183" width="217.52" height="47.6" fill="#FFFFFF"/>
+<text x="1030" y="198.0" class="el">POST /pill/analyze —</text>
+<text x="1030" y="218.8" class="el">the photo + profile DINs</text>
+<circle cx="922" cy="250" r="14" fill="#1E3A5F" stroke="#FFFFFF" stroke-width="2"/>
+<text x="922" y="256" class="bg">2</text>
+<polyline points="1170,330 890,330" fill="none" stroke="#7A8894" stroke-width="2.1" stroke-dasharray="8 6" marker-end="url(#ah)"/>
+<rect x="912.76" y="263" width="234.48000000000002" height="47.6" fill="#FFFFFF"/>
+<text x="1030" y="278.0" class="el">the record — see the card,</text>
+<text x="1030" y="298.8" class="el">lower left</text>
+<polyline points="665,500 665,545" fill="none" stroke="#7A8894" stroke-width="2.1" marker-end="url(#ah)"/>
+<rect x="560.48" y="520" width="209.04000000000002" height="26.8" fill="#FFFFFF"/>
+<text x="665" y="535.0" class="el">reads the approved DINs</text>
+<polyline points="1300,775 1300,815" fill="none" stroke="#7A8894" stroke-width="2.1" marker-end="url(#ah)"/>
+<rect x="1150.88" y="785" width="124.24000000000001" height="26.8" fill="#FFFFFF"/>
+<text x="1213" y="800.0" class="el">the face crop</text>
+<circle cx="1300" cy="795" r="14" fill="#1E3A5F" stroke="#FFFFFF" stroke-width="2"/>
+<text x="1300" y="801" class="bg">3</text>
+<polyline points="1560,775 1560,792 1750,792 1750,815" fill="none" stroke="#7A8894" stroke-width="2.1" marker-end="url(#ah)"/>
+<rect x="1620.92" y="787" width="158.16" height="26.8" fill="#FFFFFF"/>
+<text x="1700" y="802.0" class="el">the closed ballot</text>
+<circle cx="1560" cy="792" r="14" fill="#1E3A5F" stroke="#FFFFFF" stroke-width="2"/>
+<text x="1560" y="798" class="bg">4</text>
+<polyline points="1590,905 1630,905" fill="none" stroke="#7A8894" stroke-width="2.1" marker-end="url(#ah)"/>
+<rect x="1543.64" y="863" width="132.72" height="26.8" fill="#FFFFFF"/>
+<text x="1610" y="878.0" class="el">TEXT ⇒ read it</text>
+<circle cx="1610" cy="930" r="14" fill="#1E3A5F" stroke="#FFFFFF" stroke-width="2"/>
+<text x="1610" y="936" class="bg">5</text>
+<polyline points="1960,815 1960,775" fill="none" stroke="#7A8894" stroke-width="2.1" stroke-dasharray="8 6" marker-end="url(#ah)"/>
+<rect x="1919.08" y="785" width="81.84" height="26.8" fill="#FFFFFF"/>
+<text x="1960" y="800.0" class="el">the read</text>
+<polyline points="1190,745 1160,745 1160,1100 1170,1100" fill="none" stroke="#7A8894" stroke-width="2.1" marker-end="url(#ah)"/>
+<rect x="941.24" y="1060" width="217.52" height="47.6" fill="#FFFFFF"/>
+<text x="1050" y="1075.0" class="el">profile DINs ∩ allowlist</text>
+<text x="1050" y="1095.8" class="el">→ the reference rows</text>
+<polyline points="1595,339 1615,339" fill="none" stroke="#9FB6CC" stroke-width="1.7" marker-end="url(#ah_inner)"/>
+<polyline points="1392,420 1392,440" fill="none" stroke="#9FB6CC" stroke-width="1.7" marker-end="url(#ah_inner)"/>
+<polyline points="1822,420 1822,440" fill="none" stroke="#9FB6CC" stroke-width="1.7" marker-end="url(#ah_inner)"/>
+<polyline points="1822,602 1822,622" fill="none" stroke="#9FB6CC" stroke-width="1.7" marker-end="url(#ah_inner)"/>
+<polyline points="1595,693 1615,693" fill="none" stroke="#9FB6CC" stroke-width="1.7" marker-end="url(#ah_inner)"/>
+<rect x="1555.6" y="657" width="98.80000000000001" height="26.8" fill="#1E3A5F"/>
+<text x="1605" y="672.0" class="eli">lexicon_id</text>
+<rect x="40" y="800" width="900" height="350" rx="5" fill="#FDF8F1" stroke="#E09B3D" stroke-width="2"/>
+<text x="62" y="834" class="kt">The four attributes — how each one is actually produced</text>
+<text x="62" y="866" class="kr">Detection — FastSAM, zero-shot. The detector we fine-tuned collapsed on real photos.</text>
+<rect x="874.56" y="852" width="43.44" height="19" rx="9.5" fill="#2E7D5B"/>
+<text x="896.28" y="865" class="ch">LIVE</text>
+<text x="62" y="892" class="kr">Colour — calculated: card patches → white balance → CIELAB → a 13-class lookup.</text>
+<rect x="874.56" y="878" width="43.44" height="19" rx="9.5" fill="#2E7D5B"/>
+<text x="896.28" y="891" class="ch">LIVE</text>
+<text x="62" y="918" class="kr">Shape + type — an S2 CNN over the mask, with a geometry rule for the D-shape.</text>
+<rect x="874.56" y="904" width="43.44" height="19" rx="9.5" fill="#2E7D5B"/>
+<text x="896.28" y="917" class="ch">LIVE</text>
+<text x="62" y="944" class="kr">Imprint — PaddleOCR twice, i1 zero-shot and i3 CLAHE. Complementary, never pre-fused.</text>
+<rect x="874.56" y="930" width="43.44" height="19" rx="9.5" fill="#2E7D5B"/>
+<text x="896.28" y="943" class="ch">LIVE</text>
+<text x="62" y="996" class="kr">Imprint, arriving — A3 says whether text is there; A4c ranks a closed ballot.</text>
+<rect x="861.84" y="982" width="56.160000000000004" height="19" rx="9.5" fill="#6F7C87"/>
+<text x="889.92" y="995" class="ch">STEP 7</text>
+<text x="62" y="1022" class="kr">      TEXT, and margin &gt; 8.5949   →   a read that carries 0.55 into SB2</text>
+<rect x="861.84" y="1008" width="56.160000000000004" height="19" rx="9.5" fill="#6F7C87"/>
+<text x="889.92" y="1021" class="ch">STEP 7</text>
+<text x="62" y="1048" class="kr">      TEXT but gated → no read  ·  UNREADABLE → reshoot  ·  NONE → out of scope</text>
+<rect x="861.84" y="1034" width="56.160000000000004" height="19" rx="9.5" fill="#6F7C87"/>
+<text x="889.92" y="1047" class="ch">STEP 7</text>
+<text x="62" y="1088" class="kf">Zero-shot beat fine-tuned on two of the three trained heads. That result is the paper, not a footnote.</text>
+<rect x="40.0" y="1215" width="653.3333333333334" height="95" rx="4" fill="#F7F9FB" stroke="#D8E0E7" stroke-width="1.4"/>
+<text x="58.0" y="1243" class="nt">Zero-shot won twice, and it was measured</text>
+<text x="58.0" y="1269" class="nb">The fine-tuned detector missed pills the zero-shot one found, and the trained</text>
+<text x="58.0" y="1291" class="nb">shape head wins in a studio eval while costing accuracy on real photos.</text>
+<rect x="723.3333333333334" y="1215" width="653.3333333333334" height="95" rx="4" fill="#F7F9FB" stroke="#D8E0E7" stroke-width="1.4"/>
+<text x="741.3333333333334" y="1243" class="nt">Colour is measured, not classified</text>
+<text x="741.3333333333334" y="1269" class="nb">The card's printed patches white-balance the frame before the colour is</text>
+<text x="741.3333333333334" y="1291" class="nb">looked up. No training set gets a vote on what colour a pill is.</text>
+<rect x="1406.6666666666667" y="1215" width="653.3333333333334" height="95" rx="4" fill="#F7F9FB" stroke="#D8E0E7" stroke-width="1.4"/>
+<text x="1424.6666666666667" y="1243" class="nt">Two stages, two runtimes, one GPU</text>
+<text x="1424.6666666666667" y="1269" class="nb">A3 asks whether an imprint exists; A4c ranks a ballot and reports a margin.</text>
+<text x="1424.6666666666667" y="1291" class="nb">They are different models on different runtimes, swapped on demand.</text>
+<rect x="40.0" y="1330" width="45.44" height="20" rx="10" fill="#2E7D5B"/><text x="62.72" y="1344" class="ch">LIVE</text>
+<text x="99.44" y="1345" class="lg">in production IMB1_v0/ today</text>
+<rect x="713.3333333333334" y="1330" width="89.96000000000001" height="20" rx="10" fill="#E09B3D"/><text x="758.3133333333334" y="1344" class="ch">BUILT · OFF</text>
+<text x="817.2933333333334" y="1345" class="lg">in NB08_Notebook/src/, default-off, not promoted</text>
+<rect x="1386.6666666666667" y="1330" width="58.160000000000004" height="20" rx="10" fill="#6F7C87"/><text x="1415.746666666667" y="1344" class="ch">STEP 7</text>
+<text x="1458.8266666666668" y="1345" class="lg">specified, not wired into the pipeline</text>
+<line x1="40" y1="1368" x2="2060" y2="1368" stroke="#D8E0E7" stroke-width="1.4"/>
+<rect x="40.0" y="1384" width="38" height="24" rx="3" fill="#8B99A6" stroke="#6F7C87" stroke-width="1.4"/>
+<text x="90.0" y="1402" class="lg">Person</text>
+<rect x="376.6666666666667" y="1384" width="38" height="24" rx="3" fill="#1E3A5F" stroke="#16293F" stroke-width="1.4"/>
+<text x="426.6666666666667" y="1402" class="lg">Container</text>
+<rect x="713.3333333333334" y="1384" width="38" height="24" rx="3" fill="#2A9D8F" stroke="#1F7A6E" stroke-width="1.4"/>
+<text x="763.3333333333334" y="1402" class="lg">Component</text>
+<path d="M1050.0,1390 a19.0,6 0 0 1 38,0 v12 a19.0,6 0 0 1 -38,0 z" fill="#1E3A5F" stroke="#16293F" stroke-width="1.4"/>
+<text x="1100.0" y="1402" class="lg">Data store</text>
+<line x1="1386.6666666666667" y1="1396" x2="1420.6666666666667" y2="1396" stroke="#7A8894" stroke-width="2.1" marker-end="url(#ah)"/>
+<text x="1436.6666666666667" y="1402" class="lg">Request</text>
+<line x1="1723.3333333333335" y1="1396" x2="1757.3333333333335" y2="1396" stroke="#7A8894" stroke-width="2.1" stroke-dasharray="7 5" marker-end="url(#ah)"/>
+<text x="1773.3333333333335" y="1402" class="lg">Response</text>
+<text x="40" y="1452" class="ft">MyPillSafe  ·  Pill Vision, brain 2 of 5  ·  C4 level 3, components  ·  drawn from the shipped code and the NB08 specs, 2026-08-12</text>
+</svg>

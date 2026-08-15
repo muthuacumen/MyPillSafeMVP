@@ -826,6 +826,20 @@ occupancy this entry proposes to carry through) ·
 must respect) · `IMB1_Prototype/NB08_Notebook/archive/demoprep/02a_tray_probe.md` and
 `00_DEMO_STORY.md` (this session's measurement and demo framing).
 
+ADDENDUM 2026-08-14 (dated addendum -- augments this entry, does not duplicate it): the single-model
+reader (4.4B only, per `DEPLOY_GUIDE_M1_TwoStageReader.md`) removes the model-swap cost that
+originally motivated batching reads by pipeline stage rather than by well -- batch-by-stage should be
+kept only as a fallback if the 8.8B two-stage path is ever restored (`PILLSAFE_STAGE1=ollama`).
+Muthu's binding UX spec for the tray flow, his call: for a pill found in well k, user-facing messages
+read "(k+1)th slot" (1-indexed for the user); each slot gets its own alert plus a pharmacist-consult
+hedge; and a tray-flow NONE result routes to Flip/Reshoot rather than terminating -- a deliberate
+deviation from the single-pill path's terminal-NONE behaviour (ADR 2026-08-14, `.claude/pillsafe-adr.md`).
+Measured this session: tray crops pushed through the existing single-pill path scored 0/50 -- the
+fail-safe held, no false accepts -- confirming tray frames are native ONLY to the future per-well tray
+flow, not to `analyze_pill()` as it exists today. Per-well partial-failure isolation (one well's
+failure must not sink the other N-1 results) remains the unnamed hard requirement Path A has to
+satisfy, and is not yet named as its own explicit build item in the numbered list above.
+
 ---
 
 ## 24. No dose-schedule / already-taken enforcement exists anywhere in the pill-scan path
@@ -967,6 +981,164 @@ assembly, owns the 45-image measurement this entry contrasts against) · `harnes
 
 ---
 
+## 27. Frontend droplet ship completion -- image built, deploy not yet run
+
+**What was hit:** the About-page / C4-diagram change was committed 2026-08-12, but no container image
+had been built from it since 2026-07-30 -- the committed source and the running droplet diverged for
+two days. As of this session, both frontend and backend images are pushed to GHCR under tag
+`20260814-1020`.
+
+**What it blocks:** the live site (`mypillsafe.ca`) still serves the 07-30 image; the About page / C4
+diagram change is not visible to any real visitor until the droplet is updated.
+
+THE ASK (Muthu, ~5 min): run the droplet paste block -- bump `IMAGE_TAG` to `20260814-1020`,
+`compose pull` + `up` the frontend container ONLY, then restart the gateway nginx (it resolves the
+frontend upstream once at container startup, so it 502s after a plain container recreation without an
+nginx restart). Verify `https://mypillsafe.ca/architecture-c4-v9b.svg` returns 200 afterward. Rollback
+tag if needed: `20260730-1020`.
+
+Before any future FULL `up -d` (out of scope for this frontend-only step, flagged so it is not missed
+later): the `20260814-1020` backend image enables admin-gated registration. Set
+`REQUIRE_ADMIN_APPROVAL=false` in the droplet `.env` (or configure `ADMIN_EMAILS`/SMTP) first, or new
+signups will be silently gated with no admin able to approve them.
+
+**Owning doc:** `documentation/deployment/DEPLOY_GUIDE.md` (`REQUIRE_ADMIN_APPROVAL`, droplet
+compose/env section).
+
+---
+
+## 28. Sidecar scheduled task does not auto-start after reboot
+
+**What was hit:** the `MyPillSafe Sidecar` Windows scheduled task is configured for interactive-logon
+start only, not boot start. Proven 2026-08-14: after a reboot, `schtasks /query` showed
+`Last Result: 1073807364` (0x40010004 -- process terminated by the reboot), and the sidecar only came
+back after a manual `schtasks /run /tn "MyPillSafe Sidecar"`.
+
+**What it blocks:** any reboot (planned or a crash) silently takes the sidecar down until someone
+notices and runs it by hand -- no automatic recovery.
+
+THE ASK (Muthu): reconfigure the task for boot-time auto-start rather than logon-only, and consider a
+tailnet bind-retry in case the network interface isn't up yet when the task fires. Also worth adding:
+an automatic warm-up call after start, since the cold first scan measures at 43-81 s.
+
+**Owning doc:** `documentation/deployment/postrestartchecklist.md`.
+
+---
+
+## 29. DIN token normalization at the sidecar API boundary
+
+**What was hit:** `/pill/analyze` silently false-rejects (`faces: []`) when `profile_dins` is not
+already in SB2 token form (`DIN` + unpadded integer, e.g. `DIN13803`). The backend's own caller
+converts via `dev/backend/app/services/din_utils.py::to_sb2_token` before it ever reaches the sidecar,
+but any hand-rolled caller (curl, a harness script, a future integration) that skips that conversion
+gets a false `reject` with empty `faces`/`ranked_candidates`, HTTP 200, `detected: true` -- reading as
+a clean negative result rather than a format error.
+
+**What it blocks:** nothing in the current production path (the backend already normalizes), but it is
+a live footgun for anyone calling the sidecar directly, and it currently fails silently rather than
+loudly.
+
+THE ASK (Muthu): decide whether the sidecar should normalize DIN tokens itself at the API boundary
+(accept padded/bare/prefixed forms), or should instead fail loudly (a clear 4xx) on an unrecognized
+token shape instead of returning an empty-but-200 result.
+
+**Owning doc:** `documentation/deployment/DEPLOY_GUIDE_M1_TwoStageReader.md` triage table (CHECKPOINT 9
+callout / DIN token mismatch row, 2026-08-14).
+
+---
+
+## 30. Owed post-demo evidence ledger
+
+Pointer entry, not a copy -- the register lives in
+`IMB1_Prototype/NB08_Notebook/specs/NB08_C6_Contract_Build.md` §8, "OWED POST-DEMO" (Addendum 3b,
+2026-08-14). It lists mutation runs M2/M3 with captured reds, the w6/w7/w3 re-runs, and the NB08_38
+notebook pass 2 / spec result tables -- all code-complete but not re-run before the live demo, under
+the sprint's own priority cut. Nothing on that ledger may be quoted as evidence until it actually runs.
+
+THE ASK (Muthu): schedule the owed re-runs when there is runway; until then, treat every item on that
+ledger as code-complete-not-verified, not as passing.
+
+**Owning doc:** `IMB1_Prototype/NB08_Notebook/specs/NB08_C6_Contract_Build.md` §8 "OWED POST-DEMO".
+
+---
+
+## 31. Qual formal report
+
+**What was hit:** the round-2 qualification results
+(`results/nb08_demo_qual/qual_results_round2_clean.csv`) landed and the runbook was stamped, but no
+formal report section was ever written summarizing what that qualification round found. Separately,
+the first round-2 run was condemned (contaminated instrument) and produced `qual_results_round2.csv`
+(not `_clean`) -- that condemned run should be referenced from the register as a caution, not silently
+left alongside the clean one with nothing distinguishing them.
+
+**What it blocks:** anyone reading the qual results cold has to reconstruct the story from the raw
+CSVs and runbook stamps rather than a written summary; the condemned first attempt is not currently
+flagged anywhere a future reader would see it before reusing the wrong file.
+
+THE ASK (Muthu): schedule a short formal report section (what was tested, what passed, what the
+round-1-contaminated / round-2-clean distinction means) and add a one-line caution pointing at the
+condemned run from the register.
+
+**Owning doc:** `IMB1_Prototype/NB08_Notebook/results/nb08_demo_qual/`
+(`qual_results_round2_clean.csv`, `qual_results_round2.csv`, `QUAL_PLAN.md`).
+
+---
+
+## 32. UI minors from E2E (2026-08-14)
+
+**What was hit:** two small UI defects found during end-to-end testing on 2026-08-14: (a) the "Needs
+your review" badge never flips after an Approve action -- the backend state is correct, but the UI
+does not reflect it without a manual refresh/re-navigation; (b) a stale JWT renders a blank dashboard
+instead of redirecting the user to `/login`.
+
+**What it blocks:** neither breaks a demo happy path outright, but both are visible rough edges a real
+user (or a judge) could hit.
+
+THE ASK (Muthu): schedule both as small frontend fixes -- (a) re-fetch or optimistically update review
+status after Approve; (b) detect an expired/invalid JWT on dashboard load and redirect to `/login`
+instead of rendering an empty state.
+
+**Owning doc:** `documentation/deployment/E2ETestingFindings.md` if it already tracks this session's
+run, else this entry is the record.
+
+---
+
+## 33. Numeric-drift version-attribution study
+
+**What was hit:** 4.4B model reads drift across different `transformers` / `torch` / `bitsandbytes`
+version triples. Outcome-level bars (pass/fail on the acceptance decision) passed across the triples
+tested, but byte-level reproduction of the exact scores failed, and every verdict flip observed was
+conservative (toward rejecting, not toward a false accept).
+
+**What it blocks:** nothing production-blocking today -- this is a paper-relevant robustness question
+(how sensitive are the published numbers to the exact dependency pin), not a safety gap in the shipped
+bar.
+
+THE ASK (Muthu): schedule a one-variable-at-a-time attribution study (hold two of the three versions
+fixed, vary the third) to identify which dependency actually drives the drift, when there is runway for
+a paper-facing robustness section.
+
+**Owning doc:** `IMB1_Prototype/NB08_Notebook/specs/NB08_C6_Contract_Build.md` §8, open item
+(numeric-drift / version-attribution).
+
+---
+
+## 34. `/pillsafe` activation blurb is stale
+
+**What was hit:** the `/pillsafe` persona's activation text still lists OB5 DIN-linking, CB4, and BB3
+guards as live, in-progress fronts. All three have since closed (2026-07-22 / 2026-08). Anyone
+activating the persona cold reads a status that is several weeks out of date.
+
+**What it blocks:** nothing functional -- this is a persona-activation-text accuracy issue, not a code
+or data risk. But a stale activation blurb misdirects the very first thing a new session reads.
+
+THE ASK (Muthu): next session, update the activation text in `C:\Users\muthu\.claude\commands\pillsafe.md`
+to reflect current front status instead of the OB5/CB4/BB3-in-progress framing.
+
+**Owning doc:** `C:\Users\muthu\.claude\commands\pillsafe.md`.
+
+---
+
 ## Active roadmap — pointers only, not copies
 
 The short-imprint false-accept mitigation design (two switchable flags: withhold imprint credit
@@ -989,6 +1161,34 @@ lands in the same bundle. Zero of the 11 supported DINs are affected, and the fi
 structurally unreachable in the current held-out population (see item 10 above). →
 `NB08_Notebook/specs/NB08_Identification.md` §3.17.16 owns the characterisation, the design and
 every number.
+
+**Scorer warm-on-signin (filed 2026-08-15, Muthu decision D-11 in the MPR1 session).** The NF4
+scorer load intermittently dies with an access violation when triggered lazily on a uvicorn worker
+thread at the first request — measured 2026-08-15 (1 of 3 starts crashed; standalone main-thread
+loads 4/4 clean; evidence `NB08_Notebook/results/nb08_tray_route/run3/` + the MPR1-T03 report's
+B3/B4 section). Production keeps the lazy load FOR NOW (Muthu's explicit call — no warm-at-boot,
+no idle 3.1 GB hold). The chosen design: **warm the scorer when a user SIGNS IN on mypillsafe** —
+the sign-in event fires a fire-and-forget warm-up call to the sidecar (new lightweight
+`/warmup` or equivalent), so the model is resident on the main-thread-safe path minutes before the
+first scan can arrive. Until built, the first scan after a sidecar restart carries the measured
+intermittent crash risk, and the interactive-only scheduled task will NOT auto-restart a crashed
+process. Dev already mitigates via `NB08_Notebook/src/nb08_tray_devserver.py` (main-thread warm
+before serving) — reuse its ordering when implementing.
+
+**Deboss-only pills vs the frozen margin gate — tray flow (filed 2026-08-15, MPR1 run5/run6).**
+On the multi-pill tray route, 9 of the 11 supported OTC pills verify on the no-flash burned frames
+(0 false accepts across every run). The two misses are the deboss-only pills: senekot.s ("S S")
+and dulcolax ("D"). Muthu ordered a flash-arm (P2) evidence run; **the flash-rescue prediction was
+REFUTED**: dulcolax never reaches a read (presence NONE), and senekot.s reads its own name
+correctly at margin 8.474 against the frozen 8.5949 gate — 1.4% short, with the landed Sample17
+M0 crop on the same well/arm scoring 8.835, i.e. the pill sits ON the frozen boundary (dulcolax's
+landed evidence: 0 ungated in 7 appearances, best 3.73). This is a **deboss-vs-gate margin
+problem, not a capture-arm choice**. The three levers, all outside the MPR1 session's authority:
+(1) re-derive the margin threshold on non-burned data; (2) a Stage-2 reader with more relief
+sensitivity; (3) a raking-light capture geometry for deboss imprints. Until one lands, the tray
+flow's honest behavior for these two pills is abstain/reject with the pharmacist message — never
+a false accept. Evidence: `NB08_Notebook/results/nb08_tray_route/run5/` + `run6/` and the
+MPR1-T14 report (`NB08_Notebook/orc/MPR1/`).
 
 For everything else currently in flight, the live roadmap and its status live in
 `NB08_Notebook/NB08_STATE.md` §5 (timeline) and `NB08_Notebook/specs/NB08_DataModel_v3.md` §4 (work

@@ -26,6 +26,13 @@ router = APIRouter(prefix="/scans", tags=["scans"])
 # match_status (matched=green, unmatched=red, warning=amber) -- abstain maps
 # to "warning", never "unmatched"; the three decisions stay distinguishable
 # via the dedicated `decision` field below regardless of this mapping.
+#
+# THIS TABLE COLOURS A ROW, so what it reads has to be a DECISION OF RECORD --
+# a decision some surface is willing to stand behind -- and not a raw model
+# output. Tray rows go through `tray_messages.decision_of_record` for exactly
+# that reason (a D-7 downgraded slot used to land here as `verify` and light
+# up green). Any future writer of `analyses.decision` owes the same guarantee;
+# raw sidecar output belongs in `label_info`, which nothing here reads.
 _DECISION_TO_MATCH_STATUS = {"verify": "matched", "reject": "unmatched", "abstain": "warning"}
 
 

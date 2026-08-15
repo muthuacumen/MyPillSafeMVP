@@ -333,11 +333,31 @@ Then the load-bearing test -- one real pill through the real path:
 $img = "D:\Projects\PillSafe\archive\demoprep\images\motrin\DIN02242658_DarkGrey_ColourRef_Front_DL.jpg"
 curl.exe -s -X POST http://127.0.0.1:8100/pill/analyze `
   -F "image=@$img" `
-  -F 'profile_dins=["DIN02242658","DIN02237726"]'
+  -F 'profile_dins=["DIN2242658","DIN2237726"]'
 ```
 
+> **`profile_dins` MUST be in SB2 token form: `DIN` + the UNPADDED integer.**
+> `DIN13803`, never `DIN00013803` and never a bare `00013803`. The sidecar's
+> allowlist (`data/allowlist/supported_dins.csv`) and reference index are keyed on
+> that token, so a padded value silently misses the profile-intersect-allowlist
+> intersection: you get HTTP 200, `detected: true`, a clean `contract_version: "C6"`
+> record with the shape/colour heads fine -- and an empty ballot, `faces: []`,
+> `ranked_candidates: []`, `decision: "reject"`. It looks exactly like a dead reader
+> and is not one. **Confirmed live 2026-08-14** on the armed production sidecar: the
+> same gravol image rejects with `["DIN00013803"]` and verifies with `["DIN13803"]`
+> (margin 14.54, `imprint_exact`, S=0.75).
+>
+> The app path never had this bug -- the backend converts at the boundary via
+> `dev/backend/app/services/din_utils.py::to_sb2_token` (`"00013803"` -> `"DIN13803"`;
+> its inverse is `from_sb2_token`, and `normalize_din` accepts either form). Convert
+> there and nowhere else. **This only bites hand-rolled curl warm-ups and harness
+> scripts that bypass the backend**, which is precisely what this checkpoint is.
+
 CHECKPOINT 9: JSON returns with `record.detected: true` and
-`match.decision: "verify"`, `match.matched_din` resolving to DIN2242658.
+`match.decision: "verify"`, `match.matched_din` resolving to DIN2242658, plus a
+populated `faces[]` when the reader is armed. **A `reject` with `faces: []` here is
+a DIN-format failure until proven otherwise -- check `record.lexicon_profile_dins`
+in the response echoes the unpadded token form before you touch the reader.**
 
 - With the reader **armed**, the record should additionally carry `contract_version:
   "C6"` and a populated `faces[]`. **Confirmed 2026-08-14** by reading
@@ -570,7 +590,7 @@ Work down the list. Do not sign off early -- the last row is the one that matter
 | 2 | `/health` | [LAPTOP] | `imb1_ok`/`sb2_ok` true, `reference_rows` numeric, `ocr_worker: present`, `torch_cuda_available: true` |
 | 3 | Reader state reported | [LAPTOP] | `GET /health` -> `reader` key present with `reader_enabled`, `reader_mode`, `stage1_backend`, `scorer_device`, `scorer_loaded`, `scorer_load_error`, `verify_session_import_error`, `stage2_deps_ok: true` |
 | 4 | **WARM-UP:** fire one throwaway `/pill/analyze` | [LAPTOP] | do this **before** anything else below or any live demo step -- cold first request measured 43.43 s (`w3real_result.json`, `cold_total_s`) vs 8.58-10.08 s warm (`warm_min_s`/`warm_max_s`, median 9.33 s). Nobody should watch the cold load on camera |
-| 5 | One real `/pill/analyze` | [LAPTOP] | `detected: true`, `decision: verify` (CHECKPOINT 9) |
+| 5 | One real `/pill/analyze` | [LAPTOP] | `detected: true`, `decision: verify`, `faces[]` populated (CHECKPOINT 9). Pass `profile_dins` in SB2 token form -- `DIN` + unpadded integer, e.g. `DIN13803` -- or you get a false `reject` with `faces: []` (see CHECKPOINT 9 callout and section 7) |
 | 6 | Container reaches sidecar | [DROPLET] | `200` (CHECKPOINT 10) |
 | 7 | Neighbours unaffected | [DROPLET] | JAcI + PathoIntern healthy; `curl http://127.0.0.1:80` returns `301` |
 | 8 | Ollama still up | [LAPTOP] | `ollama list` responds; healthcheck log silent |
@@ -594,6 +614,7 @@ necessary and none of it is sufficient.
 | Pill/Rx/Q&A all 503 at mypillsafe.ca | sidecar down, laptop asleep, or wrong IP in `BRAINS_SERVICE_URLS` | CHECKPOINT 10; check laptop sleep (4.5) |
 | First scan very slow, later ones fine | lazy 4-bit model load on first request | expected -- warm the models before any demo (4.5) |
 | CUDA OOM on first armed scan | 4-bit VLM + Ollama models competing for 8.6 GB | `ollama stop qwen3-vl:latest` before an armed scan, or R1 |
+| **`decision: reject` with `faces: []` and `ranked_candidates: []`, but HTTP 200, `detected: true`, `contract_version: "C6"`, shape/colour heads fine** | **DIN token mismatch, NOT a reader failure.** `record.lexicon_profile_dins` echoes a padded/bare DIN (`DIN00013803`, `00013803`); the allowlist is keyed on `DIN` + unpadded integer, so the intersection is empty -> empty ballot -> no faces read | resend `profile_dins` in SB2 token form (`DIN13803`) -- see the callout at CHECKPOINT 9. Affects hand-rolled curl/harness calls only; the backend converts via `din_utils.to_sb2_token`. Do NOT restart the sidecar or disarm the reader for this |
 | Pill scan returns `no_profile` | patient has no confirmed-DIN active prescription | section 4.2 -- the sidecar was never called; this is not a sidecar fault |
 | `/dev/seed-admin` 404 on prod | by design, `APP_ENV=production` | use register + Admin -> Users approve (4.1) |
 

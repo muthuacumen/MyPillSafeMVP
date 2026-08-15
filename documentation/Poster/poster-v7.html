@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MyPillSafe — Capstone Poster v7</title>
+<style>
+  /* A0 landscape, 1189 x 841 mm. Print with:
+       chrome --headless --print-to-pdf --no-pdf-header-footer poster-v7.html
+     Text stays VECTOR in the PDF, so it is sharp at any print size. Raster assets
+     are photographs, screenshots and generated QR codes; see Appendix B.
+
+     Copy is deliberately number-free: the audience is judges and visitors who do
+     not work in AI. "How We Evaluate" states method only — no result claim.
+     Provenance and open flags: poster-nanobanana2-prompt-v2.md, Appendix B
+     (fact-checked 2026-07-30; NOT re-run for v6). Changes from v5 and the
+     evidence behind each: changerecommendations.md.
+
+     v7 = v6 with ONE change: the System Architecture image is now the C4
+     container diagram architecture-c4-v9b.png (was architecture-c4-v5.png).
+     No other copy, layout or asset was touched. */
+  @page { size: 1189mm 841mm; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1189mm; height: 841mm; }
+  body {
+    font-family: "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color: #1A202C; background: #E8EEF2;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .poster { width: 1189mm; height: 841mm; display: flex; flex-direction: column; }
+
+  /* ---------- banner ---------- */
+  .banner {
+    background: #1E3A5F; color: #fff; padding: 6mm 14mm 5mm;
+    display: flex; align-items: center; gap: 14mm; flex: 0 0 auto;
+  }
+  .banner .brand { flex: 0 0 auto; }
+  .banner .brand {
+    background: #fff; border-radius: 4mm; padding: 4mm 6mm;
+    box-shadow: 0 1mm 3mm rgba(0,0,0,.18);
+  }
+  .banner .brand img { height: 38mm; display: block; }
+  .banner .title { flex: 1 1 auto; text-align: center; }
+  .banner .title h1 { font-size: 20mm; font-weight: 800; line-height: 1.04; letter-spacing: -0.3mm; }
+  .banner .title p { font-size: 8.9mm; color: #E8EEF2; margin-top: 3mm; line-height: 1.35; }
+  .banner .meta {
+    flex: 0 0 auto; display: flex; align-items: center; gap: 7mm;
+    text-align: right; font-size: 6.2mm; line-height: 1.5; color: #C7EBE6;
+  }
+  .banner .meta .qrblock { text-align: center; }
+  .banner .meta .inst { text-align: right; }
+  .banner .meta .conestoga {
+    background: #fff; border-radius: 3mm; padding: 2.6mm 4mm;
+    display: inline-block; margin-bottom: 2.8mm;
+    box-shadow: 0 1mm 3mm rgba(0,0,0,.18);
+  }
+  .banner .meta .conestoga img { height: 21mm; display: block; }
+  .banner .meta .qr {
+    width: 42mm; height: 42mm; display: block; margin: 0 auto 1.6mm;
+    background: #fff; padding: 1.5mm; border-radius: 1.5mm;
+  }
+  .banner .meta .scan { font-size: 6.2mm; color: #fff; font-weight: 700; }
+  .badge {
+    display: inline-block; background: #D64045; color: #fff; font-weight: 700;
+    font-size: 6.2mm; letter-spacing: 0.8mm; text-transform: uppercase;
+    padding: 1.8mm 4.5mm; border-radius: 2.5mm; margin-top: 3.5mm;
+  }
+
+  /* ---------- three columns ---------- */
+  .cols {
+    flex: 1 1 auto; display: grid; grid-template-columns: 316mm 1fr 290mm;
+    gap: 6mm; padding: 6mm 9mm 0; min-height: 0;
+  }
+  .col { display: flex; flex-direction: column; gap: 6mm; min-height: 0; }
+  /* Side cards share the leftover column height instead of floating at the top,
+     and their bullets spread evenly inside. Centre column sizes to content. */
+  .col.side > .card { flex: 1 1 0; display: flex; flex-direction: column; }
+  .col.side > .card.evid > ul { flex: 0 0 auto; }
+  .col.side > .card > ul,
+  .col.side > .card > .shot { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-evenly; }
+  /* NOT a flex container: flex blockifies inline children, so a <span> inside a
+     paragraph becomes its own flex item and splits the sentence into blocks. */
+  .col.side > .card > .negative { flex: 1 1 auto; display: block; }
+  /* 8.4mm, down from v5's 8.9mm: "How We Evaluate" carries a fourth bullet and the
+     column has no slack left. Still ~24pt — far above the A0 readability floor. */
+  .col.side .card p, .col.side .card li { font-size: 8.4mm; line-height: 1.32; }
+  .col.side .card h2 { font-size: 12.8mm; margin-bottom: 5mm; }
+  .col.side .card { padding: 9mm 10mm; }
+  .col.side .card ul li { padding-left: 10mm; margin-bottom: 0; }
+  .col.side .card ul li::before { font-size: 8.4mm; }
+  .card { background: #fff; border-radius: 5mm; padding: 7mm 8mm; box-shadow: 0 1mm 3mm rgba(30,58,95,.12); }
+  .card h2 {
+    font-size: 12.8mm; color: #1E3A5F; font-weight: 800; margin-bottom: 4mm;
+    padding-bottom: 2.4mm; border-bottom: 1.2mm solid #2A9D8F;
+  }
+  .card p, .card li { font-size: 7.4mm; line-height: 1.34; color: #4A5568; }
+  .card ul { list-style: none; }
+  .card ul li { padding-left: 7mm; position: relative; margin-bottom: 3mm; }
+  .card ul li:last-child { margin-bottom: 0; }
+  .card ul li::before { content: "▸"; color: #2A9D8F; position: absolute; left: 0; font-size: 7.4mm; }
+  .card .em { color: #1A202C; font-weight: 700; }
+  .caption { font-size: 6.2mm; color: #718096; font-style: italic; line-height: 1.35; }
+
+  /* ---------- capture card pair ---------- */
+  .col.side > .card.tray { flex: 0 0 auto; }
+  .traypair { display: flex; gap: 5mm; }
+  .traypair figure { flex: 1 1 0; }
+  .traypair img { width: 100%; display: block; border-radius: 2.5mm; border: 0.6mm solid #D8E0E6; }
+  .traypair figcaption {
+    font-size: 6.2mm; color: #718096; font-style: italic; text-align: center; margin-top: 1.6mm;
+  }
+
+  /* ---------- architecture ---------- */
+  .archwrap { text-align: center; }
+  .archwrap img {
+    width: 100%; display: block; margin: 0 auto 3mm;
+    border: 0.6mm solid #D8E0E6; border-radius: 2mm;
+  }
+
+  /* ---------- workflow lanes ---------- */
+  /* The workflow card claims the centre column's leftover height and spreads its
+     three lanes through it, rather than leaving a block of white at the bottom. */
+  .col.centre > .card.flowcard {
+    flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .col.centre > .card.flowcard .lane { margin-bottom: 0; }
+  .lane-sub { font-size: 8.9mm; font-style: italic; color: #1A202C; margin: -1mm 0 4mm; }
+  .lane { margin-bottom: 4.5mm; }
+  .lane-title { font-size: 7.4mm; font-weight: 800; color: #23847A; text-transform: uppercase; letter-spacing: .5mm; margin-bottom: 2.2mm; }
+  .flow { display: flex; align-items: stretch; gap: 2.5mm; }
+  .chip {
+    border-radius: 2.6mm; padding: 5.6mm 3.6mm; font-size: 7.4mm; line-height: 1.2;
+    text-align: center; flex: 1 1 0; display: flex; flex-direction: column; justify-content: center;
+  }
+  .chip small { display: block; font-size: 6.2mm; font-weight: 400; opacity: .88; margin-top: 1mm; line-height: 1.2; }
+  .chip.brain { background: #1E3A5F; color: #fff; font-weight: 700; }
+  .chip.det   { background: #2A9D8F; color: #fff; font-weight: 700; }
+  .chip.user  { background: #fff; border: 1.1mm solid #D64045; color: #1A202C; font-weight: 700; }
+  .chip.input { background: #E8EEF2; color: #1A202C; font-weight: 600; }
+  .arrow { flex: 0 0 auto; font-size: 6.5mm; color: #718096; align-self: center; }
+  .outcomes { display: flex; gap: 3.5mm; margin-top: 2.6mm; }
+  .oc-note { font-size: 7.4mm; line-height: 1.3; color: #1A202C; font-weight: 600;
+             background: #FEF2F2; border-left: 2mm solid #D64045; border-radius: 0 2.5mm 2.5mm 0;
+             padding: 2.6mm 4mm; margin-top: 2.6mm; }
+  .oc { flex: 1; border-radius: 2.6mm; padding: 4.4mm 3mm; font-size: 7.4mm; font-weight: 700; text-align: center; border: 0.8mm solid; }
+  .oc.ok  { background: #F0FDF4; color: #166534; border-color: #BBF7D0; }
+  .oc.mid { background: #FFFBEB; color: #92400E; border-color: #FDE68A; }
+  .oc.bad { background: #FEF2F2; color: #991B1B; border-color: #FECACA; }
+
+
+  .fineline { font-size: 6.2mm; font-style: italic; color: #718096; line-height: 1.3;
+              margin: 3.5mm 0 4mm; }
+  .negative b { color: #D64045; }
+
+  /* ---------- right column ---------- */
+  .shot { text-align: center; }
+  .shot img {
+    height: 145mm; width: auto; display: block; margin: 0 auto 3mm;
+    border: 0.6mm solid #D8E0E6; border-radius: 3mm;
+  }
+  .negative {
+    font-size: 10.7mm; line-height: 1.34; color: #1A202C; background: #F4F7F9;
+    border-left: 2.4mm solid #D64045; border-radius: 0 3mm 3mm 0; padding: 4mm 5mm;
+  }
+
+  /* ---------- team band ---------- */
+  .teamband {
+    flex: 0 0 auto; background: #1E3A5F; color: #fff;
+    margin-top: 6mm; padding: 5mm 10mm 4.5mm;
+  }
+  .teamband h2 {
+    font-size: 12.8mm; font-weight: 800; text-align: center; margin-bottom: 4mm;
+    letter-spacing: .3mm;
+  }
+  .teamgrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4mm; }
+  .member { display: flex; align-items: center; justify-content: center; gap: 5mm; text-align: left; }
+  .member .face {
+    width: 40mm; height: 40mm; border-radius: 50%; object-fit: cover;
+    flex: 0 0 auto; border: 0.8mm solid #fff; background: #fff;
+  }
+  .member .info { flex: 0 1 auto; min-width: 0; }
+  .member .nm { font-size: 6.7mm; font-weight: 700; color: #fff; line-height: 1.15; }
+  .member .rl { font-size: 6.2mm; color: #C7EBE6; margin-top: 1mm; line-height: 1.2; }
+  .member .qrwrap { flex: 0 0 auto; text-align: center; }
+  .member .qr {
+    width: 28mm; height: 28mm; display: block;
+    background: #fff; padding: 1mm; border-radius: 1.2mm;
+  }
+  .member .li { font-size: 5.2mm; color: #9FC4CE; letter-spacing: .3mm; margin-top: 0.8mm; }
+  .grounded { text-align: center; font-size: 6.2mm; color: #9FC4CE; margin-top: 3.5mm; font-style: italic; }
+
+  /* ---------- future work strip ---------- */
+  .future {
+    flex: 0 0 auto; background: #fff; margin: 6mm 9mm 0; padding: 6mm 9mm;
+    border-radius: 5mm; box-shadow: 0 1mm 3mm rgba(30,58,95,.12);
+    display: flex; align-items: center; gap: 10mm;
+  }
+  .future h2 {
+    flex: 0 0 92mm; font-size: 12.8mm; color: #1E3A5F; font-weight: 800; line-height: 1.1;
+    border-right: 1.2mm solid #2A9D8F; padding-right: 10mm;
+  }
+  .future ul { flex: 1 1 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10mm; list-style: none; align-items: start; }
+  .future li { font-size: 10.7mm; line-height: 1.32; color: #4A5568; padding-left: 7.5mm; position: relative; }
+  .future li::before { content: "▸"; color: #2A9D8F; position: absolute; left: 0; font-size: 10.7mm; }
+  /* .em is scoped to .card, so the strip needs its own emphasis rule. */
+  .future .em { color: #1A202C; font-weight: 700; }
+
+  /* ---------- footer ---------- */
+  .strip {
+    flex: 0 0 auto; background: #162B47; color: #E8EEF2; font-size: 7.4mm;
+    padding: 4.5mm 14mm; display: flex; justify-content: space-between; align-items: center;
+    margin-top: 6mm;
+  }
+  .strip b { color: #fff; }
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <!-- ================= BANNER ================= -->
+  <div class="banner">
+    <div class="brand">
+      <img src="mypillsafe-logo.png" alt="MyPillSafe logo">
+    </div>
+    <div class="title">
+      <h1>The Wrong Pill Should Never Go Unnoticed</h1>
+      <p>It reads your prescription, checks your pill from a photo, and answers your questions in
+         your language. When it isn&rsquo;t sure, it says so.</p>
+      <span class="badge">Capstone MVP · Decision-Support Only</span>
+    </div>
+    <div class="meta">
+      <div class="inst">
+        <div class="conestoga"><img src="Conestogalogo.png" alt="Conestoga College"></div>
+        <div>Graduate Program in AI &amp; Machine Learning<br>Capstone Project · 2026</div>
+      </div>
+      <div class="qrblock">
+        <img class="qr" src="qr-mypillsafe-ca.png" alt="QR code to mypillsafe.ca">
+        <div class="scan">mypillsafe.ca</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cols">
+
+    <!-- ================= LEFT ================= -->
+    <div class="col side">
+      <div class="card">
+        <h2>What It Does</h2>
+        <ul>
+          <li>Photograph a prescription — it becomes your medication list, and <span class="em">you approve every line</span>.</li>
+          <li>Photograph a pill — it checks it against the medicines you already approved. It <span class="em">cannot tell you whether it is safe to take now</span>.</li>
+          <li>Ask a question — it answers from official Canadian and manufacturer drug information, in your language.</li>
+          <li>It reminds you, out loud, when a dose is due.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Why It Matters</h2>
+        <ul>
+          <li>Once a pill leaves its bottle it is hard to tell apart — so many tablets are
+              <span class="em">small, white and round</span>.</li>
+          <li>Older Canadians often take several medications at once, and the risk of a harmful mix
+              climbs with each one added.</li>
+          <li>The people who read English least well get the least help with exactly this question.</li>
+        </ul>
+      </div>
+
+      <div class="card tray">
+        <h2>The Capture Card</h2>
+        <div class="traypair">
+          <figure>
+            <img src="tray-card-empty.jpg" alt="The 3-D printed capture card, empty, showing its six wells, colour patches and corner markers">
+            <figcaption>the printed card</figcaption>
+          </figure>
+          <figure>
+            <img src="tray-photo-v2.jpg" alt="Six medications resting in the wells of the printed capture card">
+            <figcaption>six medicines, ready to photograph</figcaption>
+          </figure>
+        </div>
+        <div class="caption" style="margin-top:3mm">Pocket-sized, and printed on a desktop 3-D
+          printer. The colour patches and corner markers let the app correct for whatever light you
+          happen to be standing in, so a pill looks the same in every kitchen. Research prototype —
+          the design is still being refined.</div>
+      </div>
+
+      <div class="card">
+        <h2>Where It Helps</h2>
+        <ul>
+          <li><span class="em">The weekly organizer</span> — check a loose tablet against your own list.</li>
+          <li><span class="em">A new prescription</span> — photograph it, approve it, and reminders begin.</li>
+          <li><span class="em">A language barrier</span> — read a real, sourced answer in your own language.</li>
+          <li><span class="em">Living alone</span> — spoken reminders before each dose and again at dose time.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ================= CENTRE ================= -->
+    <div class="col centre">
+      <div class="card">
+        <h2>System Architecture</h2>
+        <div class="archwrap">
+          <img src="architecture-c4-v9b.png" alt="MyPillSafe C4 container diagram">
+          <div class="caption">Every path passes through fixed safety rules and your own approval
+            before anything is saved.</div>
+        </div>
+      </div>
+
+      <div class="card flowcard">
+        <h2>User Workflow</h2>
+        <div class="lane-sub">The part that talks is never the part that decides.</div>
+
+        <div class="lane">
+          <div class="lane-title">1 · Prescription → your list</div>
+          <div class="flow">
+            <div class="chip input">Label photo</div><div class="arrow">→</div>
+            <div class="chip brain">Prescription Reader</div><div class="arrow">→</div>
+            <div class="chip det">Safety rules<small>no invented times</small></div><div class="arrow">→</div>
+            <div class="chip user">YOU approve<small>nothing saved on its own</small></div><div class="arrow">→</div>
+            <div class="chip input">Your medication list</div>
+          </div>
+        </div>
+
+        <div class="lane">
+          <div class="lane-title">2 · Pill photo → answer</div>
+          <div class="flow">
+            <div class="chip input">Pill on the card</div><div class="arrow">→</div>
+            <div class="chip brain">Pill Vision<small>colour · shape · imprint</small></div><div class="arrow">→</div>
+            <div class="chip det">Matching rules<small>a fixed formula, not a model</small></div><div class="arrow">→</div>
+            <div class="chip input">Only your own medications</div>
+          </div>
+          <div class="outcomes">
+            <div class="oc ok">✓ On your list</div>
+            <div class="oc mid">? Not sure — don&rsquo;t take it, ask your pharmacist</div>
+            <div class="oc bad">✗ Doesn&rsquo;t match — stop</div>
+          </div>
+          <div class="oc-note">Whichever answer you get, confirm with your pharmacist before you
+            take anything. MyPillSafe checks your list — your pharmacist checks your care.</div>
+        </div>
+
+        <div class="lane" style="margin-bottom:0">
+          <div class="lane-title">3 · Question → sourced answer</div>
+          <div class="flow">
+            <div class="chip input">Your question</div><div class="arrow">→</div>
+            <div class="chip brain">Find the right page<small>one medication only</small></div><div class="arrow">→</div>
+            <div class="chip brain">Answer Voice<small>puts it in words, decides nothing</small></div><div class="arrow">→</div>
+            <div class="chip det">Checked against the source</div><div class="arrow">→</div>
+            <div class="chip input">Answer in your language</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= RIGHT ================= -->
+    <div class="col side">
+      <div class="card">
+        <h2>The App</h2>
+        <div class="shot">
+          <img src="Screenshot.jpeg" alt="MyPillSafe running on a phone">
+          <div class="caption">Live at mypillsafe.ca — installs on a phone with no app store.</div>
+        </div>
+      </div>
+
+      <div class="card evid">
+        <h2>How We Evaluate</h2>
+        <ul>
+          <li>Every experiment has its pass-or-fail mark <span class="em">written down before the run</span>,
+              so a disappointing result cannot quietly become a good one.</li>
+          <li>We treat one failure as worse than all the others — <span class="em">calling a wrong pill
+              correct</span> — and we measure it again every time anything changes.</li>
+          <li>Saying &ldquo;I&rsquo;m not sure&rdquo; counts as a success, not a miss. The system is built
+              to abstain rather than guess.</li>
+          <li>Results are checked against photographs of the real medicines, not only against catalogue
+              images.</li>
+        </ul>
+        <div class="fineline">A larger confirmatory study is planned once the pipeline is frozen, so the
+          design can be tested on photographs it has never seen.</div>
+        <div class="negative"><b>The result we didn&rsquo;t expect.</b> Pill Vision does three jobs: find
+          the pill, read its shape and colour, and read the imprint stamped on it. On two of them, models
+          we never trained are doing better than the ones we trained ourselves. That negative result
+          reshaped the design, and it is what our paper is about.</div>
+      </div>
+
+      <div class="card">
+        <h2>Privacy &amp; Access</h2>
+        <ul>
+          <li>The app is in English and French; answers come back in the language you choose.</li>
+          <li>Spoken help and spoken reminders. Installs on a phone with no app store.</li>
+          <li>Only monograph text and your question are ever sent to the AI service — <span class="em">never your name, date of birth or medication list</span>.</li>
+          <li>The pill photo itself is never kept — only the outcome.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TEAM BAND ================= -->
+  <div class="teamband">
+    <h2>The Team</h2>
+    <div class="teamgrid">
+      <div class="member">
+        <img class="face" src="TeamMembers/Muthu.jpg" alt="Muthuraj Jayakumar">
+        <div class="info">
+          <div class="nm">Muthuraj Jayakumar</div>
+          <div class="rl">Project Lead · ML Architecture</div>
+        </div>
+        <div class="qrwrap">
+          <img class="qr" src="qr-linkedin-muthuraj.png" alt="LinkedIn QR">
+          <div class="li">LinkedIn</div>
+        </div>
+      </div>
+      <div class="member">
+        <img class="face" src="TeamMembers/Sumanth.png" alt="Sumanth Reddy">
+        <div class="info">
+          <div class="nm">Sumanth Reddy</div>
+          <div class="rl">Backend &amp; Systems Integration</div>
+        </div>
+        <div class="qrwrap">
+          <img class="qr" src="qr-linkedin-sumanth.png" alt="LinkedIn QR">
+          <div class="li">LinkedIn</div>
+        </div>
+      </div>
+      <div class="member">
+        <img class="face" src="TeamMembers/Lohith.png" alt="Lohith Reddy">
+        <div class="info">
+          <div class="nm">Lohith Reddy</div>
+          <div class="rl">Frontend &amp; User Experience</div>
+        </div>
+        <div class="qrwrap">
+          <img class="qr" src="qr-linkedin-lohith.png" alt="LinkedIn QR">
+          <div class="li">LinkedIn</div>
+        </div>
+      </div>
+      <div class="member">
+        <img class="face" src="TeamMembers/Ali.jpg" alt="Ali Ozdemir">
+        <div class="info">
+          <div class="nm">Ali Ozdemir</div>
+          <div class="rl">Data Engineering · Reference Pipeline</div>
+        </div>
+        <div class="qrwrap">
+          <img class="qr" src="qr-linkedin-ali.png" alt="LinkedIn QR">
+          <div class="li">LinkedIn</div>
+        </div>
+      </div>
+      <div class="member">
+        <img class="face" src="TeamMembers/Abdallah.jpg" alt="Abdallah Mohamed">
+        <div class="info">
+          <div class="nm">Abdallah Mohamed</div>
+          <div class="rl">Quality Assurance &amp; Evaluation</div>
+        </div>
+        <div class="qrwrap">
+          <img class="qr" src="qr-linkedin-abdallah.png" alt="LinkedIn QR">
+          <div class="li">LinkedIn</div>
+        </div>
+      </div>
+    </div>
+    <div class="grounded">Grounded in published pill-imaging research — ePillID and GO-PILL.</div>
+  </div>
+
+  <!-- ================= FUTURE WORK ================= -->
+  <div class="future">
+    <h2>Future Work</h2>
+    <ul>
+      <li><span class="em">An imprint validator</span> — a person checks the machine&rsquo;s reading of colour, shape and imprint against the official document.</li>
+      <li><span class="em">Ask Health Canada to require an imprint on every tablet</span>, as the US FDA already does. An unmarked pill cannot be identified.</li>
+      <li><span class="em">Ask GS1 to require manufacturers to publish</span> colour, shape, size and imprint — better identification, harder counterfeiting.</li>
+    </ul>
+  </div>
+
+  <!-- ================= FOOTER ================= -->
+  <div class="strip">
+    <div><b>Decision-support only.</b> Not a medical device — always confirm with a licensed pharmacist or physician.</div>
+    <div>Interface in <b>EN · FR</b> — answers in the language you choose</div>
+    <div>Live at <b>mypillsafe.ca</b></div>
+  </div>
+</div>
+</body>
+</html>

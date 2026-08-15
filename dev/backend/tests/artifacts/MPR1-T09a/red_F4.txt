@@ -1,0 +1,148 @@
+MPR1-T09a RED-FIRST F4 -- captured BEFORE the fix, pristine app/ tree
+selector: -k "test_F4a_duplicate_prescriptions_of_one_din_count_once or test_F4b_duplicate_excluded_din_is_wholly_uncovered_and_says_so_once"
+==============================================================================
+FF                                                                       [100%]
+================================== FAILURES ===================================
+___________ test_F4a_duplicate_prescriptions_of_one_din_count_once ____________
+
+client = <httpx.AsyncClient object at 0x0000015F03784D40>
+auth_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5MDBkMWRmZS0wOGJiLTRjMTMtOTA3Zi1hNzQzNWE1NTk...VOVCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3ODY3OTM5NjcsImV4cCI6MTc4Njc5NzU2N30.0A4gDOAWy6lSeN2BmkbdEXmplXq9Be_i9DZs-2lLj2o'}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000015F03803D10>
+
+    @pytest.mark.asyncio
+    async def test_F4a_duplicate_prescriptions_of_one_din_count_once(
+        client, auth_headers, monkeypatch
+    ):
+        """[MINOR 9] Two prescriptions of one DIN are one medication as far as
+        coverage goes. `unsupported` was already deduped, `profile_n` was not, so
+        the notice read "1 of 3 not covered" for a two-medication profile."""
+        await _arm(monkeypatch, client, auth_headers, _full_tray("verify"),
+                   dins=(SUPPORTED_GRAVOL, SUPPORTED_GRAVOL, EXCLUDED_BENYLIN))
+        profile = (await _post(client, auth_headers)).json()["profile"]
+>       assert profile["profile_n"] == 2
+E       assert 3 == 2
+
+tests\test_tray_slots.py:785: AssertionError
+---------------------------- Captured stderr setup ----------------------------
+2026-08-15 07:39:27,593  INFO      app.services.auth_service  User registered, awaiting admin approval: patient_56923ba039@pillsafe.dev
+2026-08-15 07:39:27,593  INFO      httpx  HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 202 Accepted"
+----------------------------- Captured log setup ------------------------------
+INFO     app.services.auth_service:auth_service.py:58 User registered, awaiting admin approval: patient_56923ba039@pillsafe.dev
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 202 Accepted"
+---------------------------- Captured stderr call -----------------------------
+2026-08-15 07:39:27,611  INFO      app.api.v1.routes.prescriptions  Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\0344cbd7-773b-48c1-9ac6-74490cecf693\ecefa6a0-9db7-4bf1-8021-5503974f747b.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+2026-08-15 07:39:27,612  WARNING   app.services.brains_client  Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+2026-08-15 07:39:27,614  INFO      app.api.v1.routes.prescriptions  Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+2026-08-15 07:39:27,614  INFO      httpx  HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+2026-08-15 07:39:27,622  WARNING   app.services.brains_client  Brains sidecar profile lookup failed (dins=['DIN13803']): connection refused
+2026-08-15 07:39:27,624  INFO      httpx  HTTP Request: PATCH http://test/api/v1/prescriptions/dc03b87c-244b-42cc-b0ae-9d1f3cb0667c "HTTP/1.1 200 OK"
+2026-08-15 07:39:27,629  INFO      app.api.v1.routes.prescriptions  Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\0344cbd7-773b-48c1-9ac6-74490cecf693\a91dd5db-a5c2-4ada-9328-de2aa8b19ac0.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+2026-08-15 07:39:27,629  WARNING   app.services.brains_client  Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+2026-08-15 07:39:27,630  INFO      app.api.v1.routes.prescriptions  Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+2026-08-15 07:39:27,630  INFO      httpx  HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+2026-08-15 07:39:27,634  WARNING   app.services.brains_client  Brains sidecar profile lookup failed (dins=['DIN13803']): connection refused
+2026-08-15 07:39:27,637  INFO      httpx  HTTP Request: PATCH http://test/api/v1/prescriptions/8a34d923-c4f5-4748-a0fe-2125b1ab88be "HTTP/1.1 200 OK"
+2026-08-15 07:39:27,640  INFO      app.api.v1.routes.prescriptions  Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\0344cbd7-773b-48c1-9ac6-74490cecf693\07d2fcc6-c4c7-4417-a2e9-3a0d7d2e9363.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+2026-08-15 07:39:27,640  WARNING   app.services.brains_client  Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+2026-08-15 07:39:27,640  INFO      app.api.v1.routes.prescriptions  Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+2026-08-15 07:39:27,640  INFO      httpx  HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+2026-08-15 07:39:27,645  WARNING   app.services.brains_client  Brains sidecar profile lookup failed (dins=['DIN2306409']): connection refused
+2026-08-15 07:39:27,648  INFO      httpx  HTTP Request: PATCH http://test/api/v1/prescriptions/ccbf52ca-2c01-452f-a78b-e49bf65e0fa5 "HTTP/1.1 200 OK"
+2026-08-15 07:39:27,656  INFO      httpx  HTTP Request: POST http://test/api/v1/tray/analyze "HTTP/1.1 200 OK"
+------------------------------ Captured log call ------------------------------
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:148 Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\0344cbd7-773b-48c1-9ac6-74490cecf693\ecefa6a0-9db7-4bf1-8021-5503974f747b.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+WARNING  app.services.brains_client:brains_client.py:149 Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:213 Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+WARNING  app.services.brains_client:brains_client.py:240 Brains sidecar profile lookup failed (dins=['DIN13803']): connection refused
+INFO     httpx:_client.py:1742 HTTP Request: PATCH http://test/api/v1/prescriptions/dc03b87c-244b-42cc-b0ae-9d1f3cb0667c "HTTP/1.1 200 OK"
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:148 Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\0344cbd7-773b-48c1-9ac6-74490cecf693\a91dd5db-a5c2-4ada-9328-de2aa8b19ac0.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+WARNING  app.services.brains_client:brains_client.py:149 Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:213 Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+WARNING  app.services.brains_client:brains_client.py:240 Brains sidecar profile lookup failed (dins=['DIN13803']): connection refused
+INFO     httpx:_client.py:1742 HTTP Request: PATCH http://test/api/v1/prescriptions/8a34d923-c4f5-4748-a0fe-2125b1ab88be "HTTP/1.1 200 OK"
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:148 Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\0344cbd7-773b-48c1-9ac6-74490cecf693\07d2fcc6-c4c7-4417-a2e9-3a0d7d2e9363.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+WARNING  app.services.brains_client:brains_client.py:149 Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:213 Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+WARNING  app.services.brains_client:brains_client.py:240 Brains sidecar profile lookup failed (dins=['DIN2306409']): connection refused
+INFO     httpx:_client.py:1742 HTTP Request: PATCH http://test/api/v1/prescriptions/ccbf52ca-2c01-452f-a78b-e49bf65e0fa5 "HTTP/1.1 200 OK"
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/tray/analyze "HTTP/1.1 200 OK"
+____ test_F4b_duplicate_excluded_din_is_wholly_uncovered_and_says_so_once _____
+
+client = <httpx.AsyncClient object at 0x0000015F03970860>
+auth_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhMGY2NmU4NS1mNTk4LTQyMmYtODkwNC1mMWE4NjMzODM...VOVCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3ODY3OTM5NjgsImV4cCI6MTc4Njc5NzU2OH0.u7XkkRgpbsaxwMnEPgFGWA_iuCixojFZvCZKj6cjAHw'}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000015F03970080>
+
+    @pytest.mark.asyncio
+    async def test_F4b_duplicate_excluded_din_is_wholly_uncovered_and_says_so_once(
+        client, auth_headers, monkeypatch
+    ):
+        """[MINOR 9, the short-circuit half] On the same basis the profile is
+        WHOLLY uncovered, so the note is promoted to the frame message and the
+        count-only notice must not be emitted as well -- saying it twice is the
+        exact thing `_profile_block` documents it will not do."""
+        monkeypatch.setattr(settings, "TRAY_ANALYZE_ENABLED", True)
+        monkeypatch.setattr(httpx, "AsyncClient", _Unreachable)
+        await _confirm(client, auth_headers, EXCLUDED_BENYLIN)
+        await _confirm(client, auth_headers, EXCLUDED_BENYLIN)
+    
+        monkeypatch.setattr(httpx, "AsyncClient", _NeverCalled)
+        body = (await _post(client, auth_headers)).json()
+        assert body["status"] == "unsupported_profile"
+>       assert body["profile"] == {"profile_n": 1, "supported_n": 0, "unsupported_n": 1,
+                                   "notice": None}
+E       AssertionError: assert {'notice': {'...pported_n': 1} == {'notice': No...pported_n': 1}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Differing items:
+E         {'notice': {'default_en': 'Some of the medications on your list are not covered by MyPillSafe yet. This pill might be ...of them.', 'key': 'pill.scope.unsupported_note', 'params': {'profile_n': 2, 'unsupported_n': 1}, 'provisional': False}} != {'notice': None}
+E         {'profile_n': 2} != {'profile_n': 1}
+E         Use -v to get more diff
+
+tests\test_tray_slots.py:808: AssertionError
+---------------------------- Captured stderr setup ----------------------------
+2026-08-15 07:39:28,077  INFO      app.services.auth_service  User registered, awaiting admin approval: patient_1e3a42245e@pillsafe.dev
+2026-08-15 07:39:28,077  INFO      httpx  HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 202 Accepted"
+----------------------------- Captured log setup ------------------------------
+INFO     app.services.auth_service:auth_service.py:58 User registered, awaiting admin approval: patient_1e3a42245e@pillsafe.dev
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 202 Accepted"
+---------------------------- Captured stderr call -----------------------------
+2026-08-15 07:39:28,085  INFO      app.api.v1.routes.prescriptions  Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\e18718f6-91d7-4c25-b844-d31f40258f70\92d4e55f-5890-4925-a983-3ef867739ca6.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+2026-08-15 07:39:28,085  WARNING   app.services.brains_client  Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+2026-08-15 07:39:28,085  INFO      app.api.v1.routes.prescriptions  Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+2026-08-15 07:39:28,087  INFO      httpx  HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+2026-08-15 07:39:28,090  WARNING   app.services.brains_client  Brains sidecar profile lookup failed (dins=['DIN2306409']): connection refused
+2026-08-15 07:39:28,090  INFO      httpx  HTTP Request: PATCH http://test/api/v1/prescriptions/e8e149a8-51e6-4b9d-b1ac-810e8d1b4aaf "HTTP/1.1 200 OK"
+2026-08-15 07:39:28,095  INFO      app.api.v1.routes.prescriptions  Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\e18718f6-91d7-4c25-b844-d31f40258f70\c7afe694-10f3-457a-8ac7-6d63b03a5c29.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+2026-08-15 07:39:28,095  WARNING   app.services.brains_client  Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+2026-08-15 07:39:28,095  INFO      app.api.v1.routes.prescriptions  Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+2026-08-15 07:39:28,095  INFO      httpx  HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+2026-08-15 07:39:28,100  WARNING   app.services.brains_client  Brains sidecar profile lookup failed (dins=['DIN2306409']): connection refused
+2026-08-15 07:39:28,103  INFO      httpx  HTTP Request: PATCH http://test/api/v1/prescriptions/4d87c487-2354-47f9-bee5-8f9e2bcd2c94 "HTTP/1.1 200 OK"
+2026-08-15 07:39:28,106  INFO      httpx  HTTP Request: POST http://test/api/v1/tray/analyze "HTTP/1.1 200 OK"
+------------------------------ Captured log call ------------------------------
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:148 Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\e18718f6-91d7-4c25-b844-d31f40258f70\92d4e55f-5890-4925-a983-3ef867739ca6.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+WARNING  app.services.brains_client:brains_client.py:149 Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:213 Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+WARNING  app.services.brains_client:brains_client.py:240 Brains sidecar profile lookup failed (dins=['DIN2306409']): connection refused
+INFO     httpx:_client.py:1742 HTTP Request: PATCH http://test/api/v1/prescriptions/e8e149a8-51e6-4b9d-b1ac-810e8d1b4aaf "HTTP/1.1 200 OK"
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:148 Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\e18718f6-91d7-4c25-b844-d31f40258f70\c7afe694-10f3-457a-8ac7-6d63b03a5c29.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+WARNING  app.services.brains_client:brains_client.py:149 Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:213 Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+WARNING  app.services.brains_client:brains_client.py:240 Brains sidecar profile lookup failed (dins=['DIN2306409']): connection refused
+INFO     httpx:_client.py:1742 HTTP Request: PATCH http://test/api/v1/prescriptions/4d87c487-2354-47f9-bee5-8f9e2bcd2c94 "HTTP/1.1 200 OK"
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/tray/analyze "HTTP/1.1 200 OK"
+============================== warnings summary ===============================
+tests/test_tray_slots.py: 12 warnings
+  D:\Projects\PillSafe\PillSafe\dev\backend\venv\Lib\site-packages\jose\jwt.py:311: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = timegm(datetime.utcnow().utctimetuple())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_tray_slots.py::test_F4a_duplicate_prescriptions_of_one_din_count_once
+FAILED tests/test_tray_slots.py::test_F4b_duplicate_excluded_din_is_wholly_uncovered_and_says_so_once
+2 failed, 38 deselected, 12 warnings in 0.93s

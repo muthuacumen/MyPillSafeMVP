@@ -1,0 +1,57 @@
+MPR1-T09a RED-FIRST F5 -- captured BEFORE the fix, pristine app/ tree
+selector: -k "test_F5_read_only_slot_always_carries_copy"
+==============================================================================
+F                                                                        [100%]
+================================== FAILURES ===================================
+_________________ test_F5_read_only_slot_always_carries_copy __________________
+
+client = <httpx.AsyncClient object at 0x0000027654A84FB0>
+auth_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlYWJiZWZlMi0xN2U5LTRmNGUtOTAwMy02YmE0YmViY2R...VOVCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3ODY3OTM5NzEsImV4cCI6MTc4Njc5NzU3MX0.2oDQRY9OPzkXSgyuoO_jZRE5BYy5_lrBa5Yae49_eHk'}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000027654B03980>
+
+    @pytest.mark.asyncio
+    async def test_F5_read_only_slot_always_carries_copy(client, auth_headers, monkeypatch):
+        """[MINOR 11, backend half] `read_only` rendered a badge with no message,
+        so the cell had a colour and nothing to read."""
+        tray = _tray([_well(0, record=RECORD_READ, match=None)]
+                     + [_well(i, occupied=False) for i in range(1, 6)])
+        await _arm(monkeypatch, client, auth_headers, tray)
+        slot = (await _post(client, auth_headers)).json()["slots"][0]
+        assert slot["verdict"] == Verdict.READ_ONLY
+>       assert slot["message"] is not None
+E       assert None is not None
+
+tests\test_tray_slots.py:821: AssertionError
+---------------------------- Captured stderr setup ----------------------------
+2026-08-15 07:39:31,924  INFO      app.services.auth_service  User registered, awaiting admin approval: patient_d890ffad6e@pillsafe.dev
+2026-08-15 07:39:31,924  INFO      httpx  HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 202 Accepted"
+----------------------------- Captured log setup ------------------------------
+INFO     app.services.auth_service:auth_service.py:58 User registered, awaiting admin approval: patient_d890ffad6e@pillsafe.dev
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 202 Accepted"
+---------------------------- Captured stderr call -----------------------------
+2026-08-15 07:39:31,942  INFO      app.api.v1.routes.prescriptions  Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\e7d255ff-ed9d-4327-8f79-1d2bf6744ba6\9d29636e-d2f4-4c78-9c9c-3102e5e2728d.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+2026-08-15 07:39:31,943  WARNING   app.services.brains_client  Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+2026-08-15 07:39:31,945  INFO      app.api.v1.routes.prescriptions  Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+2026-08-15 07:39:31,946  INFO      httpx  HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+2026-08-15 07:39:31,946  WARNING   app.services.brains_client  Brains sidecar profile lookup failed (dins=['DIN13803']): connection refused
+2026-08-15 07:39:31,946  INFO      httpx  HTTP Request: PATCH http://test/api/v1/prescriptions/eadc52ea-2253-490c-b42e-165842424a0f "HTTP/1.1 200 OK"
+2026-08-15 07:39:32,014  INFO      httpx  HTTP Request: POST http://test/api/v1/tray/analyze "HTTP/1.1 200 OK"
+------------------------------ Captured log call ------------------------------
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:148 Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\e7d255ff-ed9d-4327-8f79-1d2bf6744ba6\9d29636e-d2f4-4c78-9c9c-3102e5e2728d.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+WARNING  app.services.brains_client:brains_client.py:149 Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:213 Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+WARNING  app.services.brains_client:brains_client.py:240 Brains sidecar profile lookup failed (dins=['DIN13803']): connection refused
+INFO     httpx:_client.py:1742 HTTP Request: PATCH http://test/api/v1/prescriptions/eadc52ea-2253-490c-b42e-165842424a0f "HTTP/1.1 200 OK"
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/tray/analyze "HTTP/1.1 200 OK"
+============================== warnings summary ===============================
+tests/test_tray_slots.py::test_F5_read_only_slot_always_carries_copy
+tests/test_tray_slots.py::test_F5_read_only_slot_always_carries_copy
+tests/test_tray_slots.py::test_F5_read_only_slot_always_carries_copy
+  D:\Projects\PillSafe\PillSafe\dev\backend\venv\Lib\site-packages\jose\jwt.py:311: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = timegm(datetime.utcnow().utctimetuple())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_tray_slots.py::test_F5_read_only_slot_always_carries_copy
+1 failed, 39 deselected, 3 warnings in 1.13s

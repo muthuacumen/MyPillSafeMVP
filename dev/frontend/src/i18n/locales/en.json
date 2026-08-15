@@ -34,6 +34,7 @@
     "adminUsers": "User Management",
     "signOut": "Sign Out",
     "menu": "Menu",
+    "trayCheck": "Check a Tray",
     "short": {
       "dashboard": "Home",
       "scanRx": "Scan Rx",
@@ -281,6 +282,56 @@
     "uploadAPhoto": "Upload a Photo",
     "deniedMessage": "Camera access was denied or isn't available. You can upload a photo instead.",
     "capturedPreviewAlt": "Captured photo preview"
+  },
+  "trayCheck": {
+    "captureLabel": "Capture tray photo",
+    "reshootCaptureLabel": "Capture reshoot photo",
+    "intro": "Photograph all six wells of your tray at once. MyPillSafe checks each slot separately, the same way it checks one pill at a time.",
+    "uploading": "Checking your tray…",
+    "uploadingSub": "This can take up to a minute for six pills.",
+    "reshootTitle": "One or more slots need a clearer photo",
+    "reshootBody": "Photograph the tray again so MyPillSafe can take a second look at the marked slots below.",
+    "scanNewTray": "Check Another Tray",
+    "tryAgain": "Try Again",
+    "slotLabel": "Slot {{n}}",
+    "dinLabel": "DIN {{din}}",
+    "contractErrorBadge": "Recheck this slot with your pharmacist",
+    "verdictLabel": {
+      "verify": "Verified",
+      "reject": "Doesn't Match",
+      "abstain": "Uncertain",
+      "unreadable": "Unreadable",
+      "noImprint": "No Markings",
+      "empty": "Empty",
+      "error": "Error",
+      "readOnly": "Not Checked"
+    },
+    "error": {
+      "disabled": "Tray checking is not turned on for this server yet. Please try again later, or use Scan Pill to check one pill at a time.",
+      "badNoneRoute": "That reshoot request wasn't understood. Please start over.",
+      "brainsUnavailable": "Tray checking is temporarily unavailable — the analysis service can't be reached. Your photo was fine; please try again in a few minutes.",
+      "serverGeneric": "Something went wrong on our side. Please try again.",
+      "default": "Could not check that tray. Try a plain, well-lit background and make sure all six wells are visible."
+    }
+  },
+  "msgCatalog": {
+    "tray.slot.verify": "This pill matches one of the medications on your list.",
+    "tray.slot.reject": "This pill does not match any of the medications on your list. Do not take it. Check with your pharmacist.",
+    "tray.slot.abstain": "MyPillSafe could not decide about this pill. Check with your pharmacist.",
+    "tray.slot.abstain.ask_to_flip": "MyPillSafe needs to see the other side of this pill. Turn it over and photograph the tray again.",
+    "tray.slot.abstain.shortlist": "MyPillSafe narrowed this pill down but could not confirm one answer. Check with your pharmacist.",
+    "tray.slot.empty": "This slot is empty.",
+    "tray.slot.error": "MyPillSafe could not check this slot. Try photographing the tray again.",
+    "tray.slot.error.contract": "MyPillSafe could not check this slot safely, so it is not showing a result. Do not rely on this slot. Check with your pharmacist.",
+    "tray.slot.read_only": "MyPillSafe did not check this pill against your medication list.",
+    "tray.presence.none_retry": "There are no markings on the side of this pill that is facing up. Turn the pill over and photograph the tray again.",
+    "tray.hedge.pharmacist": "Decision-support only — not a clinical determination. Verify with a pharmacist.",
+    "pill.presence.unreadable": "We could not read the markings on this pill. Try another photo, or turn the pill over and photograph the other side.",
+    "pill.presence.none": "This pill has no markings, so MyPillSafe cannot identify it. Please check with your pharmacist.",
+    "pill.scope.unsupported": "MyPillSafe does not cover any of the medications on your list yet, so it cannot check this pill.",
+    "pill.scope.unsupported_note": "Some of the medications on your list are not covered by MyPillSafe yet. This pill might be one of them.",
+    "pill.scope.no_profile": "There are no medications on your list yet, so there is nothing to check this pill against.",
+    "frontend.trayGuard.contractError": "This slot could not be safely checked, so its result is not being shown. Recheck this slot with your pharmacist."
   },
   "admin": {
     "dashboard": "Admin Dashboard",
