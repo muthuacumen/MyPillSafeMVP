@@ -34,8 +34,8 @@ import httpx
 BASE_URL = "http://127.0.0.1:8100"
 TIMEOUT = 200.0
 
-CSV_PATH = Path(r"D:\Projects\PillSafe\IMB1_Prototype\results\08_derisk_imprint_up_per_photo.csv")
-RAW_DIR = Path(r"D:\Projects\PillSafe\Brainstorm\OTC_Images\Raw")
+CSV_PATH = Path(r"D:\Projects\PillSafe\Research\IMB1_Prototype\results\08_derisk_imprint_up_per_photo.csv")
+RAW_DIR = Path(r"D:\Projects\PillSafe\Archive\Brainstorm\OTC_Images\Raw")
 
 # Filler DINs for the 3-DIN profile list (real reference rows, so a
 # realistic-looking profile) -- swapped out below if either collides with

@@ -3,7 +3,7 @@
 **Date:** 2026-08-15  
 **Repository:** D:\Projects\PillSafe\PillSafe  
 **Produced by:** Orchestrated inventory→analysis agent chain (Haiku inventory, Sonnet/Opus analysis)  
-**Status:** DRAFT — no change has been executed.
+**Status:** EXECUTED WITH DEVIATIONS 2026-08-15/16 — GOAL 1 (paddle removal) built+refuted then ROLLED BACK at the ops window (NF4 loader crash under memory pressure; re-arm deferred by owner; code lives in commits 7922128/1ed9f55 + archive\2bdeleted\2026-08-15_paddleocr_removal). GOAL 3 executed ROOT-WIDE (five tiers incl. Research + archive\2bdeleted), not repo-internal — repo-internal deferred. See ADR 2026-08-15/16 entries.
 
 ## Scope
 

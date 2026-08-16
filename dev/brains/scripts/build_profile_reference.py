@@ -65,9 +65,13 @@ import pandas as pd
 HERE = Path(__file__).resolve().parent
 BRAINS_ROOT = HERE.parent
 
-DEFAULT_SOURCE = Path(r"D:\Projects\PillSafe\data\Pills_Patient_Access_Canada.xlsx")
+# T10 restructure (2026-08-15): `data\` moved to `Research\data\` and `SB2\` moved
+# to `Production\SB2\`; this repo (`PillSafe\`) stayed put, so both used to be
+# reachable via BRAINS_ROOT's sibling-of-repo-parent chain and no longer are.
+# Pinned explicitly instead of derived.
+DEFAULT_SOURCE = Path(r"D:\Projects\PillSafe\Research\data\Pills_Patient_Access_Canada.xlsx")
 DEFAULT_OUT = BRAINS_ROOT / "data" / "profile_reference_v1.csv"
-DEFAULT_APPEARANCE = BRAINS_ROOT.parent.parent.parent / "SB2" / "data" / "ca_appearance_harmonized_v2.xlsx"
+DEFAULT_APPEARANCE = Path(r"D:\Projects\PillSafe\Production\SB2\data\ca_appearance_harmonized_v2.xlsx")
 
 SHEET = "Master List"
 

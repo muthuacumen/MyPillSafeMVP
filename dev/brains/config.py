@@ -10,6 +10,16 @@ hardcoding a drive letter, while still falling back to the literal
 defaults if that resolution fails for any reason (e.g. this file gets
 moved/copied somewhere the repo layout assumption doesn't hold).
 
+STALE AS OF THE T10/T14 RESTRUCTURE (2026-08-15): that sibling assumption no
+longer holds on this machine. IMB1_v0, SB2 and BB3 all live under
+`D:\\Projects\\PillSafe\\Production\\` now, while this repo is still at
+`D:\\Projects\\PillSafe\\PillSafe` (it could not be moved -- a vite dev server
+holds its frontend open). `start_sidecar.cmd` therefore sets IMB1_ROOT,
+SB2_ROOT and BB3_ROOT explicitly, and the env var branch below is what the
+running sidecar actually uses. Note the dynamic resolution does NOT check that
+the path it computes exists, so without those env vars all three roots resolve
+to stale locations silently -- set them, or move this repo under Production\.
+
 Roots are inserted into `sys.path` here (at import time) so that
 `import imb1` / `import sb2` work from anywhere in the sidecar process.
 """
@@ -19,10 +29,21 @@ import os
 import sys
 from pathlib import Path
 
+#: T10 restructure (2026-08-15): IMB1_v0 and SB2 moved to Production\; this repo
+#: (PillSafe\) could not move this window (locked by running dev processes), so
+#: the sibling-of-repo-parent resolution below would land on the old (now empty)
+#: locations if it ever fell through to these literal defaults. Updated to match.
+#: T14 restructure (2026-08-15): BB3 moved to Production\BB3 too, and this repo
+#: STILL could not move (a vite frontend dev server holds dev\frontend\node_modules
+#: open). All three frozen packages now live under Production\ while this repo
+#: remains at the old root, so NONE of them is a sibling of this repo's parent any
+#: more -- the dynamic resolution below is wrong for all three until PillSafe\
+#: itself moves under Production\. start_sidecar.cmd sets all three env vars
+#: explicitly for that reason; these literals are the safety net behind them.
 _LITERAL_DEFAULTS = {
-    "IMB1_ROOT": r"D:\Projects\PillSafe\IMB1_v0",
-    "SB2_ROOT": r"D:\Projects\PillSafe\SB2",
-    "BB3_ROOT": r"D:\Projects\PillSafe\BB3",
+    "IMB1_ROOT": r"D:\Projects\PillSafe\Production\IMB1_v0",
+    "SB2_ROOT": r"D:\Projects\PillSafe\Production\SB2",
+    "BB3_ROOT": r"D:\Projects\PillSafe\Production\BB3",
 }
 
 
@@ -46,74 +67,20 @@ SB2_ROOT = os.environ.get("SB2_ROOT") or _default_root("SB2", _LITERAL_DEFAULTS[
 BB3_ROOT = os.environ.get("BB3_ROOT") or _default_root("BB3", _LITERAL_DEFAULTS["BB3_ROOT"])
 BRAINS_PORT = int(os.environ.get("BRAINS_PORT", "8100"))
 
-# --- M1 (2026-08-14): the two-stage imprint reader -------------------------
-# --- GOAL1 (2026-08-15): legacy paddle OCR path removed, "off" retired ----
-# --- T06 REPAIR (2026-08-15, finding 1): closed the silent-disable loophole -
-#     any value outside the valid set now raises, instead of only the
-#     explicitly-retired ones -- see below.
+# --- M1 (2026-08-14): the two-stage imprint reader ------------------------
 #
 # `PILLSAFE_READER` -- master switch for `/pill/analyze`'s imprint path.
-#   "two_stage" (DEFAULT, since 2026-08-15): route through
-#          `production_wiring.analyze()`, which builds ONE `VerifySession`
-#          and runs A3 presence gate -> A4c constrained read. This is the
-#          ONLY arm (owner decision 2026-08-15) -- there is no fallback
-#          reader to degrade to.
-#   "off"  RETIRED 2026-08-15. Used to select the legacy
-#          `imb1.analyze_pill(photo)` paddle OCR dual-read subprocess path.
-#          That code no longer exists in `IMB1_v0/imb1/` -- see
-#          `Archive/2bdeleted/2026-08-15_paddleocr_removal/MANIFEST.md` for
-#          the archived source and restore instructions. Setting
-#          `PILLSAFE_READER=off` now raises at import time, below, instead of
-#          silently no-opping (previously: routing into now-deleted code,
-#          discovered only as a runtime ImportError mid-request).
+#   "off"  (DEFAULT, unchanged behaviour): call the legacy
+#          `imb1.analyze_pill(photo)`. No reader, no C6 record, no `faces[]`
+#          -- byte-identical to the pre-M1 sidecar.
+#   "two_stage": route through `production_wiring.analyze()`, which builds ONE
+#          `VerifySession` and runs A3 presence gate -> A4c constrained read.
 #
-# Defaulting to "two_stage" is deliberate: the reader loads a 4-bit VLM into
-# an 8.6 GB card at first request, which is still a real deployment fact --
-# it is simply no longer optional, since there is no second arm to fall back
-# to if it is skipped.
-_VALID_READER_MODES = ("two_stage", "twostage", "on", "1", "true")
-_RETIRED_READER_MODES = ("off", "0", "false", "none")
-
-# T06 REPAIR (2026-08-15, finding 1): the refuter found that ANY value not in
-# _VALID_READER_MODES and not in _RETIRED_READER_MODES (a typo, stray
-# whitespace, anything unrecognized) fell through BOTH checks below with no
-# error and silently produced READER_ENABLED=False -- a second, undocumented
-# way to disable the reader that the comments above claimed did not exist.
-# Fixed by inverting the check: normalize first (unset/blank/whitespace-only
-# collapse to the "two_stage" default, same as before), then require
-# membership in _VALID_READER_MODES for EVERY other value -- unrecognized
-# values now raise exactly like retired ones, just with a different message.
-_RAW_READER_MODE = os.environ.get("PILLSAFE_READER")
-READER_MODE = (_RAW_READER_MODE or "").strip().lower() or "two_stage"
-if READER_MODE not in _VALID_READER_MODES:
-    if READER_MODE in _RETIRED_READER_MODES:
-        raise RuntimeError(
-            f"PILLSAFE_READER={READER_MODE!r} is no longer a valid value. The "
-            "legacy paddle OCR imprint path it selected was removed "
-            "2026-08-15 (archived at "
-            "Archive/2bdeleted/2026-08-15_paddleocr_removal/MANIFEST.md, "
-            "which also carries restore instructions). Valid values: "
-            "'two_stage' (the default; 'twostage', 'on', '1', 'true' are "
-            "accepted synonyms). Unset the variable to use the default "
-            "instead of disabling the reader -- there is no longer a way to "
-            "disable it."
-        )
-    raise RuntimeError(
-        f"PILLSAFE_READER={_RAW_READER_MODE!r} is not a recognized value. "
-        f"Valid values: {_VALID_READER_MODES!r} (unset, empty, or "
-        "whitespace-only defaults to 'two_stage'). Values that used to "
-        f"disable the reader and are now retired: {_RETIRED_READER_MODES!r} "
-        "-- there is no longer a way to disable it, so no other value is "
-        "accepted either."
-    )
-# T06 REPAIR (2026-08-15, finding 1): READER_MODE is now GUARANTEED to be a
-# member of _VALID_READER_MODES at this point -- every other input raised
-# above instead of falling through. The valid set is a set of synonyms for
-# ONE arm (there is no second arm to select), so this is a constant, not a
-# computed membership test: no input can reach this line and still produce
-# False. If _VALID_READER_MODES is ever trimmed to exactly {"two_stage"},
-# this line does not need to change.
-READER_ENABLED = True
+# Defaulting to "off" is deliberate. The reader loads a 4-bit VLM into an
+# 8.6 GB card at first request; that is a deployment decision Muthu makes by
+# setting a variable, not one a code promotion makes for him.
+READER_MODE = (os.environ.get("PILLSAFE_READER") or "off").strip().lower()
+READER_ENABLED = READER_MODE in ("two_stage", "twostage", "on", "1", "true")
 
 # `PILLSAFE_STAGE1` -- WHICH instrument answers Stage 1 (the presence gate).
 #   "single" (DEFAULT): the SAME in-process 4.4B `Qwen/Qwen3-VL-4B-Instruct`
@@ -133,10 +100,8 @@ READER_ENABLED = True
 # constrained ranker) has no Ollama equivalent -- so `PILLSAFE_STAGE1=ollama`
 # STILL loads the 4-bit NF4 scorer and STILL requires `bitsandbytes`,
 # `accelerate` and a GPU. It is NOT a dependency-free fallback and must never
-# be recommended as the answer to a Stage 2 load failure.
-# 🔴 UPDATED 2026-08-15 (GOAL1): there is no longer any switch that avoids the
-# scorer -- `PILLSAFE_READER=off` used to, but that value is retired above
-# (legacy paddle OCR path removed). The two-stage reader is the only arm.
+# be recommended as the answer to a Stage 2 load failure. The only switch that
+# avoids the scorer entirely is `PILLSAFE_READER=off` above.
 STAGE1_BACKEND = (os.environ.get("PILLSAFE_STAGE1") or "single").strip().lower()
 
 # `PILLSAFE_SCORER_DEVICE` -- where Stage 2 runs. "cuda" (default) or "cpu".

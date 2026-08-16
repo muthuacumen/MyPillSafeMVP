@@ -1139,6 +1139,60 @@ to reflect current front status instead of the OB5/CB4/BB3-in-progress framing.
 
 ---
 
+## 35. NF4 loader crash -- memory/commit pressure alone reproduces the failure signature on the main thread (addendum to the scorer warm-on-signin entry below)
+
+**What was hit:** T09 evidence, 2026-08-15 -- a dedicated reproduction run isolated memory/commit
+pressure as a variable independent of thread context, and it alone reproduces a same-signature
+failure on the MAIN thread: an `OSError` (WinError 1455, "the paging file is too small") raised
+inside `safe_open`, captured at ~1.7 GB free RAM with 36 of 43 GB total commit already in use.
+Windows Error Reporting shows both of today's production crashes faulting inside `torch_cpu.dll` at
+the identical offset `0x8e4a279`. `pip freeze` from the crashing environment is byte-identical to
+the 2026-08-14 qualified snapshot, ruling out a dependency-drift explanation. Net effect: **the
+worker-thread mechanism named in the scorer warm-on-signin entry below is unproven-innocent, not
+exonerated** -- memory pressure alone is sufficient to reproduce the crash signature even off the
+worker thread, so the original diagnosis (lazy load on a uvicorn worker thread) is not the only path
+to this failure.
+
+**What it blocks:** confident selection of a single-cause fix. Five candidate repairs were ranked,
+not chosen: (1) warm-at-boot eager load -- **recommended**; (2) a pre-load headroom guard (refuse to
+load below a free-RAM floor); (3) event-loop-thread pinning -- **would NOT have prevented today's
+crashes**, since the reproduction ran main-thread; (4) pagefile/ops-level sizing; (5) a
+`torch`/library upgrade -- **no evidence** it addresses this offset.
+
+🔴 **THE ASK (Muthu's call, not the SA's):** owner deferred the re-arm decision entirely on
+2026-08-15 -- no repair is authorized yet. When runway exists, pick from the five ranked repairs
+above (warm-at-boot is the SA's recommendation) and authorize it explicitly; this entry and the
+scorer warm-on-signin entry (Active roadmap, below) should close together.
+
+**Owning doc:** the "Scorer warm-on-signin" entry under **Active roadmap** below (same underlying
+defect, filed 2026-08-15, MPR1 session) · `NB08_Notebook/results/nb08_tray_route/run3/` (original
+evidence) · T09 reproduction run, 2026-08-15 (this addendum's evidence).
+
+---
+
+## 36. Dormant Stage-1 fallback booby trap -- `qwen3-vl:latest` removed from Ollama, `PILLSAFE_STAGE1=ollama` still names it
+
+**What was hit:** `qwen3-vl:latest` (8.8B) was removed from the local Ollama model store on
+2026-08-15, freeing +5.71 GB. `production_wiring.py`'s `build_reader()` still has a
+`PILLSAFE_STAGE1=ollama` branch that names that exact tag as its Stage-1 model.
+
+**What it blocks:** nothing today -- the branch is not the active configuration (the single-model
+4.4B reader is production, per `DEPLOY_GUIDE_M1_TwoStageReader.md`). But the branch is now a
+**dormant booby trap**: if anyone ever flips `PILLSAFE_STAGE1=ollama` back on (e.g. chasing the
+two-stage reader's earlier accuracy profile, or during an incident-response rollback) without first
+re-pulling the tag or patching the code, `build_reader()` will 404 against Ollama at first call, not
+at config load -- a runtime failure discovered mid-incident rather than at flip time.
+
+🔴 **THE ASK (Muthu's call, not the SA's):** decide whether to (a) re-pull `qwen3-vl:latest` so the
+branch stays live, (b) patch `production_wiring.py` to fail fast at config load with a clear error
+when `PILLSAFE_STAGE1=ollama` is set and the tag is absent, or (c) leave it as documented, accepted
+debt (this entry is then the warning a future incident responder needs). No action taken by the SA.
+
+**Owning doc:** `Production\PillSafe\dev\brains\production_wiring.py` (`build_reader()`, the
+`PILLSAFE_STAGE1=ollama` branch) · Ollama local model store (`qwen3-vl:latest` removal, 2026-08-15).
+
+---
+
 ## Active roadmap — pointers only, not copies
 
 The short-imprint false-accept mitigation design (two switchable flags: withhold imprint credit
