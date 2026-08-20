@@ -27,7 +27,12 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-HEALTH_TIMEOUT_SECONDS = 2.0
+# 2026-08-20 (MPR1-T25): raised 2.0 -> 5.0. The dev sidecar's /health was
+# measured at ~2.07 s -- just past the old cutoff -- so a healthy sidecar
+# rendered as a demo-visible false-DOWN banner. The result is cached for
+# HEALTH_CACHE_SECONDS below, so the extra headroom costs at most one slow
+# probe per cache window, never a per-request cost.
+HEALTH_TIMEOUT_SECONDS = 5.0
 HEALTH_CACHE_SECONDS = 30.0
 
 # {url: {"healthy": bool, "latency_ms": float, "checked_at": iso-str, "_at": monotonic}}
@@ -44,13 +49,16 @@ def configured_urls() -> list[str]:
     return [u.strip() for u in raw.split(",") if u.strip()]
 
 
-async def _check_health(url: str) -> dict:
-    """`GET {url}/health`, 2s timeout, 200 = healthy. Cached 30s per URL.
-    Never raises -- any connection/timeout error just means unhealthy."""
+async def _check_health(url: str, *, force: bool = False) -> dict:
+    """`GET {url}/health`, 2s timeout, 200 = healthy. Cached 30s per URL,
+    unless `force=True` skips straight past that cache and re-probes now
+    (used by `is_sidecar_healthy()` -- see its docstring for why). Never
+    raises -- any connection/timeout error just means unhealthy."""
     now = time.monotonic()
-    cached = _health_cache.get(url)
-    if cached is not None and (now - cached["_at"]) < HEALTH_CACHE_SECONDS:
-        return cached
+    if not force:
+        cached = _health_cache.get(url)
+        if cached is not None and (now - cached["_at"]) < HEALTH_CACHE_SECONDS:
+            return cached
 
     start = time.monotonic()
     healthy = False
@@ -121,6 +129,32 @@ async def pool_status() -> list[dict]:
             }
         )
     return statuses
+
+
+async def is_sidecar_healthy() -> bool:
+    """Whether the sidecar this backend would actually call right now
+    (resolved via `resolve_brains_url()`, respecting the pool/pin config)
+    answers its own `/health` -- checked FRESH, every call.
+
+    Used only by the public status ticker (`GET /api/v1/status/sidecar`).
+    This deliberately bypasses this module's 30s per-URL health cache (via
+    `_check_health(url, force=True)`) so that route's own 20s cache is the
+    ONLY staleness bound on what the ticker reports -- without the
+    force-refresh, a sidecar dying right after this cache last refreshed
+    could read as "up" for up to ~50s (30s here + 20s there) instead of the
+    intended 20s.
+
+    This is NOT the same call the analyze routes make: `resolve_brains_url()`
+    itself is unchanged and, in the default single-sidecar setup
+    (`BRAINS_SERVICE_URLS` unset), still returns the configured URL with NO
+    health check at all (back-compat, A3.2 rule 1) -- `/analyze/pill/v2` and
+    `/tray/analyze` never pay for a health check in that mode. Only this
+    function's own final probe is forced; analyze-path latency and caching
+    are untouched.
+    """
+    url = await resolve_brains_url()
+    health = await _check_health(url, force=True)
+    return bool(health["healthy"])
 
 
 def set_pin(url: str | None) -> None:

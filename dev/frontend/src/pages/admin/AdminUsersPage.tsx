@@ -1,26 +1,81 @@
 import { useEffect, useMemo, useState } from 'react';
-import { UserCheck, UserX, Trash2, Shield, Clock } from 'lucide-react';
+import { UserCheck, UserX, Trash2, Shield, Clock, LogOut, Users, Activity, BarChart3, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { adminApi, type AdminUser } from '@/api/admin';
+import { adminApi, type AdminUser, type PlatformStats } from '@/api/admin';
 import { useAuthStore } from '@/store/authStore';
+import { Alert } from '@/components/ui/Alert';
+import { extractApiErrorMessage } from '@/lib/apiError';
+
+const PAGE_SIZE = 20;
+
+function StatTile({ icon: Icon, label, value, iconBg }: { icon: React.ElementType; label: string; value: number; iconBg: string }) {
+  return (
+    <div className="stat-card">
+      <div className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
+        <Icon className="h-5 w-5" strokeWidth={1.8} />
+      </div>
+      <div>
+        <p className="text-xs text-slate-500 font-medium">{label}</p>
+        <p className="text-2xl font-bold text-slate-900 mt-0.5">{value}</p>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminUsersPage() {
   const { t } = useTranslation();
   const me = useAuthStore((s) => s.user);
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [stats, setStats] = useState<PlatformStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [actionError, setActionError] = useState('');
+  const [actionNote, setActionNote] = useState('');
+  const [skip, setSkip] = useState(0);
+  // Returned page shorter than PAGE_SIZE (or empty) means there's no next
+  // page -- the /admin/users list endpoint doesn't return a total count, so
+  // this is the only signal available to disable "Next" honestly.
+  const [hasNextPage, setHasNextPage] = useState(false);
 
-  const load = () => {
+  const load = (nextSkip = skip) => {
     setLoading(true);
-    adminApi.listUsers().then((r) => setUsers(r.data)).finally(() => setLoading(false));
+    adminApi.listUsers(nextSkip, PAGE_SIZE)
+      .then((r) => {
+        setUsers(r.data);
+        setHasNextPage(r.data.length === PAGE_SIZE);
+      })
+      .finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(skip); }, [skip]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { adminApi.getStats().then((r) => setStats(r.data)); }, []);
 
   const withAction = async (id: string, fn: () => Promise<unknown>) => {
     setActionLoading(id);
-    try { await fn(); load(); } finally { setActionLoading(null); }
+    setActionError('');
+    try {
+      await fn();
+      load();
+    } catch (err) {
+      setActionError(extractApiErrorMessage(err, t('admin.actionFailed')));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleTerminateSessions = async (id: string) => {
+    if (!window.confirm(t('admin.confirmTerminateSessions'))) return;
+    setActionLoading(id);
+    setActionError('');
+    setActionNote('');
+    try {
+      const { data } = await adminApi.terminateSessions(id);
+      setActionNote(t('admin.sessionsTerminated', { version: data.token_version }));
+    } catch (err) {
+      setActionError(extractApiErrorMessage(err, t('admin.actionFailed')));
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   // Pending signups float to the top: this table is now an approval queue as
@@ -57,6 +112,18 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
+      {stats && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatTile icon={Users} label={t('admin.totalUsers')} value={stats.total_users} iconBg="bg-teal-50 text-teal-600" />
+          <StatTile icon={Activity} label={t('admin.activeUsers')} value={stats.active_users} iconBg="bg-blue-50 text-blue-600" />
+          <StatTile icon={BarChart3} label={t('admin.totalAnalyses')} value={stats.total_analyses} iconBg="bg-purple-50 text-purple-600" />
+          <StatTile icon={ShieldCheck} label={t('admin.admins')} value={stats.admin_count} iconBg="bg-amber-50 text-amber-600" />
+        </div>
+      )}
+
+      {actionError && <Alert variant="error" message={actionError} />}
+      {actionNote && <Alert variant="success" message={actionNote} />}
+
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -66,6 +133,7 @@ export default function AdminUsersPage() {
                 <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('admin.patientName')}</th>
                 <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('common.role')}</th>
                 <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('common.status')}</th>
+                <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('admin.verifiedColumn')}</th>
                 <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('common.joinDate')}</th>
                 <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
@@ -73,7 +141,7 @@ export default function AdminUsersPage() {
             <tbody className="divide-y divide-slate-50">
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-slate-400">{t('common.noData')}</td>
+                  <td colSpan={7} className="px-4 py-8 text-center text-slate-400">{t('common.noData')}</td>
                 </tr>
               ) : (
                 sorted.map((u) => {
@@ -110,6 +178,11 @@ export default function AdminUsersPage() {
                         <span className={`badge inline-flex items-center gap-1 ${u.is_active ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
                           {isPending && <Clock className="h-3 w-3" />}
                           {u.is_active ? t('common.active') : t('admin.pendingApproval')}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`badge ${u.is_verified ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'bg-slate-100 text-slate-500'}`}>
+                          {u.is_verified ? t('admin.verified') : t('admin.unverified')}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-slate-500 text-xs">
@@ -158,12 +231,30 @@ export default function AdminUsersPage() {
                             <Shield className="h-4 w-4" />
                           </button>
 
-                          {/* Delete */}
+                          {/* Terminate sessions -- kills every token this
+                              user currently holds (tv bump) without
+                              deactivating the account, e.g. after a lost
+                              device. Separate from Deactivate, which also
+                              blocks new logins. */}
+                          <button
+                            disabled={busy}
+                            title={t('admin.terminateSessions')}
+                            aria-label={t('admin.terminateSessions')}
+                            onClick={() => handleTerminateSessions(u.id)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          >
+                            <LogOut className="h-4 w-4" />
+                          </button>
+
+                          {/* Delete -- double confirm: this is the one
+                              irreversible action in the table (permanently
+                              removes the user and their data), so a single
+                              click-through confirm isn't enough friction. */}
                           <button
                             disabled={isSelf || busy}
                             title={t('common.delete')}
                             onClick={() => {
-                              if (window.confirm(t('admin.confirmDelete'))) {
+                              if (window.confirm(t('admin.confirmDelete')) && window.confirm(t('admin.confirmDeleteFinal'))) {
                                 withAction(u.id, () => adminApi.deleteUser(u.id));
                               }
                             }}
@@ -179,6 +270,32 @@ export default function AdminUsersPage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100">
+          <p className="text-xs text-slate-500">
+            {users.length > 0
+              ? t('admin.paginationRange', { start: skip + 1, end: skip + users.length })
+              : t('common.noData')}
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={skip === 0}
+              onClick={() => setSkip((s) => Math.max(0, s - PAGE_SIZE))}
+              className="btn-secondary !px-3 !py-1.5 !text-xs"
+            >
+              {t('common.previous')}
+            </button>
+            <button
+              type="button"
+              disabled={!hasNextPage}
+              onClick={() => setSkip((s) => s + PAGE_SIZE)}
+              className="btn-secondary !px-3 !py-1.5 !text-xs"
+            >
+              {t('common.next')}
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -149,6 +149,38 @@
   .schedule-row-afternoon { @apply bg-orange-50/60 border-orange-200; }
   .schedule-row-evening   { @apply bg-rose-50/60 border-rose-200; }
   .schedule-row-night     { @apply bg-navy/5 border-navy/20; }
+
+  /* ── Sidecar status ticker (Task T3) ──────────────────────────────── */
+  /* Slim full-width marquee, mounted in AppShell + PublicLayout. Two
+     identical `.sidecar-ticker-item` spans back to back, track animated
+     exactly -50% -- a standard seamless-loop trick that works for any
+     message length since both copies are always equal width. */
+  .sidecar-ticker {
+    @apply w-full overflow-hidden border-b;
+  }
+  .sidecar-ticker-up {
+    @apply bg-success-bg border-success-border text-success-text;
+  }
+  .sidecar-ticker-down {
+    @apply bg-warning-bg border-warning-border text-warning-text;
+  }
+  .sidecar-ticker-track {
+    display: flex;
+    width: max-content;
+    white-space: nowrap;
+    animation: sidecarTickerScroll 22s linear infinite;
+  }
+  /* Pause on hover -- lets someone actually read it instead of chasing text
+     off the edge of the screen. */
+  .sidecar-ticker:hover .sidecar-ticker-track {
+    animation-play-state: paused;
+  }
+  .sidecar-ticker-item {
+    padding: 0.35rem 2.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
 }
 
 @layer utilities {
@@ -180,5 +212,24 @@
      existing .page-enter slide-up used across the dashboard). */
   .page-fade-in {
     @apply animate-fade-in;
+  }
+}
+
+@keyframes sidecarTickerScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Respect the OS-level motion preference: a continuously scrolling bar is
+   exactly the kind of animation prefers-reduced-motion exists to suppress.
+   Falls back to static text -- the second (duplicate, aria-hidden) item is
+   hidden so there is no doubled text sitting still. */
+@media (prefers-reduced-motion: reduce) {
+  .sidecar-ticker-track {
+    animation: none !important;
+    width: 100%;
+  }
+  .sidecar-ticker-item:nth-child(2) {
+    display: none;
   }
 }

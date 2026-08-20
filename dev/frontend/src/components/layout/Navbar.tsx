@@ -11,6 +11,7 @@ import {
   MessageCircleQuestion,
   Pill,
   ScanLine,
+  Server,
   Settings,
   Shield,
   ShieldCheck,
@@ -66,6 +67,7 @@ const MENU_ITEMS: MenuItem[] = [
 const ADMIN_MENU_ITEMS: MenuItem[] = [
   { to: '/admin/dashboard', labelKey: 'nav.adminPanel', icon: ShieldCheck },
   { to: '/admin/users', labelKey: 'nav.adminUsers', icon: Users },
+  { to: '/admin/sidecar', labelKey: 'nav.adminSidecar', icon: Server },
 ];
 
 /** Single navy top navbar rendered on EVERY page, public and authenticated

@@ -59,7 +59,11 @@ async def register_user(
         return user, None, None
 
     logger.info("User registered: %s", user.email)
-    return user, create_access_token(user.id, user.role), create_refresh_token(user.id)
+    return (
+        user,
+        create_access_token(user.id, user.role, user.token_version),
+        create_refresh_token(user.id, user.token_version),
+    )
 
 
 async def login_user(db: AsyncSession, payload: LoginRequest) -> tuple[User, str, str]:
@@ -93,8 +97,8 @@ async def login_user(db: AsyncSession, payload: LoginRequest) -> tuple[User, str
             code="ACCOUNT_PENDING_APPROVAL",
         )
 
-    access_token = create_access_token(user.id, user.role)
-    refresh_token = create_refresh_token(user.id)
+    access_token = create_access_token(user.id, user.role, user.token_version)
+    refresh_token = create_refresh_token(user.id, user.token_version)
     logger.info("User logged in: %s", user.email)
     return user, access_token, refresh_token
 
@@ -118,7 +122,18 @@ async def refresh_tokens(db: AsyncSession, refresh_token: str) -> tuple[str, str
     if not user:
         raise AuthError("User not found or inactive.", code="USER_NOT_FOUND")
 
-    return create_access_token(user.id, user.role), create_refresh_token(user.id)
+    # Same session-termination check as get_current_user (Task T2). A missing
+    # `tv` is tv=0 for back-compat with refresh tokens minted before this
+    # claim existed; anything else that doesn't match the live column is a
+    # terminated session trying to mint itself a fresh access token, which is
+    # exactly the hole this check exists to close.
+    if payload.get("tv", 0) != user.token_version:
+        raise AuthError("Session has been terminated.", code="TOKEN_REVOKED")
+
+    return (
+        create_access_token(user.id, user.role, user.token_version),
+        create_refresh_token(user.id, user.token_version),
+    )
 
 
 async def get_user_by_id(db: AsyncSession, user_id: str) -> User | None:

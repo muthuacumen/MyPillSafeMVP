@@ -45,6 +45,7 @@ const AnswerVoicePage = () => lazyPage(() => import('@/pages/public/brains/Answe
 const ContactPage = () => lazyPage(() => import('@/pages/public/ContactPage'));
 const AdminDashboardPage = () => lazyPage(() => import('@/pages/admin/AdminDashboardPage'));
 const AdminUsersPage = () => lazyPage(() => import('@/pages/admin/AdminUsersPage'));
+const AdminSidecarPage = () => lazyPage(() => import('@/pages/admin/AdminSidecarPage'));
 const NotFoundPage = () => lazyPage(() => import('@/pages/NotFoundPage'));
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -124,6 +125,7 @@ export const routes: RouteObject[] = [
       { index: true, element: <Navigate to="/admin/dashboard" replace /> },
       { path: 'dashboard', element: <AdminDashboardPage /> },
       { path: 'users', element: <AdminUsersPage /> },
+      { path: 'sidecar', element: <AdminSidecarPage /> },
     ],
   },
   { path: '*', element: <NotFoundPage /> },

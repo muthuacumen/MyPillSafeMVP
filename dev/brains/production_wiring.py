@@ -57,19 +57,27 @@ turn a request that used to succeed into a 500.
 
 WHAT THIS DOES NOT DO -- the app-photo calibration gap stays OPEN
 ---------------------------------------------------------------------
-`imb1.analyze_pill()` (production `IMB1_v0`, re-checked 2026-08-14) returns
-the legacy record shape (`colour_modes`/`shape_out`/`imprint_reads`, no
-`contract_version`, no `faces`) -- not a C6 record. `sb2.match_pill`
-branches on `record.get("contract_version") == "C6"`; a legacy record never
-reaches that branch. That is still the shape `/pill/analyze` produces
-WHENEVER `PILLSAFE_READER` is off (its default), so on the default
-deployment the map is still accepted and ignored. What M1 changed is that
-`analyze()` below now produces a REAL C6 record when the reader is enabled,
-which is what finally makes the map EFFECTIVE rather than merely reachable.
-The remaining half of open item 9 is CALIBRATION, not reachability: the
-frozen gate was fitted on tray-cut crops and the app cuts with a FastSAM
-bbox, and that geometry difference is unmeasured. See `LAST_DECISION_SOURCE`
-for a way to tell which of the three paths a given call actually took.
+UPDATED 2026-08-15 (GOAL1 -- legacy paddle OCR removal), re-landed 2026-08-18
+after a 2026-08-15/16 rollback + interim restore (see
+`archive/2bdeleted/2026-08-15_paddleocr_removal/MANIFEST.md`). `imb1.analyze_pill()`
+(production `IMB1_v0`) no longer spawns the legacy paddle subprocess and no
+longer returns an `imprint_reads` key at all -- that code is deleted, archived
+in `archive/2bdeleted/2026-08-15_paddleocr_removal` (re-confirmed removed
+2026-08-18). It still returns the pre-C6 appearance-only shape
+(`colour_modes`/`shape_out`/`type_out`, no `contract_version`, no `faces`),
+because THIS module never calls it directly. `sb2.match_pill` branches on
+`record.get("contract_version") == "C6"`; that legacy-ish shape never reaches
+that branch. `PILLSAFE_READER=off` can no longer select this path -- it is
+retired and fails fast at config load (`config.py`) -- but `app.py`'s
+`/pill/analyze` still calls `imb1.analyze_pill()` directly, bypassing this
+module and `analyze()` below entirely, whenever `profile_dins` is empty (no
+patient profile to build a lexicon from). What M1 changed is that `analyze()`
+below produces a REAL C6 record whenever a profile IS supplied, which is what
+finally makes the map EFFECTIVE rather than merely reachable. The remaining
+half of open item 9 is CALIBRATION, not reachability: the frozen gate was
+fitted on tray-cut crops and the app cuts with a FastSAM bbox, and that
+geometry difference is unmeasured. See `LAST_DECISION_SOURCE` for a way to
+tell which of the three paths a given call actually took.
 
 ASCII ONLY. The cp1252 console-print trap has recurred in this project.
 """
@@ -88,8 +96,15 @@ from typing import Any, Callable, Optional
 #: T10 restructure (2026-08-15): `IMB1_Prototype/` moved to `Research/` while
 #: this repo (`PillSafe/`) could not move (locked by running dev processes) --
 #: so the sibling assumption breaks here. Pinned explicitly instead.
+#: MPR1-T30 (2026-08-20), T29 sections 3.1/4.3: the closure was PROMOTED into
+#: `Production\NB08_Runtime\`, so this no longer reaches into `Research\`.
+#: `nb08_runtime` resolves the promoted tree (env-overridable, fail-loud) and
+#: binds it as a PACKAGE -- it deliberately does NOT put it on `sys.path`; see
+#: the `sys.path.append` this replaced, below.
 _PILLSAFE_PARENT = Path(__file__).resolve().parents[3]
-NB08_SRC = Path(r"D:\Projects\PillSafe\Research\IMB1_Prototype\NB08_Notebook\src")
+import nb08_runtime  # noqa: E402
+
+NB08_SRC = nb08_runtime.NB08_SRC
 ALLOWLIST_CSV = NB08_SRC.parent / "data" / "allowlist" / "supported_dins.csv"
 
 #: Diagnostic only, never read by any decision logic -- which of the three
@@ -102,7 +117,8 @@ LAST_DECISION_SOURCE: str = ""
 
 VERIFY_SESSION_IMPORT_ERROR: Optional[str] = None
 try:
-    # APPEND, never `insert(0, ...)` -- MEASURED, not merely cautious:
+    # MPR1-T30 (2026-08-20), T29 section 4.3 -- this used to be
+    # `sys.path.append(str(NB08_SRC))`. The append was correct and MEASURED:
     # `NB08_SRC` contains `colour.py`, which shadows the third-party
     # `colour`/`colour-science` package the moment it sits ahead of
     # site-packages on `sys.path`. `IMB1_v0/imb1/colour.py` does its own
@@ -110,14 +126,14 @@ try:
     # a non-neutral pill); with `NB08_SRC` inserted at position 0 this
     # turned a working `imb1.analyze_pill()` call into `AttributeError:
     # module 'colour' has no attribute 'CCS_ILLUMINANTS'` the first time
-    # this module was imported into the real sidecar process. Appending
-    # keeps `nb08_verify` importable (nothing else on this process's path
-    # provides it) without letting it outrank a real package of the same
-    # name anywhere else already on the path. See `nb08_verify.py`'s own
-    # matching fix (its `_SRC`/`_SB2_PROTO` insertion, same repair, same
-    # date) for the other half of this.
-    if str(NB08_SRC) not in sys.path:
-        sys.path.append(str(NB08_SRC))
+    # this module was imported into the real sidecar process.
+    #
+    # Appending was ORDERING-dependent, though: any later `insert(0, ...)`
+    # anywhere in the process re-arms it, and two closure modules already do
+    # one. `nb08_runtime` (imported above) removes the ordering question
+    # entirely -- the directory is NEVER on `sys.path`, and only the
+    # enumerated `nb08_*` names are bound onto it, with `colour` deliberately
+    # NOT among them. `nb08_verify` below resolves through that binding.
     from nb08_verify import VerifySession  # noqa: E402
 except Exception as exc:  # pragma: no cover - defensive, see module docstring
     VerifySession = None  # type: ignore[assignment]
@@ -395,11 +411,15 @@ def analyze(photo, profile_dins: list, *, reference_workbook: Any,
     so PROV-1's `lexicon_id` assertion compares a read against the very instance
     that produced it.
 
-    Returns `(record, None)` when no session can be BUILT (a moved allowlist,
-    an unreadable workbook, an `sb2` too old to take the map): the caller then
-    still has a record and `decide()` still has its own fallbacks. A photograph
-    that used to get an answer must never start getting a 500 because the
-    reader could not be CONFIGURED.
+    Raises `ReaderError` when no session can be BUILT (a moved allowlist, an
+    unreadable workbook, an `sb2` too old to take the map) -- GOAL1 (2026-08-15),
+    re-landed 2026-08-18: this used to return `(record, None)` from the legacy
+    `imb1.analyze_pill()` appearance-only path, so the caller still had an
+    answer even though it was unarmed. That legacy path is gone; the two-stage
+    reader is the ONLY arm (owner decision 2026-08-15, reaffirmed 2026-08-18),
+    so a session that cannot be built is now the SAME refusal as an armed read
+    that fails -- see `ReaderError` for why this is a refusal, never a silent
+    fallback.
 
     🔴 CONFIGURATION AND EXECUTION ARE NOT THE SAME FAILURE, and this docstring
     used to blur them (corrected 2026-08-14, REPAIR agent, finding S7). Only
@@ -430,7 +450,23 @@ def analyze(photo, profile_dins: list, *, reference_workbook: Any,
     session = build_verify_session(dins, reference_workbook=reference_workbook)
     if session is None:
         LAST_READ_ATTEMPTS = 0
-        return nb08_imb1.analyze_pill(photo, profile_dins=dins), None
+        # GOAL1 (2026-08-15), re-landed 2026-08-18: a session-build failure
+        # used to fall back to the legacy
+        # `imb1.analyze_pill(photo, profile_dins=dins)` appearance-only path
+        # (removed -- see
+        # `archive\2bdeleted\2026-08-15_paddleocr_removal\MANIFEST.md`).
+        # There is no second arm left to degrade to, so this is now the SAME
+        # refusal `ReaderError` raises for an armed read that fails, not a
+        # softer one -- consistent with the no-fallback stance in
+        # `ReaderError`'s own docstring above.
+        raise ReaderError(
+            "could not build a VerifySession for this request -- the reader "
+            "has no ballot to read against (a moved allowlist, an unreadable "
+            "reference workbook, or an sb2 build too old to accept the map). "
+            "Refused rather than answered from the legacy paddle OCR path, "
+            "which was removed 2026-08-15 (retirement re-landed 2026-08-18).",
+            attempts=0,
+        )
 
     reader = build_reader(session, scorer=scorer)
     attempts, last_exc = 0, None

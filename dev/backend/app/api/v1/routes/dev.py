@@ -80,6 +80,6 @@ async def seed_admin(
     await db.refresh(user)
 
     return TokenResponse(
-        access_token=create_access_token(user.id, user.role),
+        access_token=create_access_token(user.id, user.role, user.token_version),
         expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )

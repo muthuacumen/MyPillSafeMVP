@@ -4,6 +4,7 @@ import Navbar from './Navbar';
 import { AppFooter } from './AppFooter';
 import BottomTabBar from './BottomTabBar';
 import { DisclaimerModal } from '@/components/DisclaimerModal';
+import { SidecarTicker } from '@/components/SidecarTicker';
 import { startDoseReminderEngine } from '@/lib/doseReminders';
 
 // Phase 6 (Muthu's decision): the desktop Sidebar + Topbar are gone. Every
@@ -32,6 +33,7 @@ export default function AppShell() {
         }}
       />
       <Navbar />
+      <SidecarTicker />
       <main className="flex-1 p-4 sm:p-6 pb-20 md:pb-6">
         <Outlet />
       </main>

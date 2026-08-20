@@ -128,5 +128,30 @@ class Settings(BaseSettings):
     # as a finding -- see documentation/evaluation/rx_parsing/README.md.
     RX_PARSE_BACKEND: str = "qwen"
 
+    # --- Sidecar Supervisor proxy (Task T2) ----------------------------------
+    # A separate service (dev/ops, NOT this backend) that actually starts,
+    # stops, and warms the `dev/brains` sidecar process and can see host
+    # resources (RAM, AC power) the backend has no business touching. The
+    # admin routes in app/api/v1/routes/admin_sidecar.py are a thin,
+    # admin-gated PROXY to it -- every call forwards to
+    # {SUPERVISOR_URL}{/status,/start,/stop} with this bearer token and
+    # passes the Supervisor's response straight through. Blank token is the
+    # local-dev default (a Supervisor with no auth configured accepts it).
+    SUPERVISOR_URL: str = "http://127.0.0.1:8090"
+    SUPERVISOR_TOKEN: str = ""
+
+    # --- Public sidecar-status ticker (Task T2) ------------------------------
+    # `GET /api/v1/status/sidecar` -- no auth, cached 20s in-process. Reuses
+    # the same /health check `app/services/brains_registry.py` already does
+    # before an /analyze call, so this never adds a second, differently-wired
+    # path to "is the sidecar up". The two messages are what the frontend
+    # ticker shows verbatim; overridable so a deployment can point the "down"
+    # message at whichever admin actually answers it.
+    SIDECAR_UP_MESSAGE: str = "PillSafe analysis engine is online — demo ready."
+    SIDECAR_DOWN_MESSAGE: str = (
+        "Analysis engine is offline. For demo/starting sidecar, please "
+        "contact admin at info@mypillsafe.ca"
+    )
+
 
 settings = Settings()

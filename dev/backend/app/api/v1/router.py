@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from app.api.v1.routes import (
     admin,
+    admin_sidecar,
     auth,
     contact,
     dev,
@@ -12,6 +13,7 @@ from app.api.v1.routes import (
     reference,
     reminders,
     scans,
+    status,
     tray,
 )
 
@@ -28,4 +30,6 @@ api_router.include_router(instructions.router)
 api_router.include_router(scans.router)
 api_router.include_router(contact.router)
 api_router.include_router(admin.router)
+api_router.include_router(admin_sidecar.router)
+api_router.include_router(status.router)
 api_router.include_router(dev.router)

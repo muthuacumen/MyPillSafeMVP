@@ -39,6 +39,16 @@ async def get_current_user(
     user = await get_user_by_id(db, user_id)
     if not user:
         raise _UNAUTH
+
+    # Real session termination (Task T2): a token missing `tv` is treated as
+    # tv=0 (every token minted before this feature existed), and any token
+    # whose claim no longer matches the live column is a session an admin
+    # has since terminated (or deactivate has since bumped) -- reject it the
+    # same way an unknown/expired token is rejected, not a different error
+    # shape that would tell the caller WHY they were logged out.
+    if payload.get("tv", 0) != user.token_version:
+        raise _UNAUTH
+
     return user
 
 

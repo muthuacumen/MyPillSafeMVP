@@ -34,6 +34,7 @@ from app.core.database import _add_missing_columns
 # sync's `column_defs` fails the parity test below instead of silently
 # breaking the next Postgres deploy.
 _MODEL_COLUMNS = {
+    "users": {"token_version"},
     "patients": {"notifications_enabled"},
     "prescriptions": {
         "frequency_type", "with_food", "purpose", "max_daily_dose", "din",

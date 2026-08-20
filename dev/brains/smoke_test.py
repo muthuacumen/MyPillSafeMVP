@@ -109,7 +109,9 @@ def main() -> None:
     print(f"[smoke] {len(search_results)} results, top 3:")
     for r in search_results[:3]:
         print(f"    {r}")
-    top_din = search_results[0]["din"]
+    verifiable = [r for r in search_results if r.get("pill_verifiable")]
+    assert verifiable, f"no pill_verifiable result in search_results: {search_results}"
+    top_din = verifiable[0]["din"]
 
     # --- 3. /reference/candidates ---
     print(f"\n[smoke] 3/4 GET /reference/candidates?dins={top_din}")

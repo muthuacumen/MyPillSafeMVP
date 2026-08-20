@@ -33,6 +33,40 @@ export interface AnalysisSummary {
   created_at: string;
 }
 
+export interface TerminateSessionsResponse {
+  message: string;
+  token_version: number;
+}
+
+/** `GET /admin/sidecar/status` passthrough body (Task T2 Supervisor proxy --
+ * `dev/backend/app/api/v1/routes/admin_sidecar.py`). Every field beyond
+ * `sidecar_running` is optional: the proxy forwards the Supervisor's JSON
+ * verbatim, so a Supervisor build that hasn't shipped a given metric yet
+ * (or one that omits it while the sidecar is stopped) must not break the
+ * status card -- render what's present, omit the rest. */
+export interface SidecarSupervisorStatus {
+  sidecar_running: boolean;
+  sidecar_health?: string | Record<string, unknown>;
+  free_ram_gb?: number;
+  commit_used_gb?: number;
+  commit_total_gb?: number;
+  on_ac_power?: boolean;
+  profile?: string;
+}
+
+export type SidecarProfile = 'dev' | 'prod';
+
+export interface SidecarStartRequest {
+  profile: SidecarProfile;
+  warm?: boolean;
+  force?: boolean;
+}
+
+export interface SidecarStartResponse {
+  pid: number;
+  profile: string;
+}
+
 export const adminApi = {
   getStats: () => client.get<PlatformStats>('/admin/stats'),
   listUsers: (skip = 0, limit = 50) =>
@@ -43,8 +77,15 @@ export const adminApi = {
     client.put<{ message: string }>(`/admin/users/${id}/deactivate`),
   updateRole: (id: string, role: string) =>
     client.put<{ message: string }>(`/admin/users/${id}/role`, { role }),
+  terminateSessions: (id: string) =>
+    client.post<TerminateSessionsResponse>(`/admin/users/${id}/terminate-sessions`),
   deleteUser: (id: string) =>
     client.delete(`/admin/users/${id}`),
   listAnalyses: (skip = 0, limit = 100) =>
     client.get<AnalysisSummary[]>('/admin/analyses', { params: { skip, limit } }),
+  // ── Sidecar supervisor proxy (Task T2/T3) ──────────────────────────────
+  getSidecarStatus: () => client.get<SidecarSupervisorStatus>('/admin/sidecar/status'),
+  startSidecar: (payload: SidecarStartRequest) =>
+    client.post<SidecarStartResponse>('/admin/sidecar/start', payload),
+  stopSidecar: () => client.post('/admin/sidecar/stop'),
 };

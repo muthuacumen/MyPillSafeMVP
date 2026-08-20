@@ -161,6 +161,13 @@ register -> admin-approve by hand.
 
 Almost always the right answer. The reader is a config switch by design.
 
+> **[2026-08-18] SUPERSEDED.** `PILLSAFE_READER=off` is retired and now fails config load
+> -- the legacy engine was removed from IMB1 by owner order. Reader rollback is no longer
+> an env-var flip: restore the archived change set per
+> `archive/2bdeleted/2026-08-18_paddleocr_reland/MANIFEST.md` (canon path of the cmd
+> today: `D:\Projects\PillSafe\Production\ops\start_sidecar.cmd`). Steps 1-2 below are
+> kept as history; do not execute step 1.
+
 1. Edit `D:\Projects\PillSafe\ops\start_sidecar.cmd`, set `PILLSAFE_READER=off`
    (line 10, currently `two_stage`).
 2. Restart the task:

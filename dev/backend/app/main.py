@@ -57,13 +57,22 @@ _OPENAPI_TAGS = [
     {
         "name": "admin",
         "description": (
-            "**Admin only.** Platform stats, user management, "
-            "and analysis audit log."
+            "**Admin only.** Platform stats, user management, session "
+            "termination, analysis audit log, and the sidecar-supervisor "
+            "proxy (`/admin/sidecar/*`)."
         ),
     },
     {
         "name": "health",
         "description": "Liveness probe — no auth required.",
+    },
+    {
+        "name": "status",
+        "description": (
+            "Public system-status endpoints for the frontend — no auth "
+            "required. `/status/sidecar` is what the sidecar-status ticker "
+            "polls."
+        ),
     },
     {
         "name": "dev",

@@ -9,11 +9,15 @@ Run (from this directory, using the sidecar venv):
 See README.md for full setup instructions.
 
 Two-process constraint (do not "fix" this): torch and paddle cannot share one
-Windows process (cuDNN WinError 127). `imb1.analyze_pill()` already spawns its
-own OCR subprocess internally via `sys.executable -m imb1.ocr_sub` -- since
-this service runs under the sidecar venv's python, that subprocess correctly
-reuses the same venv (which has paddleocr/paddlepaddle-gpu installed) without
-this process ever importing paddle itself. Do not import paddle here.
+Windows process (cuDNN WinError 127). UPDATED 2026-08-18 (GOAL1 re-land):
+`imb1.analyze_pill()` no longer spawns a pill-imprint OCR subprocess -- the
+legacy paddle dual-read (`imb1.ocr_sub`, I1/I3) was removed from the IMB1
+path (2026-08-15, retirement re-landed 2026-08-18; archived at
+`archive/2bdeleted/2026-08-15_paddleocr_removal/MANIFEST.md`). Pill imprint
+now comes ONLY from the in-process two-stage reader wired through
+`production_wiring.analyze()` (A3 presence gate -> A4c constrained read,
+same torch process, no paddle involved). The two-process constraint below
+still applies to Rx-label OCR, unchanged.
 
 `POST /ocr/prescription` (Task A1, app x brains deploy-readiness build) is
 the same pattern applied to prescription-LABEL OCR (as opposed to pill-
@@ -92,6 +96,14 @@ import production_wiring  # noqa: E402
 # the third-party `colour-science` package). Defensive for the same reason every
 # other brain import here is: a tray adapter that cannot import must not stop
 # /health, /pill/analyze or /qa/* from answering.
+#
+# MPR1-T30 (2026-08-20): `production_wiring` no longer puts `NB08_Notebook/src`
+# on `sys.path` -- it imports `nb08_runtime`, which binds the PROMOTED closure
+# under `Production\NB08_Runtime\` as a package without ever touching the path.
+# Imported explicitly here too (idempotent) so this file's own `import nb08_tray`
+# does not silently depend on `production_wiring` having run first.
+import nb08_runtime  # noqa: E402,F401
+
 _tray_import_error: str | None = None
 try:
     import nb08_tray  # noqa: E402
@@ -181,6 +193,31 @@ def _load_profile_reference_once() -> None:
 
 
 _load_profile_reference_once()
+
+
+# --- Warm-at-boot scorer load (Futureworks #35 repair 1) -------------------
+# `production_wiring.get_scorer()` is LAZY by design (see its docstring) --
+# loaded on first use so a sidecar started without the flag never touches the
+# GPU at import time. Env-gated so the DEFAULT (flag absent) is BYTE-IDENTICAL
+# to today: nothing below runs, the scorer still loads lazily on the first
+# `/pill/analyze` request, exactly as before this block existed.
+#
+# When `PILLSAFE_WARM_AT_BOOT=1` (set by the sidecar supervisor's `warm=true`
+# start, see `Production/ops/supervisor/supervisor.py`), eagerly call that
+# SAME accessor here -- no duplicate loading logic -- so a load failure (e.g.
+# the Futureworks #35 `OSError`/WinError-1455 signature, or the silent NF4
+# stall also filed there) surfaces at boot, before a patient's photo does,
+# instead of on first use. A warm failure does not crash the process: /health
+# already surfaces `production_wiring.SCORER_LOAD_ERROR`, and a sidecar that
+# failed to warm should still answer /health so an operator can see why,
+# rather than dying silently before uvicorn finishes binding the port.
+if os.environ.get("PILLSAFE_WARM_AT_BOOT") == "1":
+    try:
+        production_wiring.get_scorer()
+        print("[warm-at-boot] scorer loaded OK", flush=True)
+    except Exception as exc:  # pragma: no cover - defensive, mirrors /health's
+        # own treatment of SCORER_LOAD_ERROR: report, never raise past here.
+        print(f"[warm-at-boot] scorer load FAILED: {exc!r}", flush=True)
 
 
 # --- JSON-safety helper -----------------------------------------------------
@@ -421,12 +458,20 @@ async def pill_analyze(
             # EFFECTIVE. `analyze()` hoists the `VerifySession` so ONE lexicon
             # serves both the reader's ballot and SB2's map (PROV-1).
             #
-            # DEFAULT IS OFF (`config.READER_ENABLED`). Unset, this is the
-            # byte-identical legacy line it replaces -- the reader loads a 4-bit
-            # VLM into an 8.6 GB card on first request, which is Muthu's
-            # deployment decision to make by setting `PILLSAFE_READER`, not a
-            # promotion's decision to make for him.
-            if config.READER_ENABLED and dins:
+            # GOAL1 RE-LAND (2026-08-18): `config.READER_ENABLED` is now a
+            # hardcoded constant `True` -- the "off" value that used to route
+            # to the legacy PaddleOCR branch below is retired and fails fast at
+            # config load (`config.py`), so a running sidecar can never have
+            # this flag False. The config-gated half of the old condition here
+            # is therefore dead and has been dropped. The ONLY remaining reason
+            # to skip the reader is `dins` being empty (no patient profile to
+            # build a ballot/lexicon from) -- unrelated to `PILLSAFE_READER`,
+            # and NOT a legacy-reader path any more either:
+            # `imb1.analyze_pill()` no longer performs any imprint OCR at all
+            # (see `IMB1_v0/imb1/__init__.py`), so the no-profile branch below
+            # is just the appearance-only pipeline both paths share, not a
+            # second "reader."
+            if dins:
                 record, session = await run_in_threadpool(
                     production_wiring.analyze, tmp_path, dins,
                     reference_workbook=getattr(sb2_reference, "_DEFAULT_XLSX", None),

@@ -7,6 +7,17 @@ COPY package*.json ./
 RUN npm ci --prefer-offline
 
 COPY . .
+
+# Build-time feature flag (MPR1-T34pre, dev/frontend/src/lib/featureFlags.ts).
+# DEFAULT ABSENT so existing builds are byte-for-byte unchanged -- Vite only
+# exposes it to import.meta.env when the ARG is actually passed at build
+# time (`--build-arg VITE_TRAY_CHECK=on`), and featureFlags.ts treats
+# anything other than the literal string "on" as off. ENV re-exports the ARG
+# into the build environment so the `npm run build` (vite build) step below
+# can see it -- an ARG alone is not visible to RUN unless promoted this way.
+ARG VITE_TRAY_CHECK
+ENV VITE_TRAY_CHECK=$VITE_TRAY_CHECK
+
 RUN npm run build
 # Output will be at /app/dist
 

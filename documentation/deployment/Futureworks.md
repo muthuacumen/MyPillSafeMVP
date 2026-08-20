@@ -840,6 +840,54 @@ flow, not to `analyze_pill()` as it exists today. Per-well partial-failure isola
 failure must not sink the other N-1 results) remains the unnamed hard requirement Path A has to
 satisfy, and is not yet named as its own explicit build item in the numbered list above.
 
+**STATUS UPDATE 2026-08-20 (MPR1 T20/T21 -- Opus-adjudicated).** A full E1-E6 localhost run (T20,
+exit 0) plus an independent Opus refutation pass (T21) landed evidence against this entry's "RESOLVED
+on localhost" question. T21's verdict, quoted verbatim:
+
+> **PARTIALLY RESOLVED ON LOCALHOST (2026-08-20, MPR1-T20):** items 2, 3 and 4 -- the 1->N
+> IMB1-to-SB2 contract, the list-returning sidecar `/tray/analyze`, and the N-slot frontend -- are
+> proven end-to-end by a single-pass E1-E6 run (exit 0, 24/24 slots byte-identical across three
+> independent runs, 0 false accepts, 6/6 verifies DIN-confirmed to profile); item 1 is satisfied in
+> `nb08_tray.py` and **not** in `IMB1_v0` as this entry words it, item 5 is evidenced by latency
+> only, and the addendum's per-well partial-failure isolation is implemented but never exercised --
+> so #23 stays **OPEN at reduced scope** pending `IMB1_v0` promotion, production enablement, an
+> isolation proof, and the demo video.
+
+Evidence: `NB08_Notebook/orc/MPR1/MPR1-T20-EXE-localhost-e2e-multipill-full.report.md` +
+`NB08_Notebook/orc/MPR1/T20_artifacts/` (24/24 slot table, `sidecar_8101.log`,
+`ram_gpu_timeline.log`, 14 screenshots) ·
+`NB08_Notebook/orc/MPR1/MPR1-T21-ADJ-e2e-evidence.report.md` (full adjudication, item-by-item
+rulings on all 5 numbered asks plus the isolation addendum).
+
+**REMAINS OPEN (Muthu-owed/gated):**
+1. `IMB1_v0` promotion -- item 1's `analyze_tray()` lives in `nb08_tray.py`, reachable only via
+   `production_wiring.py:100`'s hard-coded `D:\Projects\PillSafe\Research\...` path, not in
+   `IMB1_v0` as this entry names it.
+2. Production :8100 enablement -- stays on the legacy reader posture by decision; the tray route
+   there would load NF4 lazily on a uvicorn worker thread, the measured intermittent-crash
+   configuration (see item #35).
+3. Per-well partial-failure isolation proof -- implemented (`nb08_tray.py:578-636`, one try per
+   well) but zero of 72 slot-evaluations across T16/T18/T20 took the exception path; unproven E2E.
+4. Demo video -- T12 never ran.
+
+**[2026-08-20] APPEND (MPR1 T25/T26) -- item 1's `IMB1_v0` promotion was ATTEMPTED and STOPPED ON
+EXECUTED EVIDENCE; it needs a closure design, not a copy.** T25 (Opus, build) attempted the literal
+promotion this REMAINS OPEN item 1 asks for and stopped before writing `IMB1_v0\tray\`, once
+execution surfaced two structural problems, both confirmed by T26's refutation: (1) `nb08_tray.py`
+pins its own `_nb08_tray_srcpkg.__path__` to its own directory by design (docstring lines 18-30), so
+a relocated copy resolves ALL shim siblings locally -- the true module-level closure a promotion must
+carry is **19 modules**, not the 20 T25 first counted (T26 corrected it: `weak_labels` is
+function-scoped, unreachable from the tray import path); (2) `data.py:27`'s `PROTO_ROOT =
+parents[2]` would silently repoint DATA/IMAGES/RESULTS to `D:\Projects\PillSafe\Production` once
+relocated under `IMB1_v0\tray\` -- root-anchoring is required, not a path copy. A scratch 11-file
+package imported clean but `pipe11()` raised `ImportError`; that failure would have surfaced only on
+a live `/tray/analyze` call, not at import time. **No `IMB1_v0\tray\` exists on disk;
+`app.py`/`production_wiring.py` are untouched (sha256-verified).** Item 1 stays OPEN, now with a
+named blocker: it needs a CLOSURE DESIGN (root-anchoring for `data.py` + a decision on `colour.py`'s
+colour-science-library shadowing) before any further promotion attempt, not a straight copy.
+Manifest + full rollback inventory:
+`archive\2bdeleted\2026-08-20_imb1v0_tray_promotion\MANIFEST.md`.
+
 ---
 
 ## 24. No dose-schedule / already-taken enforcement exists anywhere in the pill-scan path
@@ -933,6 +981,10 @@ counted per-image).
 `PillSafe/dev/backend/app/api/v1/routes/instructions.py` (where `max_daily_dose` is actually
 consumed today — display text only) · `IMB1_Prototype/NB08_Notebook/archive/demoprep/03_prescriptions.md`
 (this session's designed-but-unenforced afternoon-2-meds scenario).
+
+2026-08-18: SUPERSEDED with A3+A4c — the legacy PaddleOCR pill-imprint engine (A1) was removed
+from IMB1 by owner order (see archive\2bdeleted\2026-08-18_paddleocr_reland\MANIFEST.md). The
+Rx-label PaddleOCR path (OB5) is unaffected.
 
 ---
 
@@ -1044,6 +1096,16 @@ token shape instead of returning an empty-but-200 result.
 
 **Owning doc:** `documentation/deployment/DEPLOY_GUIDE_M1_TwoStageReader.md` triage table (CHECKPOINT 9
 callout / DIN token mismatch row, 2026-08-14).
+
+**[2026-08-20] APPEND (MPR1 T24) -- checked whether the newer tray route re-opened or duplicated this
+gap; it does not.** Roadmap sweep T24 read `dev/backend/app/api/v1/routes/tray.py:167` against
+`pill.py:106`: both call sites apply `din_utils.to_sb2_token` identically at profile assembly, so the
+tray route carries no separate normalization gap of its own -- this entry's footgun is unchanged and
+still applies equally to both callers (any hand-rolled, backend-bypassing caller of either
+`/pill/analyze` or `/tray/analyze` can still trip it). The only asymmetry found: `tray.py` wraps the
+normalized list in `_distinct_medications` before use, `pill.py` does not -- a dedup difference, not
+a token-format difference, and it does not change this entry's ASK. Entry stays OPEN; THE ASK above
+is unchanged and still Muthu's call.
 
 ---
 
@@ -1168,6 +1230,46 @@ scorer warm-on-signin entry (Active roadmap, below) should close together.
 defect, filed 2026-08-15, MPR1 session) · `NB08_Notebook/results/nb08_tray_route/run3/` (original
 evidence) · T09 reproduction run, 2026-08-15 (this addendum's evidence).
 
+**2026-08-18 evidence (not a close):** owner-ordered localhost smoke on the re-armed two-stage
+reader (dev :8101, burned tray image, manual launch then fully shut down) -- the lazy NF4 load ran
+CLEAN, no crash, at 5.76 GB free RAM and AC power (conditions recorded per this entry's own T09
+environmental hypothesis). Entry stays OPEN -- one clean run under favourable conditions does not
+close it (2026-08-14's armed success was also environmentally favourable) -- repair still unchosen.
+See `archive\2bdeleted\2026-08-18_paddleocr_reland\MANIFEST.md`.
+
+**2026-08-18 -- THIRD reproduction, still not a close.** During the colour-gate diagnostic session
+(the same day as the entry above), the armed sidecar died **silently** on its first scan after
+start: the NF4 loader stopped at tensor **216/713**, **6.35 GB free RAM**, AC power, **no
+traceback** -- not even the T09 `OSError`/WinError-1455 signature to compare against. Recovered by
+relaunch (clean on the second attempt). Repair still unchosen; three data points now exist (T09's
+characterised crash, the same-day clean run above, and this silent-death instance) and none converge
+on a single cause. See `NB08_Notebook/NB08_STATE.md` §5 (2026-08-18 row) and ADR 2026-08-18.
+
+**[2026-08-19] STATUS — repairs 1+2 IMPLEMENTED, Muthu-authorized.** Repair 1 = env-gated
+`PILLSAFE_WARM_AT_BOOT` eager load (default off; Admin Panel start sends warm=true). Repair 2 = the
+Supervisor's unconditional `SUPERVISOR_MIN_FREE_GB` floor, refusing launch below 3.0 GB free.
+Mechanism + ops steps: `AdminPanel_Runbook.md`. E2E 2026-08-19 proved the chain; the warm start
+itself was guard-blocked at 2.34 GB free (guard working as designed). This entry CLOSES on the
+first successful supervised warm start + scan; the scorer warm-on-signin entry (Active roadmap)
+closes with it.
+
+**[2026-08-20] APPEND (MPR1 T21) -- production :8100 tray enablement is a separate open item from
+this entry's now-closed warm-start question.** T21 re-confirmed that the worker-thread lazy-NF4-load
+crash configuration is exactly what production :8100's tray route would hit if enabled today, PLUS
+`production_wiring.py:100` hard-codes an absolute `D:\Projects\PillSafe\Research\...` path that is
+not deployable off this machine -- both still block Futureworks #23's production-enablement item,
+independent of this entry's 2026-08-19 close (the close covers the sidecar's OWN warm-start path,
+not the tray route riding on it). **Steady-state RAM evidence, not a start-time finding:** three
+independent runs (T16, T18, T20) all sustained free RAM in the 0.69-2.2 GB range during E2/E4 tray
+analysis on the armed dev sidecar, with **zero native crashes** across all three -- an already-warm,
+already-armed sidecar tolerates this memory pressure. The unresolved risk stays the *start-time*
+lazy-load crash this entry's mechanism section describes, which none of T16/T18/T20 exercised (the
+dev sidecar was warmed via `nb08_tray_devserver.py`'s main-thread path each run, not production's
+worker-thread lazy path) -- this steady-state evidence does not touch the start-time crash theory.
+Evidence: `NB08_Notebook/orc/MPR1/MPR1-T21-ADJ-e2e-evidence.report.md` (REMAINS OPEN list + Findings
+to log separately) · `NB08_Notebook/orc/MPR1/T16_artifacts/`, `T18_artifacts/`,
+`T20_artifacts/ram_gpu_timeline.log`.
+
 ---
 
 ## 36. Dormant Stage-1 fallback booby trap -- `qwen3-vl:latest` removed from Ollama, `PILLSAFE_STAGE1=ollama` still names it
@@ -1190,6 +1292,220 @@ debt (this entry is then the warning a future incident responder needs). No acti
 
 **Owning doc:** `Production\PillSafe\dev\brains\production_wiring.py` (`build_reader()`, the
 `PILLSAFE_STAGE1=ollama` branch) · Ollama local model store (`qwen3-vl:latest` removal, 2026-08-15).
+
+**[2026-08-20] APPEND (MPR1 T23/T25) -- read in full during the tray-promotion scoping and build
+attempt; left untouched.** `production_wiring.py` was read end-to-end during this session's
+tray-promotion work (T23's scoping pass, T25's promotion build) while tracing `analyze_tray()`'s
+reachability -- `production_wiring.py:100` hard-codes the `D:\Projects\PillSafe\Research\...` path
+that reaches `nb08_tray.py` today (see Futureworks #23's 2026-08-20 append). The stale
+`PILLSAFE_STAGE1=ollama` branch this entry describes is still present, unchanged. No edit was made to
+this file by either task -- this entry remains the sole owner of any decision to remove or patch that
+branch; THE ASK above is unchanged.
+
+---
+
+## 37. 🔴 A SUPERSEDED held-out false-accept figure is still asserted as current in SB2's PRODUCTION contract
+
+**What was hit:** `Production\SB2\CONTRACT.md` **line 114** states, immediately under the
+`WEIGHTS`/`THRESH` block it is meant to characterise: *"Measured false-accept rate at this operating
+point: **1.15%** (held-out)."* That figure is **1.15% = 6/520**, and the **LOPO-520 re-run of
+2026-08-12** (LOPO here = leave-one-**profile**-out, not leave-one-photo-out) showed the 6/520 to be
+a **refit artefact of one fold**, not a property of the matcher: at the frozen deployed threshold
+(`accept = 0.70`) the held-out baseline is **0/520**. Nothing on the page marks the figure as
+retired, so a reader takes it as the current measured operating point. 🔴 **Note the direction of the
+error** — the stale number makes the system look *worse* than it measures, which is exactly why it
+survived weeks of repetition without being audited: a pessimistic safety figure flatters nobody. The
+same superseded figure also stands in `Research\Journey.md` §8's evidence table and §4.6; those two
+were left in place **deliberately** under that file's append-only rule and are flagged as superseded
+in its §15.2, so they are not a second, independent measurement and do not need separate action.
+
+**What it blocks:** nothing at runtime — no code reads this number and no threshold depends on it.
+What it blocks is **anyone downstream trusting the contract**: `CONTRACT.md` is the handover document
+a receiving team (or a future Muthu) reads to judge whether SB2's accuracy-vs-false-accept operating
+point is acceptable, and any re-tuning conversation opened from that page starts from a baseline that
+was withdrawn. It also blocks a clean citation in the report/paper track, where the contract and the
+identification register would contradict each other if quoted side by side.
+
+🔴 **THE ASK (Muthu's call, not the SA's):** `Production\SB2\` is under the never-write-into-production
+rule, so nothing has been touched. **Give a written exception naming you, and pick one:** (a) replace
+line 114's figure with the frozen-threshold result and cite the owning register section beside it;
+(b) leave the figure where it is and add a one-line supersession note pointing at the register —
+smallest change, preserves the historical claim as history; or (c) leave `CONTRACT.md` untouched and
+let this entry be the record. If you choose (a) or (b), the SA edits **only that one sentence**,
+archives the pre-edit file to `archive\2bdeleted\` with a MANIFEST row and md5, and changes nothing
+else in `Production\SB2\`.
+
+**Owning doc:** `NB08_Notebook\specs\NB08_Identification.md` **§3.17.14 / §3.17.14.2** owns the
+re-derivation, the per-threshold table and every number — read it, never restate it. The stale
+assertion itself: `Production\SB2\CONTRACT.md:114`. The narrative and the two deliberately-standing
+Journey sites: `Research\Journey.md` §15.2. Filed 2026-08-17 (Journey.md currency session; ADR entry
+of the same date).
+
+---
+
+## 38. Traycal colour abstain on a strong imprint match -- a colour-calibration artefact, not (yet
+## shown to be) a reader-health signal
+
+**What was hit:** on the recorded localhost demo (2026-08-18), the traycal burned shot
+`IMG_20260811_131936867.jpg` produced an **ABSTAIN ("Uncertain")** verdict on well 0 despite
+`imprint_exact=true` at margin **13.67** -- a strong, unambiguous imprint match. The abstain was
+driven entirely by `colour_score=0.0`, plausibly a colour-calibration artefact of that specific
+card/lighting rather than a genuine colour mismatch.
+
+**What it blocks:** nothing today -- the demo showed the abstain as-is, which is the honest,
+correct behaviour of the decision layer given its inputs. What it blocks is **trust calibration**:
+without separating "the colour channel is miscalibrated for this shot" from "the reader doesn't
+know this pill," a viewer (or a future evaluator) can misread a colour-artefact abstain as a
+reader-confidence problem when it is not one.
+
+🔴 **THE ASK (Muthu's call, not the SA's):** decide whether to investigate colour-calibration
+health for this card/lighting condition as a separate diagnostic from reader health before any
+future demo or eval shot's abstain is judged. **No threshold change without the LOPO re-run rule**
+(per item 37's precedent -- any change to the colour gate or its threshold needs its own held-out
+re-derivation, not an ad hoc adjustment off one shot).
+
+**Owning doc:** `Quality\demo\2026-08-18_localhost_walkthrough\` (video, screenshots, README) --
+well-0 traycal result on `IMG_20260811_131936867.jpg`. Colour-scoring design context:
+`NB08_Notebook/specs/NB08_Identification.md` §3.17.15 (colour-scoring fix, designed and measured,
+not yet shipped -- see the "Active roadmap" pointer below).
+
+**2026-08-18 UPDATE -- root-caused, and a gate SHIPPED.** The colour-calibration artefact behind
+this entry's abstain is now understood at the mechanism level: the traycal card carries **no black
+patch at all**, so `card_calib`'s blob-based correction was never trustworthy on it -- the abstain
+was a symptom of that, not of reader health. A default-deny fit-quality gate is now live in the
+DEPLOYED tray-route module (`nb08_tray.py::_colour_fit_valid`, `BLACK_PATCH_WRONG_MM=15.0`) and
+correctly takes identity on this card's own geometry; a re-recorded demo achieved a genuine live
+VERIFY on a fresh frame. This entry's original ASK (investigate colour-calibration health as a
+diagnostic separate from reader health) is **satisfied by this root-cause** -- no further
+investigation is owed under this entry. **Two follow-ups remain, both PARKED for a fresh session:**
+(1) a 13-class colour centroid re-seed from chip-corrected tablets -- the uncorrected palette sits
+15.9 degrees from true chip-corrected hue, so even a correct fit-decision leaves the *classification*
+itself under-calibrated (**all-DIN blast radius**, needs its own pre-registration); (2) the
+chip-anchor correction itself (NB08_44) confirmed the underlying mechanism but FAILED its own
+pre-registered bar against plain identity and was not adopted. A **separate, still-open** finding
+from the same root-causing pass is filed as **#40** below (an offline-harness-vs-live-route colour
+disagreement on a different frame) -- do not conflate it with this entry's now-closed question.
+
+**Owning doc (added):** `NB08_Notebook/specs/IMB1_Capture_Photometry.md` §17 (owns the gate and
+every number) · `NB08_Notebook/specs/NB08_Identification.md` §3.22 (owns the centroid-luck finding
+behind follow-up 1).
+
+**[2026-08-20] APPEND (MPR1 T16/T18/T20/T21) -- the same fit-quality gate now measured on live
+multi-pill tray frames, not just the traycal card.** The default-deny `card_calib` gate this entry's
+2026-08-18 update shipped fires on **4/4** served multi-pill tray frames (S02P1/S03P1/S09P1/S10P1,
+`black_dist_mm` 48.9-61.4 vs `tol_mm=15.0`) and costs **3 of run5's 9** in-profile in-scope verifies
+(naproxen x2, pepcid x1) -- reproducible byte-identically across three independent runs (T16, T18,
+T20). The gate-abstains are the correct safety behaviour (0 false accepts in all three runs), but
+the capability loss is real and was not owned by any entry until now. Evidence:
+`NB08_Notebook/orc/MPR1/MPR1-T21-ADJ-e2e-evidence.report.md` (item-by-item ruling 2) ·
+`NB08_Notebook/orc/MPR1/T20_artifacts/sidecar_8101.log`.
+
+---
+
+## 39. Localhost demo ergonomics -- two gates and a bind-address trap between "stack is running"
+## and "tray demo actually works"
+
+**What was hit:** getting the tray-scan leg of a localhost demo to actually work (rather than
+501 or silently no-op) requires clearing three things at once, none of which is obvious from the
+stack being "up": (a) backend `TRAY_ANALYZE_ENABLED=true` -- defaults to `False`, which 501s the
+tray-analyze endpoint; now set in the gitignored `dev/backend/.env`; (b) `VITE_TRAY_CHECK=on` set
+at vite launch time, not just in an env file vite doesn't read after start; (c) vite dev binds
+`[::1]:5173` only -- `127.0.0.1:5173` fails to connect, `localhost:5173` works. Separately,
+DIN-scoped Q&A abstains in this environment (tier=none, the frozen-BB3 WP3 gap documented in
+`LOCAL_TESTING.md`), so demo questions must be name-scoped, not DIN-scoped, to get an answer.
+
+**What it blocks:** nothing broken -- this is an ergonomics/runbook gap, not a defect. It costs a
+demo operator avoidable trial-and-error (a silent 501, a UI that never shows the tray-check
+affordance, a connection refused on the "obvious" localhost address, or a DIN-scoped question that
+abstains for a documented reason unrelated to the tray leg) before landing on a working recipe.
+
+**THE ASK (Muthu):** treat this as a runbook improvement, not a risk item -- when a future session
+needs the localhost tray demo again, point at
+`Quality\demo\2026-08-18_localhost_walkthrough\README.md` for the full recipe rather than
+rediscovering these three gates from scratch. This entry intentionally does not restate that
+recipe.
+
+**Owning doc:** `Quality\demo\2026-08-18_localhost_walkthrough\README.md` owns the full recipe.
+`LOCAL_TESTING.md` owns the DIN-scoped-QA-abstains gap (frozen-BB3 WP3).
+
+**[2026-08-20] APPEND #1 (MPR1 T20/T21) -- the offline banner renders over a successful result
+screen, not just an idle stack.** `/api/v1/status/sidecar` reads the dev sidecar as down (a ~2.07s
+health check vs `HEALTH_TIMEOUT_SECONDS=2.0`, T16 finding) and the frontend renders "Analysis engine
+is offline. For demo/starting sidecar, please contact admin..." across the top of the *successful*
+tray result screen (`T20_artifacts/screens/e2_S02P1_result.png`) even though the underlying analyze
+route worked correctly. T21's ruling: on an entry whose stated purpose is capstone/competition demos,
+this is demo-visible, not cosmetic -- earlier reports (T16/T18/T20) called it "cosmetic only," which
+this append corrects. Evidence: `NB08_Notebook/orc/MPR1/MPR1-T21-ADJ-e2e-evidence.report.md`
+CONTRADICTIONS FOUND item 3.
+
+**[2026-08-20] APPEND #2 (MPR1 T20/T21) -- E6 Q&A smoke ran DIN-scoped, not name-scoped, so it never
+exercised the citation path.** T20's E6 navigated `?din=13803` (DIN-scoped) and returned
+`voice:"none"`/`cited_tags:[]` -- exactly the documented DIN-scoped-Q&A-abstain condition this entry
+already names above, not a new defect. It is a safe abstain under a known env gap, not evidence that
+the citation path works or fails either way. A future E6 pass should re-run **name-scoped** to
+actually test citations. Evidence: `NB08_Notebook/orc/MPR1/MPR1-T21-ADJ-e2e-evidence.report.md`
+item-by-item ruling 3.
+
+**[2026-08-20] APPEND #3 (MPR1 T27/T28) -- the offline-banner root cause named in APPEND #1 above is
+FIXED and smoke-verified; a visual re-check is still owed.** `brains_registry.py`'s
+`HEALTH_TIMEOUT_SECONDS` was raised 2.0s -> 5.0s (now line 35) against a live :8101 sidecar whose own
+/health measured 2.045-2.071s -- the old 2.0s timeout was tighter than the health check's own real
+latency, which is exactly the mechanism APPEND #1 found. T27 smoke test: 4/4 `GET
+/api/v1/status/sidecar` calls over 130s returned `sidecar_up:true` against that same live sidecar
+(artifacts: `orc/MPR1/T27_artifacts/`); all-off restored afterward. The frontend banner itself was NOT
+visually re-checked this session (no frontend was started) -- expected cleared given the timeout fix
+and the passing status calls, but a visual confirmation is owed at the next demo/localhost session
+before this append is treated as a full close.
+
+---
+
+## 40. Offline colour-diagnosis harness and the live tray route disagree on the same photograph
+
+**What was hit:** while root-causing item #38's colour abstain (2026-08-18 colour-gate diagnostic
+session), the same photograph, `IMG_20260818_205404170`, was scored by two different code paths and
+disagreed. The offline diagnostic harness (NB08_43's fresh-frame screen,
+`IMB1_Prototype/results/nb08_colour_diag/sweep_gated/fresh/nb08_43_fresh_screen.csv`) decides the
+well's colour class **EXACT** (`colour_score=1.0`, pink) under the new fit-quality gate -- identity
+correctly applied, black patch measured 30.0 mm out of tolerance. The **live** `/tray/analyze` route
+scored the same frame **`colour_score=0.0`, S=0.675, abstain** on the same well. A crop-geometry
+divergence between the two paths is suspected -- they may not be scoring identical pixels off the
+same photograph -- but this is **UNRESOLVED**, not confirmed.
+
+**What it blocks:** trusting any offline-harness colour number, including this session's own
+gate measurement (item #38's update, and the 5/30 -> 13/30 result), as a prediction of what the
+deployed live route will actually return on the same photograph. The gate's improvement is real and
+reproducible **inside the harness**; whether it transfers unchanged to the live route on the same
+frames is now an open question, not an assumption.
+
+🔴 **THE ASK (Muthu's call, not the SA's):** none required immediately -- no threshold or gate
+depends on closing this today. When a session next has time, instrument both paths (harness and
+live route) to log the exact crop bounding box and pixel content each one scores, on this one frame,
+and diff them directly -- the fastest way to confirm or rule out the crop-geometry hypothesis. Do
+not trust a harness colour number as a live-route predictor before this is reconciled.
+
+**Owning doc:** `NB08_Notebook/specs/IMB1_Capture_Photometry.md` §17.6(b) (the disagreement, as
+found) · `IMB1_Prototype/results/nb08_colour_diag/sweep_gated/fresh/nb08_43_fresh_screen.csv`
+(the harness-side number) · `Quality\demo\2026-08-18_localhost_walkthrough\` (the live-route
+evidence, same-day session).
+
+---
+
+## 41. `/scans/me` renders scan timestamps in UTC as local time
+
+**What was hit:** MPR1 T20/T21 (2026-08-20) -- the `/scans/me` history page renders a scan's UTC
+timestamp with a local-time label. `results.json:552` records a 00:12:16 local event rendered on
+screen as "4:12:16 AM" (an 8-hour UTC offset shown unconverted). Confirmed on `e4_scans_me.png`.
+
+**What it blocks:** nothing functional -- decisions and matching are unaffected. It is demo-visible:
+a viewer reading scan history during a capstone/competition demo sees a timestamp that does not
+match the wall clock they just watched the scan happen on.
+
+🔴 **THE ASK (Muthu's call, not the SA's):** decide whether to fix the display (convert to local
+before rendering) before the next demo, or accept it as a known minor cosmetic gap.
+
+**Owning doc:** `NB08_Notebook/orc/MPR1/MPR1-T21-ADJ-e2e-evidence.report.md` ("Findings to log
+separately") · `NB08_Notebook/orc/MPR1/T20_artifacts/results.json:552` ·
+`NB08_Notebook/orc/MPR1/T20_artifacts/screens/e4_scans_me.png`.
 
 ---
 
@@ -1228,6 +1544,10 @@ first scan can arrive. Until built, the first scan after a sidecar restart carri
 intermittent crash risk, and the interactive-only scheduled task will NOT auto-restart a crashed
 process. Dev already mitigates via `NB08_Notebook/src/nb08_tray_devserver.py` (main-thread warm
 before serving) — reuse its ordering when implementing.
+
+→ See item **#35**'s 2026-08-19 status: repairs 1 (env-gated warm-at-boot) + 2 (RAM floor) are now
+implemented and Muthu-authorized via the Admin Panel + Sidecar Supervisor; this entry closes together
+with #35 on the first successful supervised warm start + scan.
 
 **Deboss-only pills vs the frozen margin gate — tray flow (filed 2026-08-15, MPR1 run5/run6).**
 On the multi-pill tray route, 9 of the 11 supported OTC pills verify on the no-flash burned frames

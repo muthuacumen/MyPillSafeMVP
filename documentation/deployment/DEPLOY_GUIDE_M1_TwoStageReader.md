@@ -10,6 +10,17 @@ for the verified reason.
 time. **Written 2026-08-14 by PillSafe SA.** Companion to `DEPLOY_GUIDE.md` (the
 infrastructure guide) -- that document remains the authority on anything droplet-side.
 
+> 🔴 **[2026-08-18] SEMANTICS CHANGE -- read before following any step below.** The legacy
+> PaddleOCR pill-imprint engine (A1) was removed from IMB1 by owner order. `PILLSAFE_READER`
+> now accepts only `two_stage`/`twostage`/`on`/`1`/`true` (empty/unset defaults to
+> `two_stage`); the retired values `off`/`0`/`false`/`none` make the sidecar FAIL at config
+> load with a `RuntimeError`. **Every instruction below that says "set `PILLSAFE_READER=off`"
+> (the old rollback R1, the "safe deploy" option (a), the disarmed default) is superseded:**
+> there is no disarmed mode any more, and reader rollback is no longer an env-var flip --
+> restoring the legacy engine means restoring the archived change set per
+> `archive/2bdeleted/2026-08-18_paddleocr_reland/MANIFEST.md`. Dated correction notes sit at
+> each affected step; treat any stale occurrence this banner missed as historical.
+
 ---
 
 ## How to use this guide (instructions for the assisting agent)
@@ -54,13 +65,17 @@ From `dev/brains/config.py` (already merged):
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `PILLSAFE_READER` | `off` | `off` = legacy `imb1.analyze_pill`, byte-identical to the pre-M1 sidecar. `two_stage` = route through `production_wiring.analyze()` |
+| `PILLSAFE_READER` | ~~`off`~~ `two_stage` *(2026-08-18)* | ~~`off` = legacy `imb1.analyze_pill`, byte-identical to the pre-M1 sidecar.~~ **[2026-08-18]** `off` is retired and fails config load (legacy engine removed). `two_stage` = route through `production_wiring.analyze()` |
 | `PILLSAFE_STAGE1` | `single` | `single` = presence gate runs on the same in-process NF4 4.4B weights as Stage 2. `ollama` = the 8.8B `qwen3-vl:latest` over Ollama HTTP |
 | `PILLSAFE_SCORER_DEVICE` | `cuda` | `cpu` is ~47 s per forward pass with ~15 candidates per crop -- wiring smoke tests only, never a request |
 
 **`PILLSAFE_READER` defaults to `off`.** A sidecar restart that sets nothing is
 therefore a **safe no-op deploy** that ships the code without arming it. That is the
 intended shape: arming the reader is a decision Muthu makes by setting a variable.
+
+> **[2026-08-18] Superseded.** The default is now `two_stage` and `off` fails config load.
+> There is no disarmed no-op deploy any more -- a sidecar start runs the two-stage reader.
+> See the banner at the top of this guide.
 
 ---
 
@@ -118,10 +133,14 @@ Consequences, stated plainly:
   stronger argument for choosing (a) for the demo itself, independent of this fix.
 
 CHECKPOINT 1: Muthu has read the table above and has explicitly chosen ONE of:
-**(a)** deploy with `PILLSAFE_READER=off` (safe, recommended for the demo, since the
-image-qualification set in 4.3 was measured disarmed), or **(b)** deploy with
+**(a)** ~~deploy with `PILLSAFE_READER=off` (safe, recommended for the demo, since the
+image-qualification set in 4.3 was measured disarmed)~~ **[2026-08-18: retired -- fails
+config load]**, or **(b)** deploy with
 `PILLSAFE_READER=two_stage` now that the dependency blocker is resolved. **Do not
 proceed without that decision.**
+
+> **[2026-08-18] Option (a) is retired** -- `PILLSAFE_READER=off` now fails config load
+> (legacy engine removed). Only option (b) remains executable.
 
 ### 1.2 -- Stage 2 model weights present
 
@@ -152,7 +171,8 @@ both listed, and the version call returns JSON. **VERIFIED PRESENT 2026-08-14.**
 > `scorer or get_scorer()`, because Stage 1 is a kill-only screen and **Stage 2 always
 > loads the NF4 scorer either way**. Switching Stage 1 to Ollama changes which
 > instrument answers the presence gate; it does not remove the 4-bit model from the
-> process. The only knob that avoids the scorer entirely is `PILLSAFE_READER=off`.
+> process. ~~The only knob that avoids the scorer entirely is `PILLSAFE_READER=off`.~~
+> **[2026-08-18]** `off` is retired; no knob avoids the scorer any more.
 
 ### 1.4 -- Ollama keep-alive task healthy
 
@@ -253,6 +273,9 @@ by `config.py` lines 61, 84, 89. The build validated `PILLSAFE_STAGE1=single` /
 `PILLSAFE_SCORER_DEVICE=cuda` against the sidecar venv (section 1.1, `armB_sidecar_bars.json`
 / `w3real_result.json`).
 
+> **[2026-08-18]** `PILLSAFE_READER`'s default is now `two_stage`, and `off`/`0`/`false`/
+> `none` fail config load. The other two knobs are unchanged.
+
 The task launches `start_sidecar.cmd`, so variables must be set where that script sees
 them. **As of 2026-08-14 `start_sidecar.cmd` sets no environment variables** -- it only
 `cd`s into `dev/brains` and invokes `python.exe -m uvicorn`. Add `set` lines **between
@@ -262,11 +285,9 @@ rather than hidden in the registry.
 
 **Option (a), the safe deploy -- reader disarmed:**
 
-```
-set PILLSAFE_READER=off
-```
-
-or simply set nothing: `off` is the default.
+> **[2026-08-18] RETIRED.** This step used to say `set PILLSAFE_READER=off` (or set
+> nothing, `off` being the default). `off` now fails config load and the default is
+> `two_stage` -- there is no disarmed deploy. Use option (b).
 
 **Option (b), reader armed** -- only after CHECKPOINT 1 chose (b) AND section 2.6 passed:
 
@@ -370,7 +391,8 @@ in the response echoes the unpadded token form before you touch the reader.**
 
 **If this call errors with anything mentioning `bitsandbytes`, `accelerate`,
 `load_in_4bit` or `quantization_config`, section 1.1's blocker is live.** Go straight to
-rollback option R1 (section 5) -- set `PILLSAFE_READER=off` and restart. Do not attempt
+rollback option R1 (section 5) -- ~~set `PILLSAFE_READER=off` and restart~~
+**[2026-08-18: retired, fails config load -- see section 5's corrected R1]**. Do not attempt
 to install packages into the sidecar venv while the site is down.
 
 ---
@@ -510,6 +532,9 @@ They are uploaded live through the browser; nothing is pre-staged server-side.
 > Either demo with the reader off, or re-qualify at least Margaret's two images against
 > the armed sidecar before recording. This is the strongest practical argument for
 > choosing option (a) in CHECKPOINT 1 for the demo itself.
+>
+> **[2026-08-18]** Option (a) and "reader off" no longer exist (legacy engine removed);
+> the re-qualification path is the only one that remains.
 
 ### 4.4 -- File-upload fallback on the prod build (EXISTS IN PROD)
 
@@ -541,6 +566,14 @@ card. Nobody should watch that on camera.
 ## 5. Rollback
 
 Three levels, cheapest first. **R1 is almost always the right answer.**
+
+> **[2026-08-18] R1 IS SUPERSEDED.** `off` is retired and fails config load -- the legacy
+> engine was removed from IMB1 by owner order. Reader rollback is no longer an env-var
+> flip: restoring the legacy path means restoring the archived change set per
+> `archive/2bdeleted/2026-08-18_paddleocr_reland/MANIFEST.md` (file-by-file restore
+> instructions inside). If the two-stage reader itself is the problem, the sidecar cannot
+> serve a pill reader until it is repaired (`Futureworks.md` #35) -- surface the error;
+> do not hunt for a disable switch. The original R1 text below is kept as history.
 
 **R1 -- Disarm the reader (seconds, no file changes).** The reader is a config switch,
 which is the entire point of its design. Set `PILLSAFE_READER=off` in
@@ -608,7 +641,7 @@ necessary and none of it is sufficient.
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | `schtasks /run` -> `Last Result: 1`, no new banner | old instance still holds :8100 | re-run 2.2, confirm the port is free, then 2.5 |
-| Scan errors mention `bitsandbytes` / `load_in_4bit` / `quantization_config` | deps are installed (section 1.1, resolved) but something in the loaded environment regressed -- check `/health`'s `reader.stage2_deps_ok` first | R1 (`PILLSAFE_READER=off`) + restart. Do not pip-install with the site down |
+| Scan errors mention `bitsandbytes` / `load_in_4bit` / `quantization_config` | deps are installed (section 1.1, resolved) but something in the loaded environment regressed -- check `/health`'s `reader.stage2_deps_ok` first | ~~R1 (`PILLSAFE_READER=off`) + restart.~~ **[2026-08-18: superseded -- see section 5's corrected R1; `off` fails config load]** Do not pip-install with the site down |
 | Scans 500 with `TypeError`/`KeyError` on an index | `ranked_candidates` shape changed | section 3 invariant broken -- R3, and the droplet needs a rebuild |
 | Every scan says "no pill detected" | `record.detected` missing from the C6 record | section 3 invariant broken -- R3 |
 | Pill/Rx/Q&A all 503 at mypillsafe.ca | sidecar down, laptop asleep, or wrong IP in `BRAINS_SERVICE_URLS` | CHECKPOINT 10; check laptop sleep (4.5) |

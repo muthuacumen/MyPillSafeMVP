@@ -19,6 +19,7 @@ from app.services.admin_service import (
     delete_user,
     get_platform_stats,
     get_user_by_id_admin,
+    increment_token_version,
     list_all_analyses,
     list_users,
     set_user_active,
@@ -88,7 +89,30 @@ async def admin_deactivate_user(
         )
     if not await set_user_active(db, user_id, False):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=_404)
+    # Known gap closed by Task T2: deactivating used to only block NEW
+    # logins/refreshes, leaving an already-issued access token valid for up
+    # to 60 more minutes. Bumping token_version here invalidates every
+    # session this user currently holds, immediately.
+    await increment_token_version(db, user_id)
     return {"message": "User deactivated."}
+
+
+@router.post("/users/{user_id}/terminate-sessions")
+async def admin_terminate_sessions(
+    user_id: str,
+    _: Annotated[User, Depends(get_current_admin)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> dict:
+    """Kill every session this user currently holds without deactivating the
+    account -- e.g. "sign this person out everywhere" after a password
+    change or a lost device, while leaving them free to log back in right
+    away. Increments `token_version`; every access/refresh token already
+    issued encodes the OLD value in its `tv` claim and 401s on its next use.
+    """
+    new_version = await increment_token_version(db, user_id)
+    if new_version is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=_404)
+    return {"message": "All active sessions terminated.", "token_version": new_version}
 
 
 @router.put("/users/{user_id}/role")
