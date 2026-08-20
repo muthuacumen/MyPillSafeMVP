@@ -1,0 +1,94 @@
+MPR1-T09a RED-FIRST F3 -- captured BEFORE the fix, pristine app/ tree
+selector: -k "test_F3a_mock_match_block_is_the_frozen_four_key_shape or test_B21_pharmacist_hedge_present_on_every_slot_from_one_source"
+==============================================================================
+FF                                                                       [100%]
+================================== FAILURES ===================================
+_______ test_B21_pharmacist_hedge_present_on_every_slot_from_one_source _______
+
+client = <httpx.AsyncClient object at 0x00000172F32BEAE0>
+auth_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyYTVhN2NjOS1iZmMwLTQxMDYtYjcxMC0xMjU3ZjEyNjQ...VOVCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3ODY3OTM5NjMsImV4cCI6MTc4Njc5NzU2M30.zJ2yLkA4wTDxapnSWihspsiJj1zxJs4VJ-SLhWZLYlY'}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000172F34038C0>
+
+    @pytest.mark.asyncio
+    async def test_B21_pharmacist_hedge_present_on_every_slot_from_one_source(
+        client, auth_headers, monkeypatch
+    ):
+        """Muthu's filed tray call (2): per-slot alert payloads AND the pharmacist
+        hedge, empty slots included.
+    
+        DISCRIMINATING FORM (T09a, finding 3). The old bar compared the hedge to a
+        literal that was byte-identical to `tray_messages.DEFAULT_HEDGE`, so it
+        passed whichever source produced it. This one pins a SENTINEL onto the
+        single declared source and feeds the route a well whose `match` carries an
+        out-of-contract `disclaimer` -- the second source that used to exist. If
+        any second source is ever re-introduced its string wins and this goes red.
+        """
+        sentinel = "SENTINEL HEDGE -- T09a single-source bar"
+        intruder = "SIDECAR DISCLAIMER MUST NOT WIN"
+        tray = _full_tray("verify")
+        # DELIBERATELY off-contract: the frozen match shape is exactly
+        # {outcome, abstain_action, matched_din, breakdown} and has no disclaimer.
+        tray["wells"][0]["match"]["disclaimer"] = intruder
+        await _arm(monkeypatch, client, auth_headers, tray)
+        monkeypatch.setattr(tray_messages, "DEFAULT_HEDGE", sentinel)
+    
+        body = (await _post(client, auth_headers)).json()
+        slots = body["slots"]
+        assert len(slots) == 6
+        for slot in slots:
+>           assert slot["pharmacist_hedge"] == sentinel
+E           AssertionError: assert 'SIDECAR DISC... MUST NOT WIN' == 'SENTINEL HED...le-source bar'
+E             
+E             - SENTINEL HEDGE -- T09a single-source bar
+E             + SIDECAR DISCLAIMER MUST NOT WIN
+
+tests\test_tray_slots.py:621: AssertionError
+---------------------------- Captured stderr setup ----------------------------
+2026-08-15 07:39:23,898  INFO      app.services.auth_service  User registered, awaiting admin approval: patient_291e5db05f@pillsafe.dev
+2026-08-15 07:39:23,899  INFO      httpx  HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 202 Accepted"
+----------------------------- Captured log setup ------------------------------
+INFO     app.services.auth_service:auth_service.py:58 User registered, awaiting admin approval: patient_291e5db05f@pillsafe.dev
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 202 Accepted"
+---------------------------- Captured stderr call -----------------------------
+2026-08-15 07:39:23,913  INFO      app.api.v1.routes.prescriptions  Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\6a4f13ce-6cd9-4ebb-893d-7e7b80b0bda1\36fc0d9f-7645-41c9-9fb6-a46f29d40a5b.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+2026-08-15 07:39:23,913  WARNING   app.services.brains_client  Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+2026-08-15 07:39:23,916  INFO      app.api.v1.routes.prescriptions  Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+2026-08-15 07:39:23,917  INFO      httpx  HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+2026-08-15 07:39:23,921  WARNING   app.services.brains_client  Brains sidecar profile lookup failed (dins=['DIN13803']): connection refused
+2026-08-15 07:39:23,928  INFO      httpx  HTTP Request: PATCH http://test/api/v1/prescriptions/58cd8ff7-14df-467f-8767-9cdf5eb4c72c "HTTP/1.1 200 OK"
+2026-08-15 07:39:23,938  INFO      httpx  HTTP Request: POST http://test/api/v1/tray/analyze "HTTP/1.1 200 OK"
+------------------------------ Captured log call ------------------------------
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:148 Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\6a4f13ce-6cd9-4ebb-893d-7e7b80b0bda1\36fc0d9f-7645-41c9-9fb6-a46f29d40a5b.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+WARNING  app.services.brains_client:brains_client.py:149 Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:213 Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+WARNING  app.services.brains_client:brains_client.py:240 Brains sidecar profile lookup failed (dins=['DIN13803']): connection refused
+INFO     httpx:_client.py:1742 HTTP Request: PATCH http://test/api/v1/prescriptions/58cd8ff7-14df-467f-8767-9cdf5eb4c72c "HTTP/1.1 200 OK"
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/tray/analyze "HTTP/1.1 200 OK"
+___________ test_F3a_mock_match_block_is_the_frozen_four_key_shape ____________
+
+    def test_F3a_mock_match_block_is_the_frozen_four_key_shape():
+        """T09a, finding 3. The mock is the only description of the sidecar this
+        suite ever sees, so a mock that emits a key the frozen contract does not
+        have manufactures a production code path nobody can reach."""
+        frozen = {"outcome", "abstain_action", "matched_din", "breakdown"}
+>       assert set(_match("verify", matched_din="DIN13803")) == frozen
+E       AssertionError: assert {'abstain_act...n', 'outcome'} == {'abstain_act...n', 'outcome'}
+E         
+E         Extra items in the left set:
+E         'disclaimer'
+E         Use -v to get more diff
+
+tests\test_tray_slots.py:672: AssertionError
+============================== warnings summary ===============================
+tests/test_tray_slots.py::test_B21_pharmacist_hedge_present_on_every_slot_from_one_source
+tests/test_tray_slots.py::test_B21_pharmacist_hedge_present_on_every_slot_from_one_source
+tests/test_tray_slots.py::test_B21_pharmacist_hedge_present_on_every_slot_from_one_source
+  D:\Projects\PillSafe\PillSafe\dev\backend\venv\Lib\site-packages\jose\jwt.py:311: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = timegm(datetime.utcnow().utctimetuple())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_tray_slots.py::test_B21_pharmacist_hedge_present_on_every_slot_from_one_source
+FAILED tests/test_tray_slots.py::test_F3a_mock_match_block_is_the_frozen_four_key_shape
+2 failed, 38 deselected, 3 warnings in 0.69s

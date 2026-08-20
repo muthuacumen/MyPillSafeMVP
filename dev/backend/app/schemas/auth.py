@@ -44,6 +44,17 @@ class TokenResponse(BaseModel):
     expires_in: int
 
 
+class PendingApprovalResponse(BaseModel):
+    """202 body from /auth/register when REQUIRE_ADMIN_APPROVAL is on.
+
+    A separate model rather than a TokenResponse with a blank token: the
+    client MUST NOT store anything from this response, and a shape with no
+    token field at all is what makes that unmissable.
+    """
+    status: str = "pending_approval"
+    message: str
+
+
 class MeResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

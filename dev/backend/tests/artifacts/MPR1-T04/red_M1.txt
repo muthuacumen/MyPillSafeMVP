@@ -1,0 +1,66 @@
+MPR1-T04 MUTATION M1
+defect  : slot = well (the +1 dropped) -- the frontend would label every slot one low
+file    : app\services\tray_messages.py
+replaced: slot = int(index) + 1 if isinstance(index, int) else None
+with    : slot = int(index) if isinstance(index, int) else None
+bar     : tests/test_tray_slots.py::test_B01_slot_mapping_well_k_to_slot_k_plus_1
+exit    : 1 (RED (expected))
+==============================================================================
+F                                                                        [100%]
+================================== FAILURES ===================================
+________________ test_B01_slot_mapping_well_k_to_slot_k_plus_1 ________________
+
+client = <httpx.AsyncClient object at 0x00000190952024B0>
+auth_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5NTEzOWVhNi1lZDA5LTRmODQtYjkzYS0xM2FiNzliMmQ...VOVCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3ODY3NTI2NTEsImV4cCI6MTc4Njc1NjI1MX0.V8axjYVSo-sfyqG-JwXPyLiYfDQMaSWI5o_72f-5iWw'}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001909516FBC0>
+
+    @pytest.mark.asyncio
+    async def test_B01_slot_mapping_well_k_to_slot_k_plus_1(client, auth_headers, monkeypatch):
+        wells = [_well(i, record=RECORD_READ, match=_match("verify", matched_din="DIN13803"))
+                 for i in range(6)]
+        await _arm(monkeypatch, client, auth_headers, _tray(wells))
+    
+        body = (await _post(client, auth_headers)).json()
+        assert [s["well"] for s in body["slots"]] == [0, 1, 2, 3, 4, 5]
+>       assert [s["slot"] for s in body["slots"]] == [1, 2, 3, 4, 5, 6]
+E       assert [0, 1, 2, 3, 4, 5] == [1, 2, 3, 4, 5, 6]
+E         
+E         At index 0 diff: 0 != 1
+E         Use -v to get more diff
+
+tests\test_tray_slots.py:201: AssertionError
+---------------------------- Captured stderr setup ----------------------------
+2026-08-14 20:10:51,709  INFO      app.services.auth_service  User registered, awaiting admin approval: patient_6337cc088f@pillsafe.dev
+2026-08-14 20:10:51,710  INFO      httpx  HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 202 Accepted"
+----------------------------- Captured log setup ------------------------------
+INFO     app.services.auth_service:auth_service.py:58 User registered, awaiting admin approval: patient_6337cc088f@pillsafe.dev
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 202 Accepted"
+---------------------------- Captured stderr call -----------------------------
+2026-08-14 20:10:51,724  INFO      app.api.v1.routes.prescriptions  Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\710f80d5-4700-464d-a7d1-27a3133557a2\98df660a-1e4b-4aff-87f8-84e4c7f81d41.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+2026-08-14 20:10:51,725  WARNING   app.services.brains_client  Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+2026-08-14 20:10:51,727  INFO      app.api.v1.routes.prescriptions  Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+2026-08-14 20:10:51,728  INFO      httpx  HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+2026-08-14 20:10:51,734  WARNING   app.services.brains_client  Brains sidecar profile lookup failed (dins=['DIN13803']): connection refused
+2026-08-14 20:10:51,741  INFO      httpx  HTTP Request: PATCH http://test/api/v1/prescriptions/81ab325f-9da0-4f99-8612-22bbe895c29a "HTTP/1.1 200 OK"
+2026-08-14 20:10:51,750  INFO      httpx  HTTP Request: POST http://test/api/v1/tray/analyze "HTTP/1.1 200 OK"
+------------------------------ Captured log call ------------------------------
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:148 Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\710f80d5-4700-464d-a7d1-27a3133557a2\98df660a-1e4b-4aff-87f8-84e4c7f81d41.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+WARNING  app.services.brains_client:brains_client.py:149 Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:213 Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+WARNING  app.services.brains_client:brains_client.py:240 Brains sidecar profile lookup failed (dins=['DIN13803']): connection refused
+INFO     httpx:_client.py:1742 HTTP Request: PATCH http://test/api/v1/prescriptions/81ab325f-9da0-4f99-8612-22bbe895c29a "HTTP/1.1 200 OK"
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/tray/analyze "HTTP/1.1 200 OK"
+============================== warnings summary ===============================
+tests/test_tray_slots.py::test_B01_slot_mapping_well_k_to_slot_k_plus_1
+tests/test_tray_slots.py::test_B01_slot_mapping_well_k_to_slot_k_plus_1
+tests/test_tray_slots.py::test_B01_slot_mapping_well_k_to_slot_k_plus_1
+  D:\Projects\PillSafe\PillSafe\dev\backend\venv\Lib\site-packages\jose\jwt.py:311: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = timegm(datetime.utcnow().utctimetuple())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_tray_slots.py::test_B01_slot_mapping_well_k_to_slot_k_plus_1
+1 failed, 3 warnings in 0.64s
+
+

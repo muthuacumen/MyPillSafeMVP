@@ -4,6 +4,7 @@ import { ShieldAlert } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { Logo } from '@/components/ui/Logo';
 import { ABOUT_PAGES } from '@/components/AboutNav';
+import { TEAM } from '@/data/team';
 
 export function AppFooter() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -63,8 +64,27 @@ export function AppFooter() {
             <ShieldAlert className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
             <p>{t('footer.disclaimer')}</p>
           </div>
-          <p className="text-xs text-white/40 sm:ml-auto sm:shrink-0">
-            {t('footer.credits')}
+          {/* `footer.credits` is the translated prefix ONLY ("MyPillSafe ·
+              2026 ·"); the names come from @/data/team because names are not
+              language. Wrapping (not shrink-0) on the container: five linked
+              names do not fit one phone-width line, and clipping the last two
+              people is worse than a second line. */}
+          <p className="text-xs text-white/40 sm:ml-auto sm:text-right">
+            {t('footer.credits')}{' '}
+            {TEAM.map(({ key, name, linkedin }, i) => (
+              <span key={key} className="whitespace-nowrap">
+                {i > 0 && <span aria-hidden="true">, </span>}
+                <a
+                  href={linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={t('public.team.linkedinAria', { name })}
+                  className="text-white/60 hover:text-white underline decoration-white/20 underline-offset-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 rounded"
+                >
+                  {name}
+                </a>
+              </span>
+            ))}
           </p>
         </div>
       </div>

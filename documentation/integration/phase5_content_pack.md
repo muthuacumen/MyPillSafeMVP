@@ -296,7 +296,7 @@ development-set diagnostics, and we deliberately do not quote them as product cl
 - **Sumanth Reddy** — Backend & Systems Integration
 - **Lohith Reddy** — Frontend & User Experience
 - **Ali Ozdemir** — Data Engineering · Reference Pipeline
-- **Abdullah Mohammed** — Quality Assurance & Evaluation
+- **Abdallah Mohamed** — Quality Assurance & Evaluation
 
 **Note under grid:** MyPillSafe is a capstone project of the Conestoga College graduate program
 in AI & Machine Learning.

@@ -9,11 +9,15 @@ Run (from this directory, using the sidecar venv):
 See README.md for full setup instructions.
 
 Two-process constraint (do not "fix" this): torch and paddle cannot share one
-Windows process (cuDNN WinError 127). `imb1.analyze_pill()` already spawns its
-own OCR subprocess internally via `sys.executable -m imb1.ocr_sub` -- since
-this service runs under the sidecar venv's python, that subprocess correctly
-reuses the same venv (which has paddleocr/paddlepaddle-gpu installed) without
-this process ever importing paddle itself. Do not import paddle here.
+Windows process (cuDNN WinError 127). UPDATED 2026-08-18 (GOAL1 re-land):
+`imb1.analyze_pill()` no longer spawns a pill-imprint OCR subprocess -- the
+legacy paddle dual-read (`imb1.ocr_sub`, I1/I3) was removed from the IMB1
+path (2026-08-15, retirement re-landed 2026-08-18; archived at
+`archive/2bdeleted/2026-08-15_paddleocr_removal/MANIFEST.md`). Pill imprint
+now comes ONLY from the in-process two-stage reader wired through
+`production_wiring.analyze()` (A3 presence gate -> A4c constrained read,
+same torch process, no paddle involved). The two-process constraint below
+still applies to Rx-label OCR, unchanged.
 
 `POST /ocr/prescription` (Task A1, app x brains deploy-readiness build) is
 the same pattern applied to prescription-LABEL OCR (as opposed to pill-
@@ -27,6 +31,7 @@ from __future__ import annotations
 import json as json_mod
 import math
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -42,6 +47,7 @@ import numpy as np
 import pandas as pd
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 # Prescription-label OCR (Task A1). A standalone, paddle-only, torch-free
@@ -70,6 +76,40 @@ except Exception as exc:  # pragma: no cover - defensive, exercised by /health
     _sb2_match_pill = None  # type: ignore[assignment]
     sb2_reference = None  # type: ignore[assignment]
     _sb2_import_error = repr(exc)
+
+# STEP 7b: the label_to_din production caller. MUST be imported AFTER the
+# `sb2` try/except block directly above, never before -- `production_wiring`
+# transitively imports `nb08_verify`, which inserts `SB2_Prototype` onto
+# `sys.path` and does its own `import sb2`. If that ran FIRST (e.g. this
+# import moved above the block above), `sb2` would be cached from
+# SB2_Prototype for the REST OF THIS PROCESS -- silently switching every
+# endpoint (not just /pill/analyze) off whatever `config.SB2_ROOT` actually
+# selected (production `SB2/` by default). Importing it here, after `sb2`
+# is already resolved and cached, makes nb08_verify's own `import sb2`
+# transparently reuse that SAME cached module -- see production_wiring.py's
+# module docstring.
+import production_wiring  # noqa: E402
+
+# MPR1-T03 (2026-08-14) -- the TRAY route's adapter. Imported AFTER
+# `production_wiring`, which is what puts `NB08_Notebook/src` on `sys.path`
+# (APPENDED, never inserted -- see its own comment on `src/colour.py` shadowing
+# the third-party `colour-science` package). Defensive for the same reason every
+# other brain import here is: a tray adapter that cannot import must not stop
+# /health, /pill/analyze or /qa/* from answering.
+#
+# MPR1-T30 (2026-08-20): `production_wiring` no longer puts `NB08_Notebook/src`
+# on `sys.path` -- it imports `nb08_runtime`, which binds the PROMOTED closure
+# under `Production\NB08_Runtime\` as a package without ever touching the path.
+# Imported explicitly here too (idempotent) so this file's own `import nb08_tray`
+# does not silently depend on `production_wiring` having run first.
+import nb08_runtime  # noqa: E402,F401
+
+_tray_import_error: str | None = None
+try:
+    import nb08_tray  # noqa: E402
+except Exception as exc:  # pragma: no cover - defensive, surfaced by /tray/analyze
+    nb08_tray = None  # type: ignore[assignment]
+    _tray_import_error = repr(exc)
 
 try:
     from rapidfuzz import fuzz, process
@@ -155,6 +195,31 @@ def _load_profile_reference_once() -> None:
 _load_profile_reference_once()
 
 
+# --- Warm-at-boot scorer load (Futureworks #35 repair 1) -------------------
+# `production_wiring.get_scorer()` is LAZY by design (see its docstring) --
+# loaded on first use so a sidecar started without the flag never touches the
+# GPU at import time. Env-gated so the DEFAULT (flag absent) is BYTE-IDENTICAL
+# to today: nothing below runs, the scorer still loads lazily on the first
+# `/pill/analyze` request, exactly as before this block existed.
+#
+# When `PILLSAFE_WARM_AT_BOOT=1` (set by the sidecar supervisor's `warm=true`
+# start, see `Production/ops/supervisor/supervisor.py`), eagerly call that
+# SAME accessor here -- no duplicate loading logic -- so a load failure (e.g.
+# the Futureworks #35 `OSError`/WinError-1455 signature, or the silent NF4
+# stall also filed there) surfaces at boot, before a patient's photo does,
+# instead of on first use. A warm failure does not crash the process: /health
+# already surfaces `production_wiring.SCORER_LOAD_ERROR`, and a sidecar that
+# failed to warm should still answer /health so an operator can see why,
+# rather than dying silently before uvicorn finishes binding the port.
+if os.environ.get("PILLSAFE_WARM_AT_BOOT") == "1":
+    try:
+        production_wiring.get_scorer()
+        print("[warm-at-boot] scorer loaded OK", flush=True)
+    except Exception as exc:  # pragma: no cover - defensive, mirrors /health's
+        # own treatment of SCORER_LOAD_ERROR: report, never raise past here.
+        print(f"[warm-at-boot] scorer load FAILED: {exc!r}", flush=True)
+
+
 # --- JSON-safety helper -----------------------------------------------------
 # imb1/sb2 return plain dicts, but individual scalar values inside them (or
 # inside pandas-derived reference rows) can be numpy scalars (np.float32,
@@ -178,6 +243,22 @@ def _json_safe(obj: Any) -> Any:
 
 
 # --- /health -----------------------------------------------------------------
+
+def _stage2_deps_ok() -> Any:
+    """Can THIS interpreter build the Stage 2 scorer? Import-check only.
+
+    MEASURED 2026-08-14: `dev/brains/.venv` carries torch 2.13.0 and
+    transformers 5.14.1 but NO `bitsandbytes` and NO `accelerate`, while
+    `ConstrainedScorer` loads 4-bit NF4 -- and 4-bit is not a preference here
+    (bf16 is 8.88 GB against an 8.19 GB card). Checked with `importlib.util
+    .find_spec`, which does NOT execute the modules, so this stays cheap enough
+    for a 30-second poll.
+    """
+    import importlib.util
+    missing = [m for m in ("transformers", "bitsandbytes", "accelerate")
+               if importlib.util.find_spec(m) is None]
+    return True if not missing else f"missing: {', '.join(missing)}"
+
 
 @app.get("/health")
 def health() -> dict:
@@ -207,6 +288,19 @@ def health() -> dict:
             else (_PROFILE_LOAD_ERROR or "unavailable")
         ),
         "torch_cuda_available": torch_cuda_available,
+        # M1 (2026-08-14) -- the two-stage imprint reader's CONFIGURATION, not a
+        # probe. `reader_backend_report()` reads config and module state only:
+        # it never loads the 4-bit scorer, because /health is polled every 30 s
+        # by the pool checker (backend/app/services/brains_registry.py) and a
+        # health check that could pull 2.5 GB of weights into an 8.2 GB card is
+        # a liability, not a check. `stage2_deps_ok` is the BLOCKER this build
+        # reported: the sidecar venv has transformers but no bitsandbytes, so
+        # `PILLSAFE_READER=two_stage` would fail at the first request. Surfaced
+        # here so a deploy can see it BEFORE a patient's photo does.
+        "reader": {
+            **production_wiring.reader_backend_report(),
+            "stage2_deps_ok": _stage2_deps_ok(),
+        },
         # File-exists check ONLY -- deliberately never imports paddle or spawns
         # a probe subprocess here. /health is polled by the pool checker every
         # 30s (see backend/app/services/brains_registry.py); a slow/heavy
@@ -353,8 +447,56 @@ async def pill_analyze(
             tmp.write(image_bytes)
             tmp_path = tmp.name
 
+        session = None
         try:
-            record = await run_in_threadpool(imb1.analyze_pill, tmp_path)
+            # M1 (2026-08-14): with the reader ENABLED, `/pill/analyze` produces
+            # a C6 record -- `faces[]` populated by the two-stage reader (A3
+            # presence gate -> A4c constrained read) -- instead of the legacy
+            # `imprint_reads` shape. This matters because `sb2.match_pill`
+            # branches on `record["contract_version"] == "C6"`: STEP 7b made the
+            # `label_to_din` map reachable, and only a C6 record makes it
+            # EFFECTIVE. `analyze()` hoists the `VerifySession` so ONE lexicon
+            # serves both the reader's ballot and SB2's map (PROV-1).
+            #
+            # GOAL1 RE-LAND (2026-08-18): `config.READER_ENABLED` is now a
+            # hardcoded constant `True` -- the "off" value that used to route
+            # to the legacy PaddleOCR branch below is retired and fails fast at
+            # config load (`config.py`), so a running sidecar can never have
+            # this flag False. The config-gated half of the old condition here
+            # is therefore dead and has been dropped. The ONLY remaining reason
+            # to skip the reader is `dins` being empty (no patient profile to
+            # build a ballot/lexicon from) -- unrelated to `PILLSAFE_READER`,
+            # and NOT a legacy-reader path any more either:
+            # `imb1.analyze_pill()` no longer performs any imprint OCR at all
+            # (see `IMB1_v0/imb1/__init__.py`), so the no-profile branch below
+            # is just the appearance-only pipeline both paths share, not a
+            # second "reader."
+            if dins:
+                record, session = await run_in_threadpool(
+                    production_wiring.analyze, tmp_path, dins,
+                    reference_workbook=getattr(sb2_reference, "_DEFAULT_XLSX", None),
+                )
+                record = record.to_dict() if hasattr(record, "to_dict") else record
+            else:
+                record = await run_in_threadpool(imb1.analyze_pill, tmp_path)
+        except production_wiring.ReaderError as exc:
+            # M1 REPAIR 2026-08-14 (finding S7). MUST stay ABOVE the generic
+            # handler below -- `ReaderError` is an `Exception`, so the order of
+            # these two blocks IS the behaviour. Same status code (422) as the
+            # generic case on purpose: the client contract does not change and
+            # the droplet keeps its single failure branch. What changes is that
+            # the detail names the cause -- the ARMED reader failed on this
+            # request (after one retry), which is a VRAM/config condition an
+            # operator can act on, as opposed to "there is no pill in this
+            # photograph", which is the patient's to act on. See
+            # `production_wiring.ReaderError` for why this is a refusal and not
+            # a silent fallback to the legacy PaddleOCR reader.
+            raise HTTPException(
+                status_code=422,
+                detail={"error": {"code": production_wiring.READER_ERROR_CODE,
+                                  "message": str(exc),
+                                  "attempts": getattr(exc, "attempts", None)}},
+            ) from exc
         except Exception as exc:
             raise HTTPException(
                 status_code=422,
@@ -374,10 +516,158 @@ async def pill_analyze(
                 status_code=503,
                 detail={"error": {"code": "SB2_UNAVAILABLE", "message": _sb2_import_error or "sb2 package not importable"}},
             )
-        match = await run_in_threadpool(_sb2_match_pill, record, dins)
+        # STEP 7b (PRODUCTION_WIRING, formerly OWED): route through
+        # production_wiring.decide() instead of calling _sb2_match_pill
+        # directly. It builds a VerifySession from THIS request's own
+        # profile DINs and threads its label_to_din map through --
+        # transparently a no-op (identical to the line this replaces) when
+        # the imported sb2.match_pill does not accept the kwarg (production
+        # SB2/ as of 2026-08-13) or when session construction fails for any
+        # reason. See production_wiring.py's module docstring for the two
+        # measured, independent ways production SB2/ fails this today.
+        #
+        # M1: when `analyze()` above already built a session (reader path), the
+        # SAME object decides -- see `decide()`'s docstring for why rebuilding
+        # one here would hollow out PROV-1.
+        match = await run_in_threadpool(
+            production_wiring.decide, record, dins,
+            sb2_match_pill=_sb2_match_pill,
+            reference_workbook=getattr(sb2_reference, "_DEFAULT_XLSX", None),
+            session=session,
+        )
         return _json_safe({"record": record, "match": match})
 
     return _json_safe({"record": record, "match": None, "note": "no profile DINs supplied — matching skipped"})
+
+
+# --- /tray/analyze -----------------------------------------------------------
+#
+# MPR1-T03 (2026-08-14). One photograph of the six-well TRAY -> six answers.
+# Prereg + bars: `IMB1_Prototype/NB08_Notebook/notebooks/NB08_39_TrayRoute.ipynb`.
+# Adapter: `IMB1_Prototype/NB08_Notebook/src/nb08_tray.py` (frozen `nb08_pipe11`
+# localisation, reached through a package-context shim -- pipe11 is hash-pinned
+# and is adapted AROUND, never edited).
+#
+# WHY THIS IS A SEPARATE ROUTE AND NOT A FLAG ON /pill/analyze. The two endpoints
+# answer different questions with different failure modes: /pill/analyze has one
+# subject and any failure is the whole answer, while a tray has six subjects and
+# one dead well must not blank the other five. Folding a per-well isolation
+# contract into an endpoint whose consumers expect all-or-nothing would change
+# the meaning of its existing 4xx for every current caller.
+#
+# THE CONTRACT BELOW IS FROZEN by the MPR1 orchestrator; backend task T04 builds
+# against this exact shape. `nb08_tray.analyze_tray` also returns a `geometry`
+# diagnostic, which is POPPED here on purpose -- an additive fifth key is still
+# drift from a frozen body.
+
+#: Path-shaped runs: a drive-anchored Windows path, a UNC share, or a POSIX path
+#: of two or more segments. Matched so they can be REMOVED, never rendered.
+_PATHISH = re.compile(
+    r"""(?:[A-Za-z]:[\\/][^\s'"]*)        # C:\Users\...\tmpX.jpg
+      | (?:\\\\[^\s'"]+)                  # \\server\share\...
+      | (?:(?<![\w.])/(?:[^\s/'"]+/)+[^\s'"]*)   # /var/folders/.../tmpX.jpg
+    """, re.VERBOSE)
+
+#: What the wire gets when a message cannot be made safe.
+_TRAY_GENERIC_ERROR = "the tray photograph could not be processed"
+
+
+def _tray_safe_error(exc: Exception) -> str:
+    """A frame-level `error` string with NO server filesystem in it.
+
+    MPR1-T09c, closing T08 finding 8. The sidecar wrote the tray upload to a
+    `NamedTemporaryFile` and `nb08_tray` put that path in its exception message,
+    so `{"error": "unreadable image: C:\\Users\\muthu\\AppData\\...\\tmpX.jpg"}`
+    went out over the wire -- and `backend/.../routes/tray.py` passes the frame
+    error through verbatim, so it reached the browser of anyone who uploaded a
+    non-image. That is the sidecar's account layout and scratch directory handed
+    to an unauthenticated caller, for no diagnostic gain a user can act on.
+
+    The upstream messages are fixed too (`nb08_tray` no longer interpolates the
+    path). This is the BELT, not the braces: it is the last thing between an
+    exception message and the wire, so a future message that regains a path
+    still cannot ship one. Scrub the path-shaped runs; if any drive letter or
+    backslash SURVIVES the scrub, do not try to be clever -- return the generic
+    string. Operator detail is already on the server's own stderr.
+    """
+    msg = " ".join(_PATHISH.sub("", str(exc)).split())
+    # A message built AROUND a path ("unreadable image: <path>") is left dangling
+    # by the scrub; trim the orphaned punctuation rather than ship "image:".
+    msg = msg.rstrip(" :,-")
+    if len(msg) < 8 or "\\" in msg or "/" in msg or re.search(r"[A-Za-z]:[\\/]", msg):
+        return _TRAY_GENERIC_ERROR
+    return msg
+
+
+@app.post("/tray/analyze")
+async def tray_analyze(
+    photo: UploadFile = File(...),
+    profile_dins: str | None = Form(None),
+    match: bool = Form(True),
+) -> Any:
+    if nb08_tray is None:
+        raise HTTPException(
+            status_code=503,
+            detail={"error": {"code": "TRAY_UNAVAILABLE",
+                              "message": _tray_import_error or "nb08_tray not importable"}},
+        )
+
+    dins: list[str] = []
+    if profile_dins:
+        try:
+            parsed = json_mod.loads(profile_dins)
+        except json_mod.JSONDecodeError as exc:
+            raise HTTPException(
+                status_code=422,
+                detail={"error": {"code": "INVALID_PROFILE_DINS", "message": f"profile_dins must be a JSON array of DIN strings: {exc}"}},
+            ) from exc
+        if isinstance(parsed, list):
+            dins = [str(d) for d in parsed]
+
+    suffix = os.path.splitext(photo.filename or "")[1] or ".jpg"
+    image_bytes = await photo.read()
+
+    tmp_path: str | None = None
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            tmp.write(image_bytes)
+            tmp_path = tmp.name
+
+        try:
+            body = await run_in_threadpool(
+                nb08_tray.analyze_tray, tmp_path, dins,
+                match=bool(match),
+                sb2_match_pill=_sb2_match_pill,
+                reference_workbook=getattr(sb2_reference, "_DEFAULT_XLSX", None),
+            )
+        except nb08_tray.TrayReaderUnavailable as exc:
+            # MPR1-T09c (T08 finding 4). Reading was ASKED FOR (match=true with a
+            # profile) and the two-stage reader would not build. This used to
+            # degrade SILENTLY to appearance-only wells, which the backend renders
+            # as six "unreadable" slots -- indistinguishable from a bad photo, so
+            # the patient re-shoots a tray that was never the problem.
+            #
+            # 503, not 422: nothing is wrong with the photograph, the capability
+            # is missing right now. Same frozen frame-level shape (`{"error":
+            # "<string>"}`, one key), and ZERO well payloads -- a half-answered
+            # tray is the failure mode this whole route exists to prevent.
+            return JSONResponse(status_code=503,
+                                content={"error": _tray_safe_error(exc)})
+        except nb08_tray.TrayFrameError as exc:
+            # FRAME-level failure: unreadable image, or a card whose fiducials
+            # could not be read. There are no wells to isolate a failure INTO,
+            # so this is the one tray condition that is not a 200. The body is
+            # the contract's own `{"error": "..."}` -- a bare JSONResponse, not
+            # an HTTPException, because HTTPException would wrap it in `detail`
+            # and T04 builds against the frozen shape.
+            return JSONResponse(status_code=422,
+                                content={"error": _tray_safe_error(exc)})
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            os.remove(tmp_path)
+
+    body.pop("geometry", None)
+    return _json_safe(body)
 
 
 # --- /reference/search ---------------------------------------------------

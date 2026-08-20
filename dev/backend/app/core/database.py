@@ -79,6 +79,12 @@ async def _add_missing_columns(conn) -> None:
     is_sqlite = dialect == "sqlite"
     true_lit, false_lit = ("1", "0") if is_sqlite else ("TRUE", "FALSE")
     column_defs = {
+        "users": [
+            # Task T2 -- real session termination. 0 for every existing row,
+            # matching the model's default, so no pre-existing token is
+            # invalidated by the ALTER itself.
+            ("token_version", "INTEGER NOT NULL DEFAULT 0"),
+        ],
         "patients": [
             ("notifications_enabled", f"BOOLEAN NOT NULL DEFAULT {true_lit}"),
         ],

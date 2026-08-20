@@ -18,7 +18,9 @@
     "about": "À propos",
     "close": "Fermer",
     "on": "Activé",
-    "off": "Désactivé"
+    "off": "Désactivé",
+    "previous": "Précédent",
+    "next": "Suivant"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -32,8 +34,10 @@
     "settings": "Paramètres",
     "adminPanel": "Panneau admin",
     "adminUsers": "Gestion des utilisateurs",
+    "adminSidecar": "Contrôle du moteur",
     "signOut": "Se déconnecter",
     "menu": "Menu",
+    "trayCheck": "Vérifier un plateau",
     "short": {
       "dashboard": "Accueil",
       "scanRx": "Ordonnance",
@@ -62,6 +66,7 @@
       "forgotPasswordNote": "La réinitialisation du mot de passe n'est pas encore disponible dans cet aperçu. Veuillez contacter le support pour accéder à votre compte.",
       "noAccount": "Pas encore de compte ?",
       "createFree": "Créer un compte gratuit",
+      "pendingApproval": "Votre compte est en attente d'approbation par un administrateur. Vous pourrez vous connecter dès qu'il sera approuvé.",
       "disclaimer": "Outil d'aide uniquement. Confirmez toujours avec votre pharmacien."
     },
     "register": {
@@ -76,6 +81,9 @@
       "submit": "Créer un compte",
       "haveAccount": "Déjà un compte ?",
       "signIn": "Se connecter",
+      "pendingTitle": "Compte créé — en attente d'approbation",
+      "pendingBody": "Merci de votre inscription. Un administrateur examine chaque nouveau compte avant qu'il puisse être utilisé. Vous pourrez vous connecter une fois le vôtre approuvé.",
+      "pendingCta": "Retour à la connexion",
       "disclaimer": "Outil d'aide uniquement. Confirmez toujours avec votre pharmacien."
     },
     "brand": {
@@ -278,6 +286,56 @@
     "deniedMessage": "L'accès à la caméra a été refusé ou n'est pas disponible. Vous pouvez téléverser une photo à la place.",
     "capturedPreviewAlt": "Aperçu de la photo capturée"
   },
+  "trayCheck": {
+    "captureLabel": "Photographier le plateau",
+    "reshootCaptureLabel": "Photographier à nouveau pour la reprise",
+    "intro": "Photographiez les six alvéoles du plateau en une seule fois. MyPillSafe vérifie chaque emplacement séparément, de la même façon qu'il vérifie un comprimé à la fois.",
+    "uploading": "Vérification de votre plateau…",
+    "uploadingSub": "Cela peut prendre jusqu'à une minute pour six comprimés.",
+    "reshootTitle": "Un ou plusieurs emplacements ont besoin d'une photo plus claire",
+    "reshootBody": "Photographiez le plateau à nouveau pour que MyPillSafe puisse revérifier les emplacements marqués ci-dessous.",
+    "scanNewTray": "Vérifier un autre plateau",
+    "tryAgain": "Réessayer",
+    "slotLabel": "Emplacement {{n}}",
+    "dinLabel": "DIN {{din}}",
+    "contractErrorBadge": "Revérifiez cet emplacement avec votre pharmacien",
+    "verdictLabel": {
+      "verify": "Vérifié",
+      "reject": "Ne correspond pas",
+      "abstain": "Incertain",
+      "unreadable": "Illisible",
+      "noImprint": "Aucune inscription",
+      "empty": "Vide",
+      "error": "Erreur",
+      "readOnly": "Non vérifié"
+    },
+    "error": {
+      "disabled": "La vérification de plateau n'est pas encore activée sur ce serveur. Veuillez réessayer plus tard, ou utilisez Scanner un comprimé pour vérifier un comprimé à la fois.",
+      "badNoneRoute": "Cette demande de reprise n'a pas été comprise. Veuillez recommencer.",
+      "brainsUnavailable": "La vérification de plateau est temporairement indisponible — le service d'analyse est injoignable. Votre photo était correcte ; veuillez réessayer dans quelques minutes.",
+      "serverGeneric": "Une erreur s'est produite de notre côté. Veuillez réessayer.",
+      "default": "Impossible de vérifier ce plateau. Essayez un arrière-plan uni et bien éclairé, et assurez-vous que les six alvéoles sont visibles."
+    }
+  },
+  "msgCatalog": {
+    "tray.slot.verify": "Ce comprimé correspond à l'un des médicaments de votre liste. (provisoire)",
+    "tray.slot.reject": "Ce comprimé ne correspond à aucun médicament de votre liste. Ne le prenez pas. Consultez votre pharmacien. (provisoire)",
+    "tray.slot.abstain": "MyPillSafe n'a pas pu se prononcer sur ce comprimé. Consultez votre pharmacien. (provisoire)",
+    "tray.slot.abstain.ask_to_flip": "MyPillSafe doit voir l'autre côté de ce comprimé. Retournez-le et photographiez le plateau à nouveau. (provisoire)",
+    "tray.slot.abstain.shortlist": "MyPillSafe a réduit les possibilités pour ce comprimé, mais n'a pas pu confirmer une seule réponse. Consultez votre pharmacien. (provisoire)",
+    "tray.slot.empty": "Cet emplacement est vide. (provisoire)",
+    "tray.slot.error": "MyPillSafe n'a pas pu vérifier cet emplacement. Essayez de photographier le plateau à nouveau. (provisoire)",
+    "tray.slot.error.contract": "MyPillSafe n'a pas pu vérifier cet emplacement en toute sécurité et n'affiche donc aucun résultat. Ne vous fiez pas à cet emplacement. Consultez votre pharmacien. (provisoire)",
+    "tray.slot.read_only": "MyPillSafe n'a pas comparé ce comprimé à votre liste de médicaments. (provisoire)",
+    "tray.presence.none_retry": "Aucune inscription n'est visible sur la face de ce comprimé actuellement tournée vers le haut. Retournez le comprimé et photographiez le plateau à nouveau. (provisoire)",
+    "tray.hedge.pharmacist": "Aide à la décision seulement — pas une détermination clinique. Vérifiez auprès d'un pharmacien. (provisoire)",
+    "pill.presence.unreadable": "Nous n'avons pas pu lire les inscriptions sur ce comprimé. Essayez une autre photo, ou retournez le comprimé et photographiez l'autre côté.",
+    "pill.presence.none": "Ce comprimé ne porte aucune inscription ; MyPillSafe ne peut donc pas l'identifier. Veuillez consulter votre pharmacien.",
+    "pill.scope.unsupported": "MyPillSafe ne couvre encore aucun des médicaments de votre liste, il ne peut donc pas vérifier ce comprimé.",
+    "pill.scope.unsupported_note": "Certains médicaments de votre liste ne sont pas encore couverts par MyPillSafe. Ce comprimé pourrait en faire partie.",
+    "pill.scope.no_profile": "Aucun médicament ne figure encore sur votre liste, il n'y a donc rien avec quoi comparer ce comprimé.",
+    "frontend.trayGuard.contractError": "Cet emplacement n'a pas pu être vérifié en toute sécurité ; son résultat n'est donc pas affiché. Consultez votre pharmacien pour cet emplacement. (provisoire)"
+  },
   "admin": {
     "dashboard": "Tableau de bord admin",
     "users": "Gestion des utilisateurs",
@@ -292,8 +350,49 @@
     "changeRole": "Changer le rôle",
     "confirmDeactivate": "Désactiver cet utilisateur ? Il ne pourra plus se connecter.",
     "confirmDelete": "Supprimer définitivement cet utilisateur et toutes ses données ?",
+    "confirmDeleteFinal": "Cette action est irréversible. Êtes-vous certain ?",
     "noPatient": "Pas de profil",
-    "recentAnalyses": "Analyses récentes"
+    "recentAnalyses": "Analyses récentes",
+    "pendingApproval": "En attente d'approbation",
+    "approve": "Approuver le compte",
+    "pendingSummary": "{{count}} en attente d'approbation",
+    "verifiedColumn": "Vérifié",
+    "verified": "Vérifié",
+    "unverified": "Non vérifié",
+    "terminateSessions": "Résilier les sessions",
+    "confirmTerminateSessions": "Déconnecter cet utilisateur de tous les appareils et sessions actives dès maintenant ?",
+    "sessionsTerminated": "Toutes les sessions ont été résiliées. Nouvelle version de jeton : {{version}}",
+    "paginationRange": "{{start}}–{{end}}",
+    "sidecarControl": "Contrôle du moteur",
+    "sidecarSubtitle": "Démarrer, arrêter et surveiller le moteur d'analyse local.",
+    "sidecarStatusTitle": "État du moteur",
+    "running": "En cours d'exécution",
+    "stopped": "Arrêté",
+    "sidecarUnknown": "État indisponible",
+    "sidecarActionError": "Impossible de joindre l'API d'administration du moteur. Veuillez réessayer.",
+    "actionFailed": "L'action a échoué. Veuillez réessayer.",
+    "componentHealth": "État des composants",
+    "freeRam": "RAM libre",
+    "commitCharge": "Charge mémoire",
+    "acPower": "Source d'alimentation",
+    "onAcPower": "Branché (secteur)",
+    "onBattery": "Sur batterie",
+    "profile": "Profil",
+    "environment": "Environnement",
+    "envDev": "Local (dev)",
+    "envProd": "Production",
+    "warmModels": "Précharger les modèles au démarrage",
+    "warmModelsHint": "Charge les modèles en mémoire immédiatement pour que la première requête réelle ne soit pas lente.",
+    "forceGuard": "Forcer (ignorer la protection batterie)",
+    "forceGuardHint": "Forcer ne contourne que la protection sur batterie ; le seuil de RAM faible ne peut jamais être outrepassé.",
+    "start": "Démarrer le moteur",
+    "stop": "Arrêter le moteur",
+    "confirmStop": "Arrêter le moteur maintenant ? Toute analyse en cours sera interrompue.",
+    "startSuccess": "Moteur démarré (PID {{pid}}, profil {{profile}}).",
+    "stopSuccess": "Moteur arrêté."
+  },
+  "sidecarTicker": {
+    "label": "État du moteur d'analyse"
   },
   "din": {
     "title": "Est-ce bien votre médicament?",
@@ -392,7 +491,7 @@
     "signIn": "Se connecter",
     "getStarted": "Commencer",
     "disclaimer": "Aide à la décision seulement — pas un avis médical. Vérifiez toujours auprès d'un pharmacien ou d'un médecin.",
-    "credits": "MyPillSafe · 2026 · Muthuraj Jayakumar, Sumanth Reddy, Lohith Reddy, Ali Ozdemir, Abdullah Mohammed"
+    "credits": "MyPillSafe · 2026 ·"
   },
   "disclaimerModal": {
     "title": "Avis important",
@@ -635,7 +734,13 @@
           "desc": "Un test de fumée ou une vérification ponctuelle obligatoire a été exécuté à chaque version du projet — et chacun d'eux a détecté au moins un vrai bogue. Les garde-fous de sécurité déterministes affichent zéro défaillance au total sur toutes les rondes d'évaluation ; chaque incident provenait de la couche de jugement du modèle, ce qui est précisément la raison pour laquelle les modèles ne prennent pas les décisions."
         }
       },
-      "scopeNote": "MyPillSafe est un projet de fin d'études du Conestoga College, conçu pour le Canada (fondé sur les DIN et les monographies de Santé Canada). Il s'agit d'une aide à la décision seulement."
+      "scopeNote": "MyPillSafe est un projet de fin d'études du Conestoga College, conçu pour le Canada (fondé sur les DIN et les monographies de Santé Canada). Il s'agit d'une aide à la décision seulement.",
+      "diagramTitle": "Architecture du système",
+      "diagramCaption": "Architecture par conteneurs de MyPillSafe (C4 niveau 2) — chaque composant en exécution et chaque lien entre eux. L'hôte des moteurs se trouve sur un réseau privé et n'est jamais accessible publiquement.",
+      "diagramAlt": "Diagramme de conteneurs C4 de MyPillSafe. Un patient et un administrateur utilisent une application web React, qui passe par une passerelle nginx TLS à mypillsafe.ca puis par une API FastAPI assurant l'orchestration, les sessions et l'approbation des patients derrière des garde-fous de sécurité déterministes. L'API lit et écrit dans une base PostgreSQL, conserve les photos d'ordonnance dans un volume de fichiers et appelle un service de moteurs sur un réseau privé. Ce service héberge un moteur de correspondance déterministe (vérifier, rejeter, s'abstenir), un modèle de langage Ollama hors ligne et des travailleurs PaddleOCR isolés pour les inscriptions sur les comprimés et les étiquettes d'ordonnance, s'appuyant sur un classeur de données de référence et un index consultable de monographies canadiennes. Seuls une question et les passages cités sont transmis à l'API Claude externe.",
+      "diagramZoomHint": "Cliquez sur le schéma pour l'agrandir",
+      "diagramZoomLabel": "Agrandir le schéma d'architecture",
+      "diagramCloseLabel": "Fermer le schéma agrandi"
     },
     "vision": {
       "breadcrumb": "Vision et mission",
@@ -794,7 +899,8 @@
           "focus4": "A documenté les écarts et les bogues relevés lors des passes de vérification, plutôt que de les laisser passer sous silence."
         }
       },
-      "footerNote": "MyPillSafe est un projet de fin d'études du programme d'études supérieures en intelligence artificielle et apprentissage automatique du Conestoga College."
+      "footerNote": "MyPillSafe est un projet de fin d'études du programme d'études supérieures en intelligence artificielle et apprentissage automatique du Conestoga College.",
+      "linkedinAria": "{{name}} sur LinkedIn"
     },
     "contact": {
       "title": "Nous joindre",

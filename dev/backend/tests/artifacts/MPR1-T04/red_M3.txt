@@ -1,0 +1,68 @@
+MPR1-T04 MUTATION M3
+defect  : none_route is ignored and NONE is always terminal -- Muthu's filed tray call (3) silently reverted
+file    : app\services\tray_messages.py
+replaced: if none_route == NoneRoute.RETRY:
+with    : if False:  # MUTANT
+bar     : tests/test_tray_slots.py::test_B09_none_faces_retry_route_default
+exit    : 1 (RED (expected))
+==============================================================================
+F                                                                        [100%]
+================================== FAILURES ===================================
+___________________ test_B09_none_faces_retry_route_default ___________________
+
+client = <httpx.AsyncClient object at 0x000001ED45688980>
+auth_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MmIwNDU1NC1hNmRhLTRiOTUtOTVlNS0yMDc5ZWU4NmV...VOVCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3ODY3NTI2NTYsImV4cCI6MTc4Njc1NjI1Nn0.7fs2jv2JFEITCteCzhZ1J9qnsCF5hiYajEHCnk4mF6M'}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001ED456887A0>
+
+    @pytest.mark.asyncio
+    async def test_B09_none_faces_retry_route_default(client, auth_headers, monkeypatch):
+        """Muthu's filed tray call (3): in the TRAY flow NONE routes to
+        Flip/Reshoot alongside UNREADABLE, deviating from single-pill terminal
+        semantics. Default, no parameter supplied."""
+        await _arm(monkeypatch, client, auth_headers, _full_tray("abstain", record=RECORD_NONE))
+        body = (await _post(client, auth_headers)).json()
+        assert body["none_route"] == "retry"
+        slot = body["slots"][0]
+        assert slot["verdict"] == Verdict.NO_IMPRINT
+>       assert slot["message"]["key"] == TrayMsgKey.NONE_RETRY
+E       AssertionError: assert 'pill.presence.none' == 'tray.presence.none_retry'
+E         
+E         - tray.presence.none_retry
+E         + pill.presence.none
+
+tests\test_tray_slots.py:315: AssertionError
+---------------------------- Captured stderr setup ----------------------------
+2026-08-14 20:10:56,390  INFO      app.services.auth_service  User registered, awaiting admin approval: patient_7876de21a4@pillsafe.dev
+2026-08-14 20:10:56,390  INFO      httpx  HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 202 Accepted"
+----------------------------- Captured log setup ------------------------------
+INFO     app.services.auth_service:auth_service.py:58 User registered, awaiting admin approval: patient_7876de21a4@pillsafe.dev
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 202 Accepted"
+---------------------------- Captured stderr call -----------------------------
+2026-08-14 20:10:56,406  INFO      app.api.v1.routes.prescriptions  Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\817e1591-a085-4348-86a0-31e18b9b7394\9ab3b3e0-1322-472f-a753-d87fbcfb64f8.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+2026-08-14 20:10:56,406  WARNING   app.services.brains_client  Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+2026-08-14 20:10:56,408  INFO      app.api.v1.routes.prescriptions  Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+2026-08-14 20:10:56,408  INFO      httpx  HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+2026-08-14 20:10:56,417  WARNING   app.services.brains_client  Brains sidecar profile lookup failed (dins=['DIN13803']): connection refused
+2026-08-14 20:10:56,417  INFO      httpx  HTTP Request: PATCH http://test/api/v1/prescriptions/e7167436-f77d-4f4b-a73d-1849cf6a2855 "HTTP/1.1 200 OK"
+2026-08-14 20:10:56,417  INFO      httpx  HTTP Request: POST http://test/api/v1/tray/analyze "HTTP/1.1 200 OK"
+------------------------------ Captured log call ------------------------------
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:148 Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\817e1591-a085-4348-86a0-31e18b9b7394\9ab3b3e0-1322-472f-a753-d87fbcfb64f8.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+WARNING  app.services.brains_client:brains_client.py:149 Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:213 Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+WARNING  app.services.brains_client:brains_client.py:240 Brains sidecar profile lookup failed (dins=['DIN13803']): connection refused
+INFO     httpx:_client.py:1742 HTTP Request: PATCH http://test/api/v1/prescriptions/e7167436-f77d-4f4b-a73d-1849cf6a2855 "HTTP/1.1 200 OK"
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/tray/analyze "HTTP/1.1 200 OK"
+============================== warnings summary ===============================
+tests/test_tray_slots.py::test_B09_none_faces_retry_route_default
+tests/test_tray_slots.py::test_B09_none_faces_retry_route_default
+tests/test_tray_slots.py::test_B09_none_faces_retry_route_default
+  D:\Projects\PillSafe\PillSafe\dev\backend\venv\Lib\site-packages\jose\jwt.py:311: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = timegm(datetime.utcnow().utctimetuple())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_tray_slots.py::test_B09_none_faces_retry_route_default - As...
+1 failed, 3 warnings in 0.64s
+
+

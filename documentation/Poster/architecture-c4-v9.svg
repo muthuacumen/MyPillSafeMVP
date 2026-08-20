@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2150" height="1105" viewBox="0 0 2150 1105" font-family="Arial, Helvetica, sans-serif">
+<defs>
+  <marker id="ah" markerWidth="9" markerHeight="7" refX="8.5" refY="3.5" orient="auto">
+    <polygon points="0,0 9,3.5 0,7" fill="#7A8894"/></marker>
+  <marker id="ah_red" markerWidth="9" markerHeight="7" refX="8.5" refY="3.5" orient="auto">
+    <polygon points="0,0 9,3.5 0,7" fill="#D64045"/></marker>
+</defs>
+<style>
+  text { dominant-baseline: auto; }
+  .nm { font-size:21px; font-weight:700; fill:#FFFFFF; text-anchor:middle; }
+  .tp { font-size:14px; fill:#DCE4EC; text-anchor:middle; }
+  .ds { font-size:15.5px; fill:#EAF0F5; text-anchor:middle; }
+  .cn { font-size:16px; font-weight:700; fill:#FFFFFF; text-anchor:middle; }
+  .ct { font-size:14px; fill:#EAF7F4; text-anchor:middle; }
+  .el { font-size:14px; text-anchor:middle; }
+  .bd { font-size:16px; fill:#5A6570; }
+  .lgt { font-size:15px; font-weight:700; fill:#5A6570; }
+  .lg { font-size:14px; fill:#33404B; }
+</style>
+<rect width="2150" height="1105" fill="#FFFFFF"/>
+<rect x="400" y="40" width="1480" height="1035" rx="4" fill="none" stroke="#9AA4AD" stroke-width="1.4" stroke-dasharray="7 5"/>
+<text x="416" y="64" class="bd">MyPillSafe</text>
+<rect x="905" y="385" width="950" height="675" rx="4" fill="none" stroke="#9AA4AD" stroke-width="1.4" stroke-dasharray="7 5"/>
+<text x="921" y="409" class="bd">Brains Host — private network, GPU, never public</text>
+<polyline points="255,222 340,222 340,195 430,195" fill="none" stroke="#7A8894" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="281.0" y="173" width="88.0" height="18" fill="#FFFFFF"/>
+<text x="325" y="186" class="el" fill="#7A8894">Uses [HTTPS]</text>
+<polyline points="255,425 340,425 340,255 430,255" fill="none" stroke="#7A8894" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="258.25" y="233" width="133.5" height="18" fill="#FFFFFF"/>
+<text x="325" y="246" class="el" fill="#7A8894">Administers [HTTPS]</text>
+<polyline points="635,205 675,205" fill="none" stroke="#7A8894" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="607.75" y="99" width="94.5" height="18" fill="#FFFFFF"/>
+<text x="655" y="112" class="el" fill="#7A8894">Calls [HTTPS]</text>
+<polyline points="880,205 920,205" fill="none" stroke="#7A8894" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="849.5" y="99" width="101.0" height="18" fill="#FFFFFF"/>
+<text x="900" y="112" class="el" fill="#7A8894">Proxies [HTTP]</text>
+<polyline points="920,310 760,310 760,445" fill="none" stroke="#7A8894" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="670.5" y="349" width="179.0" height="18" fill="#FFFFFF"/>
+<text x="760" y="362" class="el" fill="#7A8894">Stores prescription photos</text>
+<polyline points="920,332 532,332 532,445" fill="none" stroke="#7A8894" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="455.5" y="379" width="153.0" height="18" fill="#FFFFFF"/>
+<text x="532" y="392" class="el" fill="#7A8894">Reads and writes [SQL]</text>
+<polyline points="1047,345 1047,550" fill="none" stroke="#7A8894" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="947.75" y="359" width="198.5" height="18" fill="#FFFFFF"/>
+<text x="1047" y="372" class="el" fill="#7A8894">Calls [HTTP, private network]</text>
+<polyline points="1175,200 1905,200" fill="none" stroke="#D64045" stroke-width="2.6" marker-end="url(#ah_red)"/>
+<rect x="1385.5" y="170" width="309.0" height="18" fill="#FFFFFF"/>
+<text x="1540" y="183" class="el" fill="#D64045">Sends question and cited passages only [HTTPS]</text>
+<polyline points="1185,600 1207,600 1207,540 1230,540" fill="none" stroke="#7A8894" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="1261.75" y="436" width="172.5" height="18" fill="#FFFFFF"/>
+<text x="1348" y="449" class="el" fill="#7A8894">Prompts [HTTP, localhost]</text>
+<polyline points="1185,650 1207,650 1207,745 1230,745" fill="none" stroke="#7A8894" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="1281.25" y="631" width="133.5" height="18" fill="#FFFFFF"/>
+<text x="1348" y="644" class="el" fill="#7A8894">Spawns [subprocess]</text>
+<polyline points="1185,700 1196,700 1196,950 1230,950" fill="none" stroke="#7A8894" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="1281.25" y="826" width="133.5" height="18" fill="#FFFFFF"/>
+<text x="1348" y="839" class="el" fill="#7A8894">Spawns [subprocess]</text>
+<polyline points="960,550 960,425 1645,425 1645,460" fill="none" stroke="#7A8894" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="1378.75" y="403" width="42.5" height="18" fill="#FFFFFF"/>
+<text x="1400" y="416" class="el" fill="#7A8894">Reads</text>
+<polyline points="985,785 985,1040 1645,1040 1645,905" fill="none" stroke="#7A8894" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="1378.75" y="1018" width="42.5" height="18" fill="#FFFFFF"/>
+<text x="1400" y="1031" class="el" fill="#7A8894">Reads</text>
+<polyline points="1905,660 1838,660 1838,520 1770,520" fill="none" stroke="#7A8894" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="1763.0" y="484" width="114.0" height="18" fill="#FFFFFF"/>
+<text x="1820" y="497" class="el" fill="#7A8894">Ingested offline</text>
+<polyline points="1905,700 1860,700 1860,800 1770,800" fill="none" stroke="#7A8894" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="1769.0" y="825" width="114.0" height="18" fill="#FFFFFF"/>
+<text x="1826" y="838" class="el" fill="#7A8894">Ingested offline</text>
+<rect x="25" y="150" width="230" height="145" rx="3" fill="#8B99A6" stroke="#6F7C87" stroke-width="1.5"/>
+<text x="140.0" y="195.5" class="nm">Patient</text>
+<text x="140.0" y="225.5" class="tp">[Person]</text>
+<text x="140.0" y="249.5" class="ds">Takes several medications;</text>
+<text x="140.0" y="269.5" class="ds">may not read English</text>
+<rect x="25" y="345" width="230" height="160" rx="3" fill="#8B99A6" stroke="#6F7C87" stroke-width="1.5"/>
+<text x="140.0" y="398.0" class="nm">Administrator</text>
+<text x="140.0" y="428.0" class="tp">[Person]</text>
+<text x="140.0" y="452.0" class="ds">Operates the platform; blocked</text>
+<text x="140.0" y="472.0" class="ds">from patient health data</text>
+<rect x="430" y="125" width="205" height="175" rx="3" fill="#1E3A5F" stroke="#16293F" stroke-width="1.5"/>
+<text x="532.5" y="176.5" class="nm">Web App</text>
+<text x="532.5" y="206.5" class="tp">[Container: React 18,</text>
+<text x="532.5" y="224.5" class="tp">TypeScript, Vite, PWA]</text>
+<text x="532.5" y="248.5" class="ds">Installable single-page</text>
+<text x="532.5" y="268.5" class="ds">app in English and French</text>
+<rect x="675" y="125" width="205" height="175" rx="3" fill="#1E3A5F" stroke="#16293F" stroke-width="1.5"/>
+<text x="777.5" y="185.5" class="nm">Gateway</text>
+<text x="777.5" y="215.5" class="tp">[Container: nginx + TLS]</text>
+<text x="777.5" y="239.5" class="ds">Public entry point</text>
+<text x="777.5" y="259.5" class="ds">at mypillsafe.ca</text>
+<rect x="920" y="125" width="255" height="220" rx="3" fill="#1E3A5F" stroke="#16293F" stroke-width="1.5"/>
+<text x="1047.5" y="179.0" class="nm">API</text>
+<text x="1047.5" y="209.0" class="tp">[Container: FastAPI, Python]</text>
+<text x="1047.5" y="233.0" class="ds">Orchestration, sessions,</text>
+<text x="1047.5" y="253.0" class="ds">patient approval</text>
+<rect x="934" y="279" width="227" height="52" rx="4" fill="#2A9D8F" stroke="#1F7A6E" stroke-width="1.5"/>
+<text x="1047.5" y="300" class="cn">Safety Guardrails</text>
+<text x="1047.5" y="318" class="ct">[Component: deterministic rules]</text>
+<path d="M430,461 a102.5,16 0 0 1 205,0 v143 a102.5,16 0 0 1 -205,0 z" fill="#1E3A5F" stroke="#16293F" stroke-width="1.5"/>
+<path d="M430,461 a102.5,16 0 0 0 205,0" fill="none" stroke="#43617F" stroke-width="1.5"/>
+<text x="532.5" y="523.5" class="nm">Database</text>
+<text x="532.5" y="553.5" class="tp">[Container: PostgreSQL]</text>
+<text x="532.5" y="577.5" class="ds">Accounts, medication</text>
+<text x="532.5" y="597.5" class="ds">profiles, scan outcomes</text>
+<rect x="675" y="445" width="205" height="175" rx="3" fill="#1E3A5F" stroke="#16293F" stroke-width="1.5"/>
+<text x="777.5" y="505.5" class="nm">Photo Store</text>
+<text x="777.5" y="535.5" class="tp">[Container: file volume]</text>
+<text x="777.5" y="559.5" class="ds">Prescription photos; pill</text>
+<text x="777.5" y="579.5" class="ds">photos are never stored</text>
+<rect x="935" y="550" width="250" height="235" rx="3" fill="#1E3A5F" stroke="#16293F" stroke-width="1.5"/>
+<text x="1060.0" y="611.5" class="nm">Brains Service</text>
+<text x="1060.0" y="641.5" class="tp">[Container: FastAPI, Python]</text>
+<text x="1060.0" y="665.5" class="ds">Hosts pill vision, the matcher</text>
+<text x="1060.0" y="685.5" class="ds">and monograph retrieval</text>
+<rect x="949" y="719" width="222" height="52" rx="4" fill="#2A9D8F" stroke="#1F7A6E" stroke-width="1.5"/>
+<text x="1060.0" y="740" class="cn">Deterministic Matcher</text>
+<text x="1060.0" y="758" class="ct">[Component: verify · reject · abstain]</text>
+<rect x="1230" y="460" width="235" height="155" rx="3" fill="#1E3A5F" stroke="#16293F" stroke-width="1.5"/>
+<text x="1347.5" y="510.5" class="nm">Local Language Model</text>
+<text x="1347.5" y="540.5" class="tp">[Container: Ollama, qwen2.5:7b]</text>
+<text x="1347.5" y="564.5" class="ds">Proposes medications from</text>
+<text x="1347.5" y="584.5" class="ds">label text; fully offline</text>
+<rect x="1230" y="655" width="235" height="155" rx="3" fill="#1E3A5F" stroke="#16293F" stroke-width="1.5"/>
+<text x="1347.5" y="696.5" class="nm">Imprint OCR Worker</text>
+<text x="1347.5" y="726.5" class="tp">[Container: PaddleOCR,</text>
+<text x="1347.5" y="744.5" class="tp">isolated subprocess]</text>
+<text x="1347.5" y="768.5" class="ds">Reads imprint text from</text>
+<text x="1347.5" y="788.5" class="ds">a photographed pill</text>
+<rect x="1230" y="850" width="235" height="170" rx="3" fill="#1E3A5F" stroke="#16293F" stroke-width="1.5"/>
+<text x="1347.5" y="886.0" class="nm">Prescription</text>
+<text x="1347.5" y="912.0" class="nm">OCR Worker</text>
+<text x="1347.5" y="942.0" class="tp">[Container: PaddleOCR,</text>
+<text x="1347.5" y="960.0" class="tp">torch-free subprocess]</text>
+<text x="1347.5" y="984.0" class="ds">Turns a photographed</text>
+<text x="1347.5" y="1004.0" class="ds">prescription label into text</text>
+<path d="M1520,476 a125.0,16 0 0 1 250,0 v153 a125.0,16 0 0 1 -250,0 z" fill="#1E3A5F" stroke="#16293F" stroke-width="1.5"/>
+<path d="M1520,476 a125.0,16 0 0 0 250,0" fill="none" stroke="#43617F" stroke-width="1.5"/>
+<text x="1645.0" y="543.5" class="nm">Reference Data</text>
+<text x="1645.0" y="573.5" class="tp">[Data store: workbook]</text>
+<text x="1645.0" y="597.5" class="ds">Appearance and identifiers for</text>
+<text x="1645.0" y="617.5" class="ds">marketed Canadian products</text>
+<path d="M1520,726 a125.0,16 0 0 1 250,0 v163 a125.0,16 0 0 1 -250,0 z" fill="#1E3A5F" stroke="#16293F" stroke-width="1.5"/>
+<path d="M1520,726 a125.0,16 0 0 0 250,0" fill="none" stroke="#43617F" stroke-width="1.5"/>
+<text x="1645.0" y="789.5" class="nm">Monograph Index</text>
+<text x="1645.0" y="819.5" class="tp">[Data store: SQLite FTS5</text>
+<text x="1645.0" y="837.5" class="tp">+ memory-mapped vectors]</text>
+<text x="1645.0" y="861.5" class="ds">Searchable Canadian</text>
+<text x="1645.0" y="881.5" class="ds">product monographs</text>
+<rect x="1905" y="125" width="225" height="195" rx="3" fill="#8B99A6" stroke="#6F7C87" stroke-width="1.5"/>
+<text x="2017.5" y="186.5" class="nm">Claude API</text>
+<text x="2017.5" y="216.5" class="tp">[External system: Anthropic,</text>
+<text x="2017.5" y="234.5" class="tp">claude-haiku-4-5]</text>
+<text x="2017.5" y="258.5" class="ds">Phrases the final answer;</text>
+<text x="2017.5" y="278.5" class="ds">decides nothing</text>
+<rect x="1905" y="605" width="225" height="225" rx="3" fill="#8B99A6" stroke="#6F7C87" stroke-width="1.5"/>
+<text x="2017.5" y="659.5" class="nm">Drug Reference</text>
+<text x="2017.5" y="685.5" class="nm">Sources</text>
+<text x="2017.5" y="715.5" class="tp">[External system: Health Canada</text>
+<text x="2017.5" y="733.5" class="tp">DPD and monographs;</text>
+<text x="2017.5" y="751.5" class="tp">openFDA OTC labels]</text>
+<text x="2017.5" y="775.5" class="ds">Ingested offline; never</text>
+<text x="2017.5" y="795.5" class="ds">called at runtime</text>
+<rect x="430" y="835" width="390" height="225" rx="3" fill="#FFFFFF" stroke="#9AA4AD" stroke-width="1.2"/>
+<text x="444" y="861" class="lgt">Legend</text>
+<rect x="444" y="881" width="34" height="22" rx="3" fill="#8B99A6" stroke="#6F7C87" stroke-width="1.2"/>
+<text x="488" y="897" class="lg">Person / External system</text>
+<rect x="444" y="915" width="34" height="22" rx="3" fill="#1E3A5F" stroke="#16293F" stroke-width="1.2"/>
+<text x="488" y="931" class="lg">Container</text>
+<rect x="444" y="949" width="34" height="22" rx="3" fill="#2A9D8F" stroke="#1F7A6E" stroke-width="1.2"/>
+<text x="488" y="965" class="lg">Component</text>
+<path d="M444,988 a17.0,5 0 0 1 34,0 v12 a17.0,5 0 0 1 -34,0 z" fill="#1E3A5F" stroke="#16293F" stroke-width="1.2"/>
+<path d="M444,988 a17.0,5 0 0 0 34,0" fill="none" stroke="#43617F" stroke-width="1.2"/>
+<text x="488" y="999" class="lg">Data store</text>
+<line x1="444" y1="1028" x2="478" y2="1028" stroke="#D64045" stroke-width="2.6" marker-end="url(#ah_red)"/>
+<text x="488" y="1033" class="lg">Leaves our network</text>
+</svg>

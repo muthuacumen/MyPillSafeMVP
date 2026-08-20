@@ -21,6 +21,39 @@ class Settings(BaseSettings):
 
     FRONTEND_ORIGIN: str = "http://localhost:5173"
 
+    # --- Registration gating -------------------------------------------------
+    # Every new signup lands inactive and an admin approves it. Deliberately
+    # rides on the EXISTING `users.is_active` column rather than a new
+    # `approval_status` one: this project is code-first with no migrations, and
+    # `create_all` never ALTERs an existing table -- a column added to the model
+    # but never to Postgres raises UndefinedColumn on every read AND write while
+    # every health check stays green. That is exactly what took the live site
+    # down on 2026-07-30. `is_active` already exists in production and already
+    # means "may this account authenticate", which is the whole question here.
+    #
+    # false is the kill-switch: registration goes back to today's behaviour
+    # (201 + tokens + refresh cookie, account active immediately).
+    REQUIRE_ADMIN_APPROVAL: bool = True
+    # Comma-separated, case-insensitive. Every matching EXISTING user is
+    # promoted to ADMIN and reactivated at boot (app/services/admin_bootstrap).
+    # This is the only way to mint an admin in production -- /dev/seed-admin
+    # 404s unless APP_ENV == "development".
+    ADMIN_EMAILS: str = ""
+
+    # --- Outbound mail (contact form) ---------------------------------------
+    # Inert by default: a blank SMTP_HOST/SMTP_USER/SMTP_PASSWORD makes
+    # mail_service return False without opening a socket, so the app ships and
+    # runs with no credentials at all. Filling these in is what turns the
+    # /contact notification on -- the JSONL log is written either way and is
+    # still the system of record.
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM: str = ""
+    SMTP_STARTTLS: bool = True
+    CONTACT_TO: str = "info@mypillsafe.ca"
+
     OPENAPI_ENABLED: bool = True
     # Real PaddleOCR prescription parsing. Was left off by default, which meant
     # every upload silently returned canned demo text regardless of the image —
@@ -44,6 +77,28 @@ class Settings(BaseSettings):
     # set to false only if the sidecar can't be run on this deployment).
     BRAINS_SERVICE_URL: str = "http://127.0.0.1:8100"
     PILL_V2_ENABLED: bool = True
+
+    # --- Tray scan (MPR1-T04) ------------------------------------------------
+    # `/api/v1/tray/analyze` proxies the sidecar's `/tray/analyze`. Pure
+    # kill-switch, same shape as PILL_V2_ENABLED: off -> 501.
+    #
+    # DEFAULT OFF, and unlike PILL_V2_ENABLED it stays off until someone turns
+    # it on. The production sidecar does not serve `/tray/analyze` yet, so
+    # default-on meant the next routine deploy exposed tray scanning to real
+    # patients against a sidecar that cannot answer -- a feature shipped by
+    # forgetting rather than by deciding. Set TRAY_ANALYZE_ENABLED=true on a
+    # deployment whose sidecar actually has the route.
+    TRAY_ANALYZE_ENABLED: bool = False
+    # Server default for the tray NONE (no markings on any photographed face)
+    # route: "retry" -> Flip/Reshoot alongside Unreadable, which is Muthu's
+    # filed tray call (3); "terminal" -> the single-pill v3 1.8 message.
+    #
+    # WHETHER THE RETRY LOOP SHOULD EVER BECOME TERMINAL IS PENDING WITH MUTHU
+    # (a pill blank on BOTH faces would otherwise loop forever). Both routes
+    # are built and the request may override this per call, so the choice can
+    # be made later without touching the verdict layer. Do not "resolve" this
+    # by deleting a branch.
+    TRAY_NONE_ROUTE: str = "retry"
 
     # Sidecar pool (Task A3, deploy-readiness build): comma-separated URLs for
     # a team of laptop-hosted sidecars, health-checked so a closed laptop
@@ -72,6 +127,31 @@ class Settings(BaseSettings):
     # 50/50 fields, 0 safety events vs qwen's 11/12, 49/50, 0) and is recorded
     # as a finding -- see documentation/evaluation/rx_parsing/README.md.
     RX_PARSE_BACKEND: str = "qwen"
+
+    # --- Sidecar Supervisor proxy (Task T2) ----------------------------------
+    # A separate service (dev/ops, NOT this backend) that actually starts,
+    # stops, and warms the `dev/brains` sidecar process and can see host
+    # resources (RAM, AC power) the backend has no business touching. The
+    # admin routes in app/api/v1/routes/admin_sidecar.py are a thin,
+    # admin-gated PROXY to it -- every call forwards to
+    # {SUPERVISOR_URL}{/status,/start,/stop} with this bearer token and
+    # passes the Supervisor's response straight through. Blank token is the
+    # local-dev default (a Supervisor with no auth configured accepts it).
+    SUPERVISOR_URL: str = "http://127.0.0.1:8090"
+    SUPERVISOR_TOKEN: str = ""
+
+    # --- Public sidecar-status ticker (Task T2) ------------------------------
+    # `GET /api/v1/status/sidecar` -- no auth, cached 20s in-process. Reuses
+    # the same /health check `app/services/brains_registry.py` already does
+    # before an /analyze call, so this never adds a second, differently-wired
+    # path to "is the sidecar up". The two messages are what the frontend
+    # ticker shows verbatim; overridable so a deployment can point the "down"
+    # message at whichever admin actually answers it.
+    SIDECAR_UP_MESSAGE: str = "PillSafe analysis engine is online — demo ready."
+    SIDECAR_DOWN_MESSAGE: str = (
+        "Analysis engine is offline. For demo/starting sidecar, please "
+        "contact admin at info@mypillsafe.ca"
+    )
 
 
 settings = Settings()

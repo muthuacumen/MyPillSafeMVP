@@ -4,12 +4,14 @@ import {
   BookOpen,
   ChevronDown,
   FileText,
+  Grid3x3,
   LayoutDashboard,
   LogOut,
   Menu as MenuIcon,
   MessageCircleQuestion,
   Pill,
   ScanLine,
+  Server,
   Settings,
   Shield,
   ShieldCheck,
@@ -27,12 +29,17 @@ import { Logo } from '@/components/ui/Logo';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { ABOUT_PAGES } from '@/components/AboutNav';
 import { voice } from '@/lib/voiceAssistant';
+import { isTrayCheckEnabled } from '@/lib/featureFlags';
 
 interface MenuItem {
   to: string;
   labelKey: string;
   icon: LucideIcon;
   end?: boolean;
+  /** Build-time gate, evaluated on every render (never at module load, so the
+   * flag reflects the environment the app is actually running in). Absent =
+   * always shown. */
+  enabled?: () => boolean;
 }
 
 // Every authenticated destination in the app, in the order they appear in
@@ -42,6 +49,13 @@ const MENU_ITEMS: MenuItem[] = [
   { to: '/dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard, end: true },
   { to: '/dashboard/scan-prescription', labelKey: 'nav.scanRx', icon: FileText },
   { to: '/dashboard/scan-pill', labelKey: 'nav.scanPill', icon: ScanLine },
+  // MPR1-T07: localhost tray-check page (6-slot grid) -- separate from the
+  // Scan Pill single-pill flow above and from the marketing tray section on
+  // PillVisionPage. FLAGGED OFF BY DEFAULT (MPR1-T09b, T08 finding 5): a
+  // deploy without VITE_TRAY_CHECK=on must not show patients a page that
+  // calls a `/tray/analyze` endpoint the production sidecar does not serve.
+  // The matching route gate is `router/RequireTrayCheck.tsx`.
+  { to: '/dashboard/tray-check', labelKey: 'nav.trayCheck', icon: Grid3x3, enabled: isTrayCheckEnabled },
   { to: '/dashboard/medications', labelKey: 'nav.medications', icon: Pill },
   { to: '/dashboard/qa', labelKey: 'nav.qa', icon: MessageCircleQuestion },
   { to: '/dashboard/safety', labelKey: 'nav.safety', icon: Shield },
@@ -53,6 +67,7 @@ const MENU_ITEMS: MenuItem[] = [
 const ADMIN_MENU_ITEMS: MenuItem[] = [
   { to: '/admin/dashboard', labelKey: 'nav.adminPanel', icon: ShieldCheck },
   { to: '/admin/users', labelKey: 'nav.adminUsers', icon: Users },
+  { to: '/admin/sidecar', labelKey: 'nav.adminSidecar', icon: Server },
 ];
 
 /** Single navy top navbar rendered on EVERY page, public and authenticated
@@ -98,6 +113,10 @@ export default function Navbar() {
     setMenuOpen(false);
     setMobileOpen(false);
   }, [pathname]);
+
+  // Flag-gated entries are dropped here, on every render, so a build without
+  // the flag has no link to them at all (desktop dropdown AND mobile panel).
+  const menuItems = MENU_ITEMS.filter((item) => item.enabled?.() ?? true);
 
   const isAboutActive = pathname === '/about' || pathname.startsWith('/about/');
   const initials = user?.first_name?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? '?';
@@ -177,7 +196,7 @@ export default function Navbar() {
                 </button>
                 {menuOpen && (
                   <div className="absolute right-0 top-full mt-1 w-72 bg-white rounded-xl shadow-lg border border-slate-100 py-2 animate-fade-in z-50 max-h-[calc(100vh-5rem)] overflow-y-auto">
-                    {MENU_ITEMS.map(({ to, labelKey, icon: Icon, end }) => (
+                    {menuItems.map(({ to, labelKey, icon: Icon, end }) => (
                       <NavLink
                         key={to}
                         to={to}
@@ -275,7 +294,7 @@ export default function Navbar() {
           {isAuthenticated && (
             <div className="border-t border-white/10 mt-1 pt-2">
               <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider pb-1.5">{t('nav.menu')}</p>
-              {MENU_ITEMS.map(({ to, labelKey, icon: Icon, end }) => (
+              {menuItems.map(({ to, labelKey, icon: Icon, end }) => (
                 <NavLink
                   key={to}
                   to={to}

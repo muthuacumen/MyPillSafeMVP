@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, update
 from sqlalchemy.orm import selectinload
 
 from app.models.user import User, UserRole
@@ -37,6 +37,34 @@ async def set_user_active(
     user.is_active = is_active
     await db.flush()
     return user
+
+
+async def increment_token_version(db: AsyncSession, user_id: str) -> int | None:
+    """Bump `token_version`, invalidating every access/refresh token already
+    issued to this user (both encode `tv` at mint time; validation in
+    app/api/deps.py and auth_service.refresh_tokens rejects a mismatch).
+    Returns the new value, or None if the user doesn't exist -- unlike
+    set_user_active's bool, the caller needs the new number to report it back
+    (POST /admin/users/{id}/terminate-sessions' response body).
+
+    Uses an atomic `UPDATE ... SET token_version = token_version + 1` rather
+    than a Python read-modify-write. The old approach (increment the loaded
+    ORM attribute by one, then flush) reads the current value into Python,
+    adds 1, and writes it back; two concurrent admin actions on the same
+    user (e.g. terminate-sessions racing deactivate) can both read N and
+    both write N plus 1, silently losing one bump. The database computing
+    `new = old + 1` as part of a single statement has no such window -- both
+    callers (terminate-sessions and deactivate) go through this function, so
+    both are covered.
+    """
+    result = await db.execute(
+        update(User)
+        .where(User.id == user_id)
+        .values(token_version=User.token_version + 1)
+    )
+    if result.rowcount == 0:
+        return None
+    return await db.scalar(select(User.token_version).where(User.id == user_id))
 
 
 async def delete_user(db: AsyncSession, user_id: str) -> bool:

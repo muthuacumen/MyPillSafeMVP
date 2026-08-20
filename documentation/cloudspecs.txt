@@ -1,0 +1,37 @@
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$   echo "=== SYSTEM ===" && hostnamectl | grep -E "Operating System|Kernel"
+  echo -e "\n=== CPU & RAM ===" && nproc --all && free -h
+  echo -e "\n=== DISK ===" && df -h /
+  echo -e "\n=== DOCKER ===" && docker system df
+  echo -e "\n=== CONTAINERS ===" && docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Size}}"
+=== SYSTEM ===
+Operating System: Ubuntu 24.04.4 LTS
+          Kernel: Linux 6.8.0-136-generic
+
+=== CPU & RAM ===
+2
+               total        used        free      shared  buff/cache   available
+Mem:           3.8Gi       1.6Gi       328Mi        40Mi       2.3Gi       2.3Gi
+Swap:          4.0Gi       1.3Mi       4.0Gi
+
+=== DISK ===
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/vda1        77G   49G   29G  64% /
+
+=== DOCKER ===
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          14        8         14.29GB   1.217GB (8%)
+Containers      8         8         485.4MB   0B (0%)
+Local Volumes   3         3         528.7MB   0B (0%)
+Build Cache     40        0         31.06GB   19.69GB
+
+=== CONTAINERS ===
+NAMES                     IMAGE                                                   STATUS                  SIZE
+pillsafe_frontend         ghcr.io/muthuacumen/mypillsafe-frontend:20260814-1020   Up 21 hours (healthy)   53.2kB (virtual 57.7MB)
+pillsafe_backend          ghcr.io/muthuacumen/mypillsafe-backend:20260814-1020    Up 21 hours (healthy)   2.39MB (virtual 309MB)
+pillsafe_nginx            nginx:1.25-alpine                                       Up 21 hours             754kB (virtual 54.4MB)
+pillsafe_postgres         postgres:15-alpine                                      Up 2 weeks (healthy)    20.5kB (virtual 301MB)
+pillsafe_redis            redis:7-alpine                                          Up 2 weeks (healthy)    4.1kB (virtual 41.1MB)
+pathointern-qa-frontend   qa-frontend                                             Up 2 weeks              262kB (virtual 913MB)
+pathointern-qa-backend    qa-backend                                              Up 2 weeks              482MB (virtual 7.3GB)
+pathointern-qa-db         pgvector/pgvector:pg15                                  Up 2 weeks (healthy)    24.6kB (virtual 458MB)
+deploy@ubuntu-s-2vcpu-2gb-tor1-01:~$

@@ -18,7 +18,9 @@
     "about": "About",
     "close": "Close",
     "on": "On",
-    "off": "Off"
+    "off": "Off",
+    "previous": "Previous",
+    "next": "Next"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -32,8 +34,10 @@
     "settings": "Settings",
     "adminPanel": "Admin Panel",
     "adminUsers": "User Management",
+    "adminSidecar": "Sidecar Control",
     "signOut": "Sign Out",
     "menu": "Menu",
+    "trayCheck": "Check a Tray",
     "short": {
       "dashboard": "Home",
       "scanRx": "Scan Rx",
@@ -62,6 +66,7 @@
       "forgotPasswordNote": "Password reset isn't available in this preview yet. Please contact support for help accessing your account.",
       "noAccount": "Don't have an account?",
       "createFree": "Create one free",
+      "pendingApproval": "Your account is awaiting administrator approval. You'll be able to sign in as soon as it's approved.",
       "disclaimer": "Decision support tool only. Always confirm with your pharmacist."
     },
     "register": {
@@ -76,6 +81,9 @@
       "submit": "Create Account",
       "haveAccount": "Already have an account?",
       "signIn": "Sign in",
+      "pendingTitle": "Account created — awaiting approval",
+      "pendingBody": "Thanks for signing up. An administrator reviews every new account before it can be used. You'll be able to sign in once yours is approved.",
+      "pendingCta": "Back to sign in",
       "disclaimer": "Decision support tool only. Always confirm with your pharmacist or physician."
     },
     "brand": {
@@ -278,6 +286,56 @@
     "deniedMessage": "Camera access was denied or isn't available. You can upload a photo instead.",
     "capturedPreviewAlt": "Captured photo preview"
   },
+  "trayCheck": {
+    "captureLabel": "Capture tray photo",
+    "reshootCaptureLabel": "Capture reshoot photo",
+    "intro": "Photograph all six wells of your tray at once. MyPillSafe checks each slot separately, the same way it checks one pill at a time.",
+    "uploading": "Checking your tray…",
+    "uploadingSub": "This can take up to a minute for six pills.",
+    "reshootTitle": "One or more slots need a clearer photo",
+    "reshootBody": "Photograph the tray again so MyPillSafe can take a second look at the marked slots below.",
+    "scanNewTray": "Check Another Tray",
+    "tryAgain": "Try Again",
+    "slotLabel": "Slot {{n}}",
+    "dinLabel": "DIN {{din}}",
+    "contractErrorBadge": "Recheck this slot with your pharmacist",
+    "verdictLabel": {
+      "verify": "Verified",
+      "reject": "Doesn't Match",
+      "abstain": "Uncertain",
+      "unreadable": "Unreadable",
+      "noImprint": "No Markings",
+      "empty": "Empty",
+      "error": "Error",
+      "readOnly": "Not Checked"
+    },
+    "error": {
+      "disabled": "Tray checking is not turned on for this server yet. Please try again later, or use Scan Pill to check one pill at a time.",
+      "badNoneRoute": "That reshoot request wasn't understood. Please start over.",
+      "brainsUnavailable": "Tray checking is temporarily unavailable — the analysis service can't be reached. Your photo was fine; please try again in a few minutes.",
+      "serverGeneric": "Something went wrong on our side. Please try again.",
+      "default": "Could not check that tray. Try a plain, well-lit background and make sure all six wells are visible."
+    }
+  },
+  "msgCatalog": {
+    "tray.slot.verify": "This pill matches one of the medications on your list.",
+    "tray.slot.reject": "This pill does not match any of the medications on your list. Do not take it. Check with your pharmacist.",
+    "tray.slot.abstain": "MyPillSafe could not decide about this pill. Check with your pharmacist.",
+    "tray.slot.abstain.ask_to_flip": "MyPillSafe needs to see the other side of this pill. Turn it over and photograph the tray again.",
+    "tray.slot.abstain.shortlist": "MyPillSafe narrowed this pill down but could not confirm one answer. Check with your pharmacist.",
+    "tray.slot.empty": "This slot is empty.",
+    "tray.slot.error": "MyPillSafe could not check this slot. Try photographing the tray again.",
+    "tray.slot.error.contract": "MyPillSafe could not check this slot safely, so it is not showing a result. Do not rely on this slot. Check with your pharmacist.",
+    "tray.slot.read_only": "MyPillSafe did not check this pill against your medication list.",
+    "tray.presence.none_retry": "There are no markings on the side of this pill that is facing up. Turn the pill over and photograph the tray again.",
+    "tray.hedge.pharmacist": "Decision-support only — not a clinical determination. Verify with a pharmacist.",
+    "pill.presence.unreadable": "We could not read the markings on this pill. Try another photo, or turn the pill over and photograph the other side.",
+    "pill.presence.none": "This pill has no markings, so MyPillSafe cannot identify it. Please check with your pharmacist.",
+    "pill.scope.unsupported": "MyPillSafe does not cover any of the medications on your list yet, so it cannot check this pill.",
+    "pill.scope.unsupported_note": "Some of the medications on your list are not covered by MyPillSafe yet. This pill might be one of them.",
+    "pill.scope.no_profile": "There are no medications on your list yet, so there is nothing to check this pill against.",
+    "frontend.trayGuard.contractError": "This slot could not be safely checked, so its result is not being shown. Recheck this slot with your pharmacist."
+  },
   "admin": {
     "dashboard": "Admin Dashboard",
     "users": "User Management",
@@ -292,8 +350,49 @@
     "changeRole": "Change Role",
     "confirmDeactivate": "Deactivate this user? They will not be able to log in.",
     "confirmDelete": "Permanently delete this user and all their data?",
+    "confirmDeleteFinal": "This cannot be undone. Are you sure?",
     "noPatient": "No profile",
-    "recentAnalyses": "Recent Analyses"
+    "recentAnalyses": "Recent Analyses",
+    "pendingApproval": "Pending approval",
+    "approve": "Approve account",
+    "pendingSummary": "{{count}} awaiting approval",
+    "verifiedColumn": "Verified",
+    "verified": "Verified",
+    "unverified": "Not verified",
+    "terminateSessions": "Terminate sessions",
+    "confirmTerminateSessions": "Sign this user out of every device and active session right now?",
+    "sessionsTerminated": "All sessions terminated. New token version: {{version}}",
+    "paginationRange": "{{start}}–{{end}}",
+    "sidecarControl": "Sidecar Control",
+    "sidecarSubtitle": "Start, stop, and monitor the local analysis engine.",
+    "sidecarStatusTitle": "Engine Status",
+    "running": "Running",
+    "stopped": "Stopped",
+    "sidecarUnknown": "Status unavailable",
+    "sidecarActionError": "Could not reach the sidecar admin API. Please try again.",
+    "actionFailed": "Action failed. Please try again.",
+    "componentHealth": "Component Health",
+    "freeRam": "Free RAM",
+    "commitCharge": "Memory Commit",
+    "acPower": "Power Source",
+    "onAcPower": "Plugged in (AC power)",
+    "onBattery": "On battery",
+    "profile": "Profile",
+    "environment": "Environment",
+    "envDev": "Localhost (dev)",
+    "envProd": "Production",
+    "warmModels": "Warm models at boot",
+    "warmModelsHint": "Loads models into memory immediately so the first real request isn't slow.",
+    "forceGuard": "Force (ignore battery guard)",
+    "forceGuardHint": "Force bypasses only the on-battery guard; the low-memory floor can never be overridden.",
+    "start": "Start Sidecar",
+    "stop": "Stop Sidecar",
+    "confirmStop": "Stop the sidecar now? Any in-progress analysis will be interrupted.",
+    "startSuccess": "Sidecar started (PID {{pid}}, profile {{profile}}).",
+    "stopSuccess": "Sidecar stopped."
+  },
+  "sidecarTicker": {
+    "label": "Analysis engine status"
   },
   "din": {
     "title": "Is this your medication?",
@@ -392,7 +491,7 @@
     "signIn": "Sign In",
     "getStarted": "Get Started",
     "disclaimer": "Decision-support only — not medical advice. Always verify with a pharmacist or physician.",
-    "credits": "MyPillSafe · 2026 · Muthuraj Jayakumar, Sumanth Reddy, Lohith Reddy, Ali Ozdemir, Abdullah Mohammed"
+    "credits": "MyPillSafe · 2026 ·"
   },
   "disclaimerModal": {
     "title": "Important Notice",
@@ -635,7 +734,13 @@
           "desc": "A mandatory smoke test or spot-check ran on every build of the project — and every single one caught at least one real bug. The deterministic safety guards have a combined zero failures across all evaluation rounds; every incident came from the model-judgment layer, which is exactly why models don't make the decisions."
         }
       },
-      "scopeNote": "MyPillSafe is a Conestoga College capstone project, built for Canada (DIN-based, Health Canada monographs). It is decision-support only."
+      "scopeNote": "MyPillSafe is a Conestoga College capstone project, built for Canada (DIN-based, Health Canada monographs). It is decision-support only.",
+      "diagramTitle": "System architecture",
+      "diagramCaption": "MyPillSafe container architecture (C4 level 2) — every box that runs, and every link between them. The brains host sits on a private network and is never publicly reachable.",
+      "diagramAlt": "C4 container diagram of MyPillSafe. A patient and an administrator use a React web app, which reaches an nginx TLS gateway at mypillsafe.ca and then a FastAPI API handling orchestration, sessions and patient approval behind deterministic safety guardrails. The API reads and writes a PostgreSQL database, stores prescription photos in a file volume, and calls a Brains Service over a private network. That service hosts a deterministic verify-reject-abstain matcher, an offline Ollama language model, and isolated PaddleOCR workers for pill imprints and prescription labels, reading from a reference-data workbook and a searchable Canadian monograph index. Only a question and its cited passages are ever sent to the external Claude API.",
+      "diagramZoomHint": "Click the diagram to enlarge",
+      "diagramZoomLabel": "Enlarge the architecture diagram",
+      "diagramCloseLabel": "Close the enlarged diagram"
     },
     "vision": {
       "breadcrumb": "Vision & Mission",
@@ -794,7 +899,8 @@
           "focus4": "Documented deviations and bugs surfaced during verification passes, rather than letting them go unreported."
         }
       },
-      "footerNote": "MyPillSafe is a capstone project of the Conestoga College graduate program in AI & Machine Learning."
+      "footerNote": "MyPillSafe is a capstone project of the Conestoga College graduate program in AI & Machine Learning.",
+      "linkedinAria": "{{name}} on LinkedIn"
     },
     "contact": {
       "title": "Contact Us",

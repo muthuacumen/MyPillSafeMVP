@@ -3,6 +3,8 @@ import uuid
 import pytest
 from httpx import AsyncClient
 
+from app.core.security import create_access_token
+
 
 @pytest.mark.asyncio
 async def test_change_password_wrong_current(client: AsyncClient, auth_headers: dict):
@@ -15,9 +17,9 @@ async def test_change_password_wrong_current(client: AsyncClient, auth_headers: 
 
 
 @pytest.mark.asyncio
-async def test_change_password_and_login_with_new_password(client: AsyncClient):
+async def test_change_password_and_login_with_new_password(client: AsyncClient, approve_user):
     email = f"pw_{uuid.uuid4().hex[:10]}@pillsafe.dev"
-    register_resp = await client.post(
+    await client.post(
         "/api/v1/auth/register",
         json={
             "email": email,
@@ -27,8 +29,10 @@ async def test_change_password_and_login_with_new_password(client: AsyncClient):
             "date_of_birth": "1990-01-01",
         },
     )
-    token = register_resp.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+    # Registration is approval-gated and hands back no token, so this test
+    # gets its signed-in state the same way a real user does: after approval.
+    user = await approve_user(email)
+    headers = {"Authorization": f"Bearer {create_access_token(user.id, user.role)}"}
 
     change_resp = await client.patch(
         "/api/v1/patients/me/password",

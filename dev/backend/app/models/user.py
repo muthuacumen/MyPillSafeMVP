@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from enum import Enum as PyEnum
-from sqlalchemy import String, Boolean, DateTime, Enum, func
+from sqlalchemy import String, Boolean, DateTime, Enum, Integer, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 
@@ -20,6 +20,14 @@ class User(Base):
     role: Mapped[str] = mapped_column(String(20), default=UserRole.PATIENT.value, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    # Real session termination (Task T2). Minted into every access/refresh
+    # token's `tv` claim; validation (app/api/deps.py, auth_service.refresh_
+    # tokens) 401s any token whose `tv` doesn't match the live column. Bumping
+    # this is what actually kills sessions already issued -- unlike is_active,
+    # which only blocks NEW logins/refreshes, this invalidates tokens a user
+    # is already holding. Default 0 so every pre-existing user/token keeps
+    # working until an admin explicitly terminates a session.
+    token_version: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)

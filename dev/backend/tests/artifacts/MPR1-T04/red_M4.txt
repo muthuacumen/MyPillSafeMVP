@@ -1,0 +1,69 @@
+MPR1-T04 MUTATION M4
+defect  : the D-7 fail-safe downgrade is skipped -- a record that fails C6 validation reaches the patient as a green `verify`
+file    : app\services\tray_messages.py
+replaced: if contract_error:
+        out.update(verdict=Verdict.ERROR,
+with    : if False:  # MUTANT (D-7 downgrade skipped)
+        out.update(verdict=Verdict.ERROR,
+bar     : tests/test_tray_slots.py::test_D7a_contract_error_downgrades_sb2_verify
+exit    : 1 (RED (expected))
+==============================================================================
+F                                                                        [100%]
+================================== FAILURES ===================================
+________________ test_D7a_contract_error_downgrades_sb2_verify ________________
+
+client = <httpx.AsyncClient object at 0x000001F30B6AEB70>
+auth_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODMyODk4My0xOTk5LTQ4Y2ItOTZlYS0yMjQwNTY5ZTE...VOVCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3ODY3NTI2NTgsImV4cCI6MTc4Njc1NjI1OH0.p3MaasjWvSHVzHyPWCC7k-ZFN3juPr6_41ZDhVhI9Hc'}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001F30B6E5130>
+
+    @pytest.mark.asyncio
+    async def test_D7a_contract_error_downgrades_sb2_verify(client, auth_headers, monkeypatch):
+        """D-7 (binding): a slot whose record fails C6 validation must NEVER carry
+        verdict `verify`. SB2's raw decision is kept for the audit trail; the
+        identification is withheld and the user is sent to a pharmacist."""
+        await _arm(monkeypatch, client, auth_headers, _full_tray("verify", record=RECORD_BAD_CONTRACT))
+        slot = (await _post(client, auth_headers)).json()["slots"][0]
+>       assert slot["verdict"] == Verdict.ERROR
+E       AssertionError: assert 'verify' == 'error'
+E         
+E         - error
+E         + verify
+
+tests\test_tray_slots.py:393: AssertionError
+---------------------------- Captured stderr setup ----------------------------
+2026-08-14 20:10:58,825  INFO      app.services.auth_service  User registered, awaiting admin approval: patient_6f2a79c0cb@pillsafe.dev
+2026-08-14 20:10:58,825  INFO      httpx  HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 202 Accepted"
+----------------------------- Captured log setup ------------------------------
+INFO     app.services.auth_service:auth_service.py:58 User registered, awaiting admin approval: patient_6f2a79c0cb@pillsafe.dev
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 202 Accepted"
+---------------------------- Captured stderr call -----------------------------
+2026-08-14 20:10:58,843  INFO      app.api.v1.routes.prescriptions  Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\b12f431e-3416-4043-a397-411fc5af4975\59918f76-2494-487d-a7d1-4c7c86a7cb17.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+2026-08-14 20:10:58,843  WARNING   app.services.brains_client  Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+2026-08-14 20:10:58,843  INFO      app.api.v1.routes.prescriptions  Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+2026-08-14 20:10:58,843  INFO      httpx  HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+2026-08-14 20:10:58,854  WARNING   app.services.brains_client  Brains sidecar profile lookup failed (dins=['DIN13803']): connection refused
+2026-08-14 20:10:58,860  INFO      httpx  HTTP Request: PATCH http://test/api/v1/prescriptions/69aff12b-6824-474b-8636-44221557c93d "HTTP/1.1 200 OK"
+2026-08-14 20:10:58,860  WARNING   app.services.tray_messages  Tray well carried a record that fails C6 validation: contract_version is 'C5', expected 'C6' -- refuse a record you do not understand rather than mis-read it
+2026-08-14 20:10:58,860  INFO      httpx  HTTP Request: POST http://test/api/v1/tray/analyze "HTTP/1.1 200 OK"
+------------------------------ Captured log call ------------------------------
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:148 Prescription OCR scan: image_sha256=13d16247b785 image_bytes=10 saved_path=./uploads\prescriptions\b12f431e-3416-4043-a397-411fc5af4975\59918f76-2494-487d-a7d1-4c7c86a7cb17.jpg raw_text_lines=1 raw_text_head='Metformin HCl 500mg — twice daily with meals. Dr. A. Chen. Refills: 2.'
+WARNING  app.services.brains_client:brains_client.py:149 Brains sidecar reference search failed (q='Metformin HCl'): connection refused
+INFO     app.api.v1.routes.prescriptions:prescriptions.py:213 Prescription parse: image_sha256=13d16247b785 parse_source=regex medications=1 flags=['not_in_reference']
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/prescriptions "HTTP/1.1 201 Created"
+WARNING  app.services.brains_client:brains_client.py:240 Brains sidecar profile lookup failed (dins=['DIN13803']): connection refused
+INFO     httpx:_client.py:1742 HTTP Request: PATCH http://test/api/v1/prescriptions/69aff12b-6824-474b-8636-44221557c93d "HTTP/1.1 200 OK"
+WARNING  app.services.tray_messages:tray_messages.py:222 Tray well carried a record that fails C6 validation: contract_version is 'C5', expected 'C6' -- refuse a record you do not understand rather than mis-read it
+INFO     httpx:_client.py:1742 HTTP Request: POST http://test/api/v1/tray/analyze "HTTP/1.1 200 OK"
+============================== warnings summary ===============================
+tests/test_tray_slots.py::test_D7a_contract_error_downgrades_sb2_verify
+tests/test_tray_slots.py::test_D7a_contract_error_downgrades_sb2_verify
+tests/test_tray_slots.py::test_D7a_contract_error_downgrades_sb2_verify
+  D:\Projects\PillSafe\PillSafe\dev\backend\venv\Lib\site-packages\jose\jwt.py:311: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = timegm(datetime.utcnow().utctimetuple())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_tray_slots.py::test_D7a_contract_error_downgrades_sb2_verify
+1 failed, 3 warnings in 0.68s
+
+

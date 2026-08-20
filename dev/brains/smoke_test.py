@@ -34,8 +34,8 @@ import httpx
 BASE_URL = "http://127.0.0.1:8100"
 TIMEOUT = 200.0
 
-CSV_PATH = Path(r"D:\Projects\PillSafe\IMB1_Prototype\results\08_derisk_imprint_up_per_photo.csv")
-RAW_DIR = Path(r"D:\Projects\PillSafe\Brainstorm\OTC_Images\Raw")
+CSV_PATH = Path(r"D:\Projects\PillSafe\Research\IMB1_Prototype\results\08_derisk_imprint_up_per_photo.csv")
+RAW_DIR = Path(r"D:\Projects\PillSafe\Archive\Brainstorm\OTC_Images\Raw")
 
 # Filler DINs for the 3-DIN profile list (real reference rows, so a
 # realistic-looking profile) -- swapped out below if either collides with
@@ -109,7 +109,9 @@ def main() -> None:
     print(f"[smoke] {len(search_results)} results, top 3:")
     for r in search_results[:3]:
         print(f"    {r}")
-    top_din = search_results[0]["din"]
+    verifiable = [r for r in search_results if r.get("pill_verifiable")]
+    assert verifiable, f"no pill_verifiable result in search_results: {search_results}"
+    top_din = verifiable[0]["din"]
 
     # --- 3. /reference/candidates ---
     print(f"\n[smoke] 3/4 GET /reference/candidates?dins={top_din}")
@@ -141,10 +143,19 @@ def main() -> None:
         body = resp.json()
 
         # --- strict shape assertions ---
+        # GOAL1 (2026-08-15): the legacy `imprint_reads` key no longer exists
+        # anywhere -- the paddle OCR path that produced it was removed (archived
+        # in Archive/2bdeleted/2026-08-15_paddleocr_removal). This now asserts
+        # the C6 contract shape instead: `contract_version` present, and
+        # `faces` present as a list (populated when the two-stage reader is
+        # armed and a profile was supplied; empty otherwise -- see
+        # `nb08_imb1.build_record`'s own docstring for why an empty list means
+        # UNKNOWN, not a terminal no-imprint verdict).
         record = body.get("record")
         assert record is not None, f"missing record in response: {body}"
-        for key in ("detected", "colour_modes", "shape_out", "type_out", "imprint_reads"):
+        for key in ("detected", "contract_version", "colour_modes", "shape_out", "type_out", "faces"):
             assert key in record, f"record missing key {key!r}: {record}"
+        assert isinstance(record["faces"], list), f"record['faces'] should be a list: {record['faces']!r}"
 
         match = body.get("match")
         assert match is not None, f"expected a match (profile_dins was non-empty): {body}"
