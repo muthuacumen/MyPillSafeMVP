@@ -32,7 +32,17 @@ logger = logging.getLogger(__name__)
 # rendered as a demo-visible false-DOWN banner. The result is cached for
 # HEALTH_CACHE_SECONDS below, so the extra headroom costs at most one slow
 # probe per cache window, never a per-request cost.
-HEALTH_TIMEOUT_SECONDS = 5.0
+#
+# 2026-08-20 (droplet deploy session): raised 5.0 -> 8.0. The prod sidecar's
+# /health measured ~6.08 s locally (Ollama stopped -> ollama_up() pays its
+# ~4.14 s synchronous failure cost every time, per admin_sidecar.py's own
+# SUPERVISOR_HEALTH_TIMEOUT_S comment) before any droplet<->laptop Tailscale
+# latency is added -- the public ticker reported a healthy prod sidecar as
+# DOWN because this timeout alone was shorter than the local response time.
+# 8.0 matches the timeout already used for the same underlying call via the
+# Supervisor's admin proxy (admin_sidecar.py's _STATUS_TIMEOUT), so both
+# paths now tolerate the same known Ollama-down cost.
+HEALTH_TIMEOUT_SECONDS = 8.0
 HEALTH_CACHE_SECONDS = 30.0
 
 # {url: {"healthy": bool, "latency_ms": float, "checked_at": iso-str, "_at": monotonic}}

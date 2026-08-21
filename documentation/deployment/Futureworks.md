@@ -888,6 +888,41 @@ colour-science-library shadowing) before any further promotion attempt, not a st
 Manifest + full rollback inventory:
 `archive\2bdeleted\2026-08-20_imb1v0_tray_promotion\MANIFEST.md`.
 
+**[2026-08-20] APPEND (MPR1 T29-T34, self-contained promotion) -- item 1's blocker from the append
+above is RESOLVED, on a different path than either prior attempt tried; the closure design T25/T26
+called for was designed (T29), built (T30), refute-repaired (T31/T31b/T31c), and proven
+byte-for-byte (T32c) after a real gap was found and closed (T32 UNRESOLVED -> T32b found the gap ->
+T33 fixed it -> T33-R independently re-confirmed the fix).** Not an `IMB1_v0\tray\` copy -- a
+depth-mirrored, root-anchored closure at `Production\NB08_Runtime\` (35 promoted source files +
+2 runtime artifacts; FastSAM weights rebound, not copied, sha256-pinned) that the sidecar's own
+`production_wiring.py`/`app.py` now import from directly. **Muthu's regression bar -- byte-identical
+to MPR1-T20 on every decision-bearing field -- is MET**: MPR1-T32c re-ran the full E1-E6 localhost
+suite with BOTH legacy src trees renamed away (forcing every import through the closure, no
+fallback) and measured 0 hard differences against T20, R-2 self-containment audit 4/4, restoration
+hash-verified 92/92 + 11/11, driver exit 0, zero new bugs. `Production\` is therefore self-contained
+for sidecar deployment on another machine, per Muthu's Decision 1. This change set (commit
+`0377136`, Muthu Decision 2) is committed and pushed to `feat/admin-approval-contact-team`, 0
+ahead/0 behind origin.
+
+**REMAINS OPEN list above, corrected 2026-08-20:** item 1 -- SATISFIED (closure lives at
+`Production\NB08_Runtime\`, not `IMB1_v0`, per Muthu's design choice; see above). Item 4 (demo
+video) -- REMOVED per Muthu Decision 3: no longer required; the existing
+`archive\BenadrylDemo\videos\PillSafe_Localhost_Demo_2026-08-18_VERIFY.webm` stands as the
+deliverable, and MPR1 T12 closes without ever running. Items 2 and 3 stay OPEN, now scoped as: (2)
+production :8100 enablement -- a droplet-update runbook is written
+(`Production\PillSafe\documentation\deployment\Droplet_Update_2026-08-20.md`, Muthu-executed:
+branch check, image build+push with the required `VITE_TRAY_CHECK=on` build-arg, `.env`/`IMAGE_TAG`
+bump, mandatory schema-parity check, verification curls) plus a production E2E with the 3 accounts
+(per the runbook's deferred Sec.5) still owed; (3) per-well partial-failure isolation proof and item
+5's arbiter (N sequential reader passes) latency instrumentation both remain unexercised -- still
+Muthu-owed/gated, unchanged by this session.
+
+Evidence: `Research\IMB1_Prototype\NB08_Notebook\orc\MPR1\T29_closure_design.md` (design) ·
+`Production\NB08_Runtime\MANIFEST.md` (T30 build + T31 refutation notes + T33 gap-close, full) ·
+`archive\2bdeleted\2026-08-20_selfcontained_promotion\MANIFEST.md` (T30 archive/rollback) ·
+`orc\MPR1\T32_artifacts\`, `T32b_artifacts\`, `T32c_artifacts\` (regression attempts + PASS) ·
+`orc\MPR1\_INDEX.md` T29-T36 rows.
+
 ---
 
 ## 24. No dose-schedule / already-taken enforcement exists anywhere in the pill-scan path
@@ -1270,6 +1305,24 @@ Evidence: `NB08_Notebook/orc/MPR1/MPR1-T21-ADJ-e2e-evidence.report.md` (REMAINS 
 to log separately) · `NB08_Notebook/orc/MPR1/T16_artifacts/`, `T18_artifacts/`,
 `T20_artifacts/ram_gpu_timeline.log`.
 
+**[2026-08-20] APPEND #2 (MPR1 T32/T32b/T32c) -- CORRECTED ATTRIBUTION: T32's uniform failure was
+NOT this entry's mechanism.** An initial read of MPR1-T32's uniform `verdict=error`-class slots (E2
+mismatches, E4 `decision=None`) attributed them to RAM starvation, i.e. this entry's class of
+failure. **That attribution is wrong, corrected 2026-08-20:** the actual cause was an unrelated
+closure gap -- `nb08_imb1.py`'s lazy `_m0_render()` shim (`_nb08_m1_srcpkg`) pinning to a module,
+`nb08_merge16.py`, that the self-containment promotion (T29/T30) never enumerated and therefore
+never promoted; every well failed `ModuleNotFoundError`, not a memory-pressure crash (see
+Futureworks #23's 2026-08-20 APPEND above and
+`orc\MPR1\T32b_artifacts\diag_direct_sidecar_call.txt`). The one event from that session that DOES
+belong to this entry's environmental class: a native `torch_cpu.dll` crash on sidecar restart,
+recorded at 0.74-1.75 GB ambient free RAM -- consistent with this entry's mechanism, not the closure
+gap. Once T33 closed the closure gap, **T32c's full E1-E6 re-run (both legacy src trees hidden)
+completed clean at a measured minimum of 3.41 GB free RAM**, zero native crashes -- another data
+point for the already-closed 2026-08-19 warm-start question, not a new one. Evidence:
+`orc\MPR1\T32_artifacts\driver_run.log` (uniform failure, pre-correction) ·
+`orc\MPR1\T32b_artifacts\diag_direct_sidecar_call.txt` (root cause) ·
+`orc\MPR1\T32c_artifacts\` (clean re-run, 3.41 GB minimum).
+
 ---
 
 ## 36. Dormant Stage-1 fallback booby trap -- `qwen3-vl:latest` removed from Ollama, `PILLSAFE_STAGE1=ollama` still names it
@@ -1457,6 +1510,15 @@ visually re-checked this session (no frontend was started) -- expected cleared g
 and the passing status calls, but a visual confirmation is owed at the next demo/localhost session
 before this append is treated as a full close.
 
+**[2026-08-20] APPEND #4 (MPR1 T34) -- APPEND #3's fix is now committed and pushed; the owed visual
+check moves to the droplet update.** The `HEALTH_TIMEOUT_SECONDS` 2.0s->5.0s fix (APPEND #3) shipped
+in commit `0377136` (`dev/backend/app/services/brains_registry.py`) to
+`feat/admin-approval-contact-team`, pushed, 0 ahead/0 behind origin. The visual banner re-check
+APPEND #3 left owed is still not done -- it now lands as part of
+`Production\PillSafe\documentation\deployment\Droplet_Update_2026-08-20.md` Sec.4's frontend
+verification steps (load the site, log in, confirm no stale-timeout offline banner over a working
+result), Muthu-executed at the droplet, not this session.
+
 ---
 
 ## 40. Offline colour-diagnosis harness and the live tray route disagree on the same photograph
@@ -1506,6 +1568,76 @@ before rendering) before the next demo, or accept it as a known minor cosmetic g
 **Owning doc:** `NB08_Notebook/orc/MPR1/MPR1-T21-ADJ-e2e-evidence.report.md` ("Findings to log
 separately") · `NB08_Notebook/orc/MPR1/T20_artifacts/results.json:552` ·
 `NB08_Notebook/orc/MPR1/T20_artifacts/screens/e4_scans_me.png`.
+
+---
+
+## 42. Two stale `SB2_Prototype` fallback-path literals resolve to non-existent directories, in
+## both the promoted closure and the Research originals
+
+**What was hit:** `nb08_verify.py:85` (`_SB2_PROTO = _PILLSAFE / "SB2_Prototype"`) and
+`nb08_lexicon.py:445` (`sb2_root = Path(__file__).resolve().parents[3] / "SB2_Prototype"`) each
+derive a fallback `sys.path` entry from their own file location. In the Research tree this resolves
+to `Research\SB2_Prototype` (absent); in the promoted closure (`Production\NB08_Runtime\
+NB08_Notebook\src\`, promoted 2026-08-20, MPR1-T30) the SAME expressions now resolve to
+`Production\SB2_Prototype` (also absent) -- neither location has ever existed. The correct,
+post-restructure home of this package is `Development\SB2_Prototype`
+(`nb08_paths.py:121-125`'s `PROJECT_ROOT`/`SB2_PROTOTYPE` pins it correctly with a literal
+`D:\Projects\PillSafe` root). Found and verified during the T29 closure-design enumeration
+(`T29_closure_design.md` section 1.5).
+
+**What it blocks:** nothing on the live path today -- `sys.path.append`/`insert` of a non-existent
+directory is a documented no-op in both files (`nb08_verify.py:107-108`,
+`nb08_lexicon.py:446-447`), and `from sb2 import matcher` actually resolves via a separately-pinned
+`SB2_ROOT`, not via either of these two literals. This is a landmine, not a live bug: it stays inert
+only as long as nothing ever removes the working `SB2_ROOT` pin these two files are silently
+backstopping.
+
+**THE ASK (Muthu's call):** low priority -- either delete the two dead fallback lines, or repoint
+them at `Development\SB2_Prototype` (via `nb08_paths.SB2_PROTOTYPE` rather than a fresh literal) so
+they stop being landmines that look like they do something. Not urgent; no session has ever depended
+on them firing.
+
+**Owning doc:** `Research\IMB1_Prototype\NB08_Notebook\src\nb08_verify.py:85,107-108` ·
+`Research\IMB1_Prototype\NB08_Notebook\src\nb08_lexicon.py:445-448` (promoted copies:
+`Production\NB08_Runtime\NB08_Notebook\src\`, same line numbers, byte-identical) ·
+`nb08_paths.py:121-125` (the correct pin) ·
+`Research\IMB1_Prototype\NB08_Notebook\orc\MPR1\T29_closure_design.md` section 1.5 (discovery).
+
+---
+
+## 43. A third self-pinning package shim (`_nb08_m1_srcpkg`) is missing from
+## `nb08_runtime.PKG_ALIASES`, so its first use binds 15 duplicate module objects
+
+**What was hit:** `nb08_imb1.py`'s lazily-called `_m0_render()` (line 167) defines its own
+self-pinning package shim, `_nb08_m1_srcpkg`, pinned to `Path(__file__).resolve().parent` -- the
+same pattern `_nb08_tray_srcpkg` uses, which `nb08_runtime._bind()` already resolves via
+`PKG_ALIASES`. `_nb08_m1_srcpkg` was never added to that list (it didn't need to exist before
+MPR1-T33 promoted `nb08_merge16.py`, the only module it loads). Measured 2026-08-20 (MPR1-T33's
+verification pass): the first `_m0_render()` call now binds **16 module objects** under
+`_nb08_m1_srcpkg`, of which **15 duplicate files already loaded canonically** under `_nb08_runtime`
+(`card_calib`, `colour`, `data`, `detect`, `faces`, `nb08_geom`, `nb08_paths`, `nb08_pipe11`,
+`nb08_sections`, `nb08_split`, `nb08_wells`, `pipelines`, `results`, `shape_geom`, `shape_heads`) --
+this is T29 section 8's open risk #1 (named for `_nb08_tray_srcpkg`, already resolved there)
+recurring for a third shim.
+
+**What it blocks:** nothing measured -- `nb08_tray.pipe11()` still returns and rebinds the CANONICAL
+`_nb08_runtime.nb08_pipe11` object (`pipe11_returned_is_canonical: true`, FastSAM weights resolve
+correctly), and `nb08_imb1` takes only the pure-NumPy `render` function from `nb08_merge16`, never
+touching the duplicate `_nb08_m1_srcpkg.nb08_pipe11`'s stale FastSAM literal. The cost is a one-off
+duplicate import of the cv2/torch chain on first tray call -- measured harmless, not a correctness
+risk, as long as nothing ever calls `nb08_merge16.pill_mask` (which DOES use P11) from the sidecar.
+
+**THE ASK (Muthu's call):** one-line fix, deliberately not taken during T33 (out of that task's
+brief scope, which limited `nb08_runtime.py` edits to `ALIAS_NAMES`): add `"_nb08_m1_srcpkg"` to
+`nb08_runtime.PKG_ALIASES` (line 80). `_bind()` would then pre-populate
+`sys.modules["_nb08_m1_srcpkg"]`, `nb08_imb1.py:168`'s `if pkg_name not in sys.modules` guard would
+reuse it, and all 15 duplicates collapse to one object per file -- identical to the mechanism already
+applied to `_nb08_tray_srcpkg`.
+
+**Owning doc:** `Production\PillSafe\dev\brains\nb08_runtime.py:80` (`PKG_ALIASES`) ·
+`Research\IMB1_Prototype\NB08_Notebook\src\nb08_imb1.py:167-172` (`_m0_render`,
+`_nb08_m1_srcpkg` definition) · `Production\NB08_Runtime\MANIFEST.md` "T33" section, "OPEN ITEM
+RAISED BY THIS PROMOTION" (full measurement).
 
 ---
 
